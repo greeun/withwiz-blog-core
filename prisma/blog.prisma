@@ -1,0 +1,98 @@
+// 블로그 Prisma 모델 참조 문서
+// 실제 마이그레이션은 호스트 프로젝트의 schema.prisma에서 수행한다.
+// BlogCategory enum과 author 관계는 호스트 프로젝트에서 정의한다.
+// 패키지는 category를 문자열로 처리하여 유연성을 확보한다.
+//
+// 주의: 호스트 프로젝트는 모델명을 자유롭게 변경할 수 있다.
+//       예) dts-ballet-homepage는 "News"를 사용하며, PostTag/Comment의
+//           FK 필드명은 `newsId`(컬럼: `news_id`)로 매핑한다.
+//       Host projects should adapt model names (e.g., News instead of BlogPost).
+
+model BlogPost {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  category      BlogCategory
+  title         String
+  content       String         @db.Text
+  excerpt       String?
+  coverImageUrl String?        @map("cover_image_url")
+  coverImageKey String?        @map("cover_image_key")
+  attachments   Json?          @default("[]")
+  featured      Boolean        @default(false)
+  published     Boolean        @default(false)
+  publishedAt   DateTime?      @map("published_at")
+  authorId      String         @map("author_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  // 태그 N:M 관계 (중계 모델: PostTag)
+  tags          PostTag[]
+  // 댓글 1:N 관계
+  comments      Comment[]
+
+  @@index([published, publishedAt(sort: Desc)])
+  @@index([published, featured, publishedAt(sort: Desc)])
+  @@index([category])
+  @@map("blog_posts")
+}
+
+// ── 태그 시스템 ──
+
+model Tag {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // 포스트 N:M 관계 (중계 모델)
+  posts       PostTag[]
+
+  @@map("tags")
+}
+
+// ── 댓글 시스템 ──
+
+model Comment {
+  id          String        @id @default(cuid())
+  postId      String
+  parentId    String?
+  authorId    String?
+  guestName   String?
+  guestEmail  String?
+  content     String        @db.Text
+  status      CommentStatus @default(PENDING)
+  ipHash      String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  post        BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[]     @relation("CommentReplies")
+
+  @@index([postId, status, createdAt])
+  @@index([ipHash, createdAt])
+  @@map("comments")
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+// 포스트-태그 중계 테이블 (N:M)
+model PostTag {
+  postId     String
+  tagId      String
+  assignedAt DateTime @default(now())
+
+  post       BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+  @@map("post_tags")
+}
