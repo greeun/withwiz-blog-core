@@ -1,0 +1,130 @@
+{
+  "name": "@withwiz/blog-core-v2",
+  "version": "0.1.0",
+  "description": "Next.js App Router blog package with CRUD, tags, comments, search, scheduling, and SEO",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:types": "tsc --emitDeclarationOnly",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests yet\""
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.mjs",
+      "require": "./dist/types/index.js"
+    },
+    "./services": {
+      "types": "./dist/services/index.d.ts",
+      "import": "./dist/services/index.mjs",
+      "require": "./dist/services/index.js"
+    },
+    "./routes": {
+      "types": "./dist/routes/index.d.ts",
+      "import": "./dist/routes/index.mjs",
+      "require": "./dist/routes/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.mjs",
+      "require": "./dist/utils/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.mjs",
+      "require": "./dist/errors/index.js"
+    },
+    "./seo": {
+      "types": "./dist/seo/index.d.ts",
+      "import": "./dist/seo/index.mjs",
+      "require": "./dist/seo/index.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.mjs",
+      "require": "./dist/i18n/index.js"
+    },
+    "./validators": {
+      "types": "./dist/validators/index.d.ts",
+      "import": "./dist/validators/index.mjs",
+      "require": "./dist/validators/index.js"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/storage/index.mjs",
+      "require": "./dist/storage/index.js"
+    },
+    "./components/admin": {
+      "types": "./dist/components/admin/index.d.ts",
+      "import": "./dist/components/admin/index.mjs",
+      "require": "./dist/components/admin/index.js"
+    },
+    "./components/public": {
+      "types": "./dist/components/public/index.d.ts",
+      "import": "./dist/components/public/index.mjs",
+      "require": "./dist/components/public/index.js"
+    },
+    "./components/admin/editor": {
+      "types": "./dist/components/admin/editor/index.d.ts",
+      "import": "./dist/components/admin/editor/index.mjs",
+      "require": "./dist/components/admin/editor/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "prisma"
+  ],
+  "dependencies": {
+    "slugify": "^1.6.6"
+  },
+  "peerDependencies": {
+    "@prisma/client": ">=5.0.0",
+    "next": ">=14.0.0",
+    "react": ">=18.0.0",
+    "zod": ">=3.20.0",
+    "@aws-sdk/client-s3": ">=3.0.0",
+    "@withwiz/block-editor": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@prisma/client": {
+      "optional": false
+    },
+    "next": {
+      "optional": false
+    },
+    "react": {
+      "optional": false
+    },
+    "zod": {
+      "optional": true
+    },
+    "@aws-sdk/client-s3": {
+      "optional": true
+    },
+    "@withwiz/block-editor": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "next": "^15.0.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "zod": "^3.23.0"
+  }
+}
