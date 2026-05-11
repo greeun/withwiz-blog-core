@@ -10,6 +10,10 @@ export { default as TagPicker } from './TagPicker';
 export { default as CommentModerationPanel } from './CommentModerationPanel';
 export { default as BlogDashboard } from './BlogDashboard';
 
+// Design System Injection
+export { BlogThemeProvider, useBlogUI } from '../../context/BlogUIContext';
+export { defaultComponents } from '../ui';
+
 // 타입 export
 export type {
   BlogManagerClientProps,
@@ -26,4 +30,6 @@ export type {
   SortField,
   SlugStatus,
   CategoryMap,
+  BlockEditorConfig,
+  BlockEditorInjection,
 } from './types';

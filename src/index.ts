@@ -370,9 +370,8 @@ export type {
 export { createS3StorageAdapter } from './storage';
 export type { S3StorageConfig } from './storage';
 
-// ── Design System Injection ──
+// ── Design System Injection (types only — runtime exports via ./components/admin) ──
 
-export { BlogThemeProvider, useBlogUI } from './context/BlogUIContext';
 export type { BlogThemeProviderProps } from './context/BlogUIContext';
 
 export type {
@@ -385,5 +384,3 @@ export type {
   BadgeProps as BlogBadgeProps,
   CardProps as BlogCardProps,
 } from './types/ui-components';
-
-export { defaultComponents } from './components/ui';
