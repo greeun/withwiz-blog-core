@@ -20,7 +20,7 @@ import {
   type CSSProperties, type DragEvent, type ChangeEvent,
 } from 'react';
 import slugify from 'slugify';
-import type { Attachment, BlogListItem, BlogDetail } from '../../types/blog';
+import type { Attachment, BlogListItem, BlogDetail, EditorType } from '../../types/blog';
 import type { BlogEditFormProps, BlogFormData, SlugStatus } from './types';
 import { resolveI18n } from '../../i18n';
 import { SLUG_PATTERN } from '../../utils/slug';
@@ -28,6 +28,8 @@ import { formatFileSize, getFileIcon } from '../../utils/file-helpers';
 import { toLocalDatetime } from '../../utils/date';
 import { s, rootVars } from './styles';
 import TagPicker from './TagPicker';
+import BlockEditorForm from './editor/BlockEditorForm';
+import { useBlogUI } from '../../context/BlogUIContext';
 
 /** fetch 래퍼 */
 function apiFetch(
@@ -51,6 +53,7 @@ function createEmptyForm(categories: Record<string, unknown>): BlogFormData {
     slug: '',
     category: firstCategory,
     content: '',
+    editorType: 'block',
     excerpt: '',
     coverImageUrl: '',
     coverImageKey: '',
@@ -114,12 +117,6 @@ const ef = {
     marginTop: 8,
   } as CSSProperties,
 
-  coverRemove: {
-    ...s.btnDanger,
-    ...s.btnSmall,
-    marginTop: 8,
-  } as CSSProperties,
-
   attachList: {
     marginTop: 8,
   } as CSSProperties,
@@ -171,28 +168,115 @@ const ef = {
     paddingTop: 16,
     borderTop: '1px solid var(--blog-border)',
   } as CSSProperties,
-};
 
-/** 토글 스위치 인라인 컴포넌트 */
-function ToggleSwitch({ checked, onChange, disabled }: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      style={s.toggle}
-      onClick={() => !disabled && onChange(!checked)}
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-    >
-      <span style={s.toggleTrack(checked)} />
-      <span style={s.toggleThumb(checked)} />
-    </button>
-  );
-}
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: 'var(--blog-text-muted)',
+    marginBottom: 8,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+  } as CSSProperties,
+
+  sectionTag: {
+    fontSize: 10,
+    fontWeight: 400,
+    color: 'var(--blog-text-dim)',
+    padding: '1px 6px',
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    borderRadius: 3,
+  } as CSSProperties,
+
+  headerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  } as CSSProperties,
+
+  headerActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+  } as CSSProperties,
+
+  toggleInlineRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+  } as CSSProperties,
+
+  toggleInlineLabel: {
+    fontSize: 12,
+    color: 'var(--blog-text-muted)',
+    whiteSpace: 'nowrap' as const,
+  } as CSSProperties,
+
+  catTabs: {
+    display: 'flex',
+    gap: 4,
+    marginBottom: 16,
+  } as CSSProperties,
+
+  catTab: (active: boolean): CSSProperties => ({
+    padding: '6px 14px',
+    fontSize: 12,
+    fontWeight: active ? 600 : 400,
+    fontFamily: 'var(--blog-font)',
+    borderRadius: 'var(--blog-radius-sm)',
+    border: active ? '1px solid var(--blog-accent)' : '1px solid var(--blog-border)',
+    backgroundColor: active ? 'rgba(74,144,217,0.12)' : 'transparent',
+    color: active ? 'var(--blog-accent)' : 'var(--blog-text-muted)',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+  }),
+
+  slugBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    padding: '6px 10px',
+    backgroundColor: 'var(--blog-bg-card)',
+    border: '1px solid var(--blog-border)',
+    borderRadius: 'var(--blog-radius-sm)',
+    marginBottom: 16,
+    fontSize: 12,
+  } as CSSProperties,
+
+  slugPrefix: {
+    color: 'var(--blog-text-dim)',
+    fontSize: 12,
+    whiteSpace: 'nowrap' as const,
+    flexShrink: 0,
+  } as CSSProperties,
+
+  slugInput: {
+    border: 'none',
+    background: 'none',
+    fontSize: 12,
+    color: 'var(--blog-text)',
+    outline: 'none',
+    flex: 1,
+    minWidth: 100,
+    fontFamily: 'var(--blog-font)',
+    padding: '2px 0',
+  } as CSSProperties,
+
+  titleInput: {
+    width: '100%',
+    padding: '10px 12px',
+    backgroundColor: 'var(--blog-bg-input)',
+    color: 'var(--blog-text)',
+    border: '1px solid var(--blog-border)',
+    borderRadius: 'var(--blog-radius-sm)',
+    fontSize: 16,
+    fontWeight: 600,
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+    fontFamily: 'var(--blog-font)',
+  } as CSSProperties,
+};
 
 export default function BlogEditForm({
   adminApiBasePath,
@@ -208,7 +292,15 @@ export default function BlogEditForm({
   i18n,
   onSave,
   onCancel,
+  basePath,
+  BlockEditorComponent,
+  BlockEditorProviderComponent,
+  editorConfig,
+  onFormChange,
+  uploadImage: uploadImageProp,
+  onImageUploaded,
 }: BlogEditFormProps) {
+  const { Button, Toggle, Input } = useBlogUI();
   const t = resolveI18n(i18n);
   const isNew = !editId;
 
@@ -216,6 +308,10 @@ export default function BlogEditForm({
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    onFormChange?.(form);
+  }, [form, onFormChange]);
 
   // Slug 관련
   const [slugStatus, setSlugStatus] = useState<SlugStatus>('idle');
@@ -235,6 +331,20 @@ export default function BlogEditForm({
   const updateField = useCallback(<K extends keyof BlogFormData>(key: K, value: BlogFormData[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
+
+  // ── uploadImage 함수 (prop 우선, 없으면 uploadEndpoint로 생성) ──
+  const resolvedUploadImage = useMemo(() => {
+    if (uploadImageProp) return uploadImageProp;
+    if (!uploadEndpoint) return undefined;
+    return async (file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await apiFetch(uploadEndpoint, authHeaders, { method: 'POST', body: fd });
+      const json = await res.json();
+      const data = (json as Record<string, unknown>)?.data ?? json;
+      return data as { url: string; key?: string };
+    };
+  }, [uploadImageProp, uploadEndpoint, authHeaders]);
 
   // ── 편집 데이터 로드 ──
 
@@ -256,6 +366,7 @@ export default function BlogEditForm({
           slug: data.slug ?? '',
           category: data.category ?? Object.keys(categories)[0] ?? '',
           content: data.content ?? '',
+          editorType: (data.editorType as EditorType) ?? 'block',
           excerpt: data.excerpt ?? '',
           coverImageUrl: data.coverImageUrl ?? '',
           coverImageKey: data.coverImageKey ?? '',
@@ -481,6 +592,7 @@ export default function BlogEditForm({
         slug: form.slug.trim(),
         category: form.category,
         content: form.content,
+        editorType: form.editorType,
         excerpt: form.excerpt || undefined,
         coverImageUrl: form.coverImageUrl || undefined,
         coverImageKey: form.coverImageKey || undefined,
@@ -534,118 +646,82 @@ export default function BlogEditForm({
 
   return (
     <div style={ef.form}>
-      {/* 헤더 */}
-      <div style={ef.header}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--blog-text)' }}>
+      {/* 헤더: 제목 + 토글 + 액션 */}
+      <div style={ef.headerRow}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--blog-text)', margin: 0 }}>
           {isNew ? t.adminCreateTitle : t.adminEditTitle}
         </h2>
+        <div style={ef.headerActions}>
+          <Toggle checked={form.featured} onChange={(v) => updateField('featured', v)} disabled={saving} label={t.adminFeaturedLabel} />
+          <Toggle checked={form.published} onChange={(v) => updateField('published', v)} disabled={saving} label={t.adminPublishedLabel} />
+          <Button onClick={onCancel} disabled={saving}>
+            {t.adminCancelButton}
+          </Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? t.adminSaving : t.adminSaveButton}
+          </Button>
+        </div>
       </div>
 
       {/* 에러 */}
       {error && <p style={{ ...s.errorText, marginBottom: 16 }} role="alert">{error}</p>}
 
-      {/* 제목 */}
-      <div style={s.fieldGroup}>
-        <label style={s.label}>
-          {t.adminTitleLabel} <span style={{ color: 'var(--blog-danger)' }}>*</span>
-        </label>
+      {/* Slug URL */}
+      <div style={ef.slugBar}>
+        <span style={ef.slugPrefix}>{basePath ?? '/blog'}/</span>
         <input
-          type="text"
-          style={s.input}
-          value={form.title}
-          onChange={(e) => updateField('title', e.target.value)}
-          placeholder={t.adminTitlePlaceholder}
-          disabled={saving}
-        />
-      </div>
-
-      {/* Slug */}
-      <div style={s.fieldGroup}>
-        <label style={s.label}>{t.adminSlugLabel}</label>
-        <input
-          type="text"
-          style={s.input}
+          style={ef.slugInput}
           value={form.slug}
           onChange={(e) => handleSlugChange(e.target.value)}
           placeholder={t.adminSlugPlaceholder}
           disabled={saving}
+          spellCheck={false}
         />
-        <div style={ef.slugStatus(slugStatus)}>{slugStatusText}</div>
+        <span style={ef.slugStatus(slugStatus)}>
+          {slugStatus === 'checking' && '...'}
+          {slugStatus === 'available' && '✓'}
+          {slugStatus === 'duplicate' && '✗ ' + t.adminSlugDuplicate}
+          {slugStatus === 'invalid' && '✗ ' + t.adminSlugInvalid}
+        </span>
       </div>
 
-      {/* 카테고리 + 발행일시 */}
-      <div style={ef.twoCol}>
-        <div style={s.fieldGroup}>
-          <label style={s.label}>
-            {t.adminCategoryLabel} <span style={{ color: 'var(--blog-danger)' }}>*</span>
-          </label>
-          <select
-            style={{ ...s.select, width: '100%' }}
-            value={form.category}
-            onChange={(e) => updateField('category', e.target.value)}
+      {/* 카테고리 탭 */}
+      <div style={ef.catTabs}>
+        {catKeys.map((key) => (
+          <button
+            key={key}
+            type="button"
+            style={ef.catTab(form.category === key)}
+            onClick={() => updateField('category', key)}
             disabled={saving}
           >
-            {catKeys.map((key) => (
-              <option key={key} value={key}>{categories[key].label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div style={s.fieldGroup}>
-          <label style={s.label}>{t.adminPublishedAtLabel}</label>
-          <input
-            type="datetime-local"
-            style={s.input}
-            value={form.publishedAt}
-            onChange={(e) => updateField('publishedAt', e.target.value)}
-            disabled={saving}
-          />
-        </div>
+            {categories[key].label}
+          </button>
+        ))}
       </div>
 
-      {/* 본문 (Basic editor: textarea) */}
+      {/* 발행일시 */}
       <div style={s.fieldGroup}>
-        <label style={s.label}>{t.adminContentLabel}</label>
-        <textarea
-          style={s.textarea}
-          value={form.content}
-          onChange={(e) => updateField('content', e.target.value)}
-          placeholder={t.adminContentPlaceholder}
-          disabled={saving}
-        />
+        <div style={ef.sectionTitle}>{t.adminPublishedAtLabel}</div>
+        <Input type="datetime-local" style={{ fontSize: 12 }} value={form.publishedAt} onChange={(v) => updateField('publishedAt', v)} disabled={saving} />
       </div>
 
-      {/* 요약 */}
+      {/* 기본 정보 */}
       <div style={s.fieldGroup}>
-        <label style={s.label}>
-          {t.adminExcerptLabel}
-          <span style={{ ...s.helperText, marginLeft: 8 }}>{t.adminOptionalLabel}</span>
-        </label>
-        <input
-          type="text"
-          style={s.input}
-          value={form.excerpt}
-          onChange={(e) => updateField('excerpt', e.target.value)}
-          placeholder={t.adminExcerptPlaceholder}
-          disabled={saving}
-        />
+        <div style={ef.sectionTitle}>
+          {t.adminTitleLabel} <span style={ef.sectionTag}>*</span>
+        </div>
+        <Input style={{ padding: '10px 12px', fontSize: 16, fontWeight: 600 }} value={form.title} onChange={(v) => updateField('title', v)} placeholder={t.adminTitlePlaceholder} disabled={saving} />
+        <Input style={{ marginTop: 8 }} value={form.excerpt} onChange={(v) => updateField('excerpt', v)} placeholder={t.adminExcerptPlaceholder} disabled={saving} />
       </div>
 
       {/* 대표 이미지 */}
       <div style={s.fieldGroup}>
-        <label style={s.label}>{t.adminCoverImageLabel}</label>
+        <div style={ef.sectionTitle}>{t.adminCoverImageLabel}</div>
         {form.coverImageUrl ? (
-          <div>
+          <div style={{ position: 'relative' }}>
             <img src={form.coverImageUrl} alt="Cover" style={ef.coverPreview} />
-            <br />
-            <button
-              type="button"
-              style={ef.coverRemove}
-              onClick={removeCoverImage}
-              disabled={saving}
-            >
-              {t.commonDelete}
-            </button>
+            <Button variant="danger" size="small" style={{ marginTop: 8 }} onClick={removeCoverImage} disabled={saving}>{t.commonDelete}</Button>
           </div>
         ) : (
           <div
@@ -678,15 +754,79 @@ export default function BlogEditForm({
         />
       </div>
 
+      {/* 콘텐츠 블록 */}
+      <div style={s.fieldGroup}>
+        <div style={ef.sectionTitle}>
+          {t.adminBlocksLabel} <span style={ef.sectionTag}>{t.adminBlocksTag}</span>
+        </div>
+        <BlockEditorForm
+          content={form.content}
+          onContentChange={(c: string) => updateField('content', c)}
+          category={form.category}
+          editorConfig={editorConfig!}
+          uploadImage={resolvedUploadImage}
+          onError={(msg) => setError(msg)}
+          onImageUploaded={onImageUploaded}
+          BlockEditorComponent={BlockEditorComponent}
+          BlockEditorProviderComponent={BlockEditorProviderComponent}
+        />
+      </div>
+
+      {/* 태그 피커 */}
+      {enableTags && (
+        <div style={s.fieldGroup}>
+          <div style={ef.sectionTitle}>{t.adminBlocksTag}</div>
+          <TagPicker
+            selectedTagIds={form.tagIds}
+            onChange={(ids) => updateField('tagIds', ids)}
+            apiBasePath={`${adminApiBasePath}/tags`}
+            authHeaders={authHeaders}
+            disabled={saving}
+            i18n={i18n}
+          />
+        </div>
+      )}
+
+      {/* CTA */}
+      {enableCta && (
+        <div style={s.fieldGroup}>
+          <div style={ef.sectionTitle}>{t.adminCtaLabel}</div>
+          <div style={ef.ctaSection}>
+            <div style={ef.toggleRow}>
+              <span style={ef.toggleLabel}>{t.adminCtaToggle}</span>
+              <Toggle checked={form.ctaEnabled} onChange={(v) => updateField('ctaEnabled', v)} disabled={saving} />
+            </div>
+            {form.ctaEnabled && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ ...s.label, fontSize: 11 }}>{t.adminCtaMessageLabel}</label>
+                  <Input value={form.ctaMsg} onChange={(v) => updateField('ctaMsg', v)} placeholder={t.adminCtaMessagePlaceholder} disabled={saving} />
+                </div>
+                <div style={ef.twoCol}>
+                  <div>
+                    <label style={{ ...s.label, fontSize: 11 }}>{t.adminCtaButtonLabel}</label>
+                    <Input value={form.ctaBtn} onChange={(v) => updateField('ctaBtn', v)} placeholder={t.adminCtaButtonPlaceholder} disabled={saving} />
+                  </div>
+                  <div>
+                    <label style={{ ...s.label, fontSize: 11 }}>{t.adminCtaUrlLabel}</label>
+                    <Input value={form.ctaUrl} onChange={(v) => updateField('ctaUrl', v)} placeholder="https://" disabled={saving} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 첨부파일 */}
       {enableAttachments && (
         <div style={s.fieldGroup}>
-          <label style={s.label}>
+          <div style={ef.sectionTitle}>
             {t.adminAttachmentsLabel}
-            <span style={{ ...s.helperText, marginLeft: 8 }}>
+            <span style={ef.sectionTag}>
               {form.attachments.length}/{maxAttachments}
             </span>
-          </label>
+          </div>
           <div style={ef.attachList}>
             {form.attachments.map((a, i) => (
               <div key={i} style={ef.attachItem}>
@@ -709,14 +849,7 @@ export default function BlogEditForm({
             ))}
           </div>
           {form.attachments.length < maxAttachments && (
-            <button
-              type="button"
-              style={{ ...s.btn, ...s.btnSmall, marginTop: 8 }}
-              onClick={() => attachInputRef.current?.click()}
-              disabled={saving || attachUploading}
-            >
-              {attachUploading ? t.adminUploading : t.adminAttachmentAddButton}
-            </button>
+            <Button size="small" style={{ marginTop: 8 }} onClick={() => attachInputRef.current?.click()} disabled={saving || attachUploading}>{attachUploading ? t.adminUploading : t.adminAttachmentAddButton}</Button>
           )}
           <input
             ref={attachInputRef}
@@ -727,112 +860,6 @@ export default function BlogEditForm({
           />
         </div>
       )}
-
-      {/* 태그 피커 */}
-      {enableTags && (
-        <div style={s.fieldGroup}>
-          <label style={s.label}>{t.adminBlocksTag}</label>
-          <TagPicker
-            selectedTagIds={form.tagIds}
-            onChange={(ids) => updateField('tagIds', ids)}
-            apiBasePath={`${adminApiBasePath}/tags`}
-            authHeaders={authHeaders}
-            disabled={saving}
-            i18n={i18n}
-          />
-        </div>
-      )}
-
-      {/* CTA */}
-      {enableCta && (
-        <div style={s.fieldGroup}>
-          <label style={s.label}>{t.adminCtaLabel}</label>
-          <div style={ef.ctaSection}>
-            <div style={ef.toggleRow}>
-              <span style={ef.toggleLabel}>{t.adminCtaToggle}</span>
-              <ToggleSwitch
-                checked={form.ctaEnabled}
-                onChange={(v) => updateField('ctaEnabled', v)}
-                disabled={saving}
-              />
-            </div>
-            {form.ctaEnabled && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ marginBottom: 8 }}>
-                  <label style={{ ...s.label, fontSize: 11 }}>{t.adminCtaMessageLabel}</label>
-                  <input
-                    type="text"
-                    style={s.input}
-                    value={form.ctaMsg}
-                    onChange={(e) => updateField('ctaMsg', e.target.value)}
-                    placeholder={t.adminCtaMessagePlaceholder}
-                    disabled={saving}
-                  />
-                </div>
-                <div style={ef.twoCol}>
-                  <div>
-                    <label style={{ ...s.label, fontSize: 11 }}>{t.adminCtaButtonLabel}</label>
-                    <input
-                      type="text"
-                      style={s.input}
-                      value={form.ctaBtn}
-                      onChange={(e) => updateField('ctaBtn', e.target.value)}
-                      placeholder={t.adminCtaButtonPlaceholder}
-                      disabled={saving}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ ...s.label, fontSize: 11 }}>{t.adminCtaUrlLabel}</label>
-                    <input
-                      type="text"
-                      style={s.input}
-                      value={form.ctaUrl}
-                      onChange={(e) => updateField('ctaUrl', e.target.value)}
-                      placeholder="https://"
-                      disabled={saving}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 공개/추천 토글 */}
-      <div style={{ ...s.card, marginBottom: 20 }}>
-        <div style={ef.toggleRow}>
-          <span style={ef.toggleLabel}>{t.adminPublishedLabel}</span>
-          <ToggleSwitch
-            checked={form.published}
-            onChange={(v) => updateField('published', v)}
-            disabled={saving}
-          />
-        </div>
-        <div style={{ ...ef.toggleRow, borderBottom: 'none' }}>
-          <span style={ef.toggleLabel}>{t.adminFeaturedLabel}</span>
-          <ToggleSwitch
-            checked={form.featured}
-            onChange={(v) => updateField('featured', v)}
-            disabled={saving}
-          />
-        </div>
-      </div>
-
-      {/* 푸터 */}
-      <div style={ef.footer}>
-        <button type="button" style={s.btn} onClick={onCancel} disabled={saving}>
-          {t.adminCancelButton}
-        </button>
-        <button
-          type="button"
-          style={{ ...s.btnPrimary, ...(saving ? s.btnDisabled : {}) }}
-          onClick={handleSave}
-          disabled={saving}
-        >
-          {saving ? t.adminSaving : t.adminSaveButton}
-        </button>
-      </div>
     </div>
   );
 }

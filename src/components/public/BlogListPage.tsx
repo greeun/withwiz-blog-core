@@ -12,6 +12,7 @@ import Link from "next/link";
 import type { BlogListPageProps } from "./types";
 import { resolveI18n } from "../../i18n";
 import { ps, publicRootVars } from "./styles";
+import { useBlogUI } from "../../context/BlogUIContext";
 
 function formatDate(date: Date | string | null): string {
   if (!date) return "";
@@ -36,6 +37,7 @@ export default function BlogListPage({
   sessionStorageKey,
 }: BlogListPageProps) {
   const t = resolveI18n(i18nOverride);
+  const { Badge } = useBlogUI();
 
   // URL 복원을 위한 세션 저장
   useEffect(() => {
@@ -147,7 +149,7 @@ export default function BlogListPage({
                   {post.tags && post.tags.length > 0 && (
                     <div style={ps.cardTags}>
                       {post.tags.map((tag) => (
-                        <span key={tag.id} style={ps.tagBadge}>#{tag.name}</span>
+                        <Badge key={tag.id} style={ps.tagBadge}>#{tag.name}</Badge>
                       ))}
                     </div>
                   )}

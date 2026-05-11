@@ -12,6 +12,7 @@ import type { DashboardStats, BlogListItem } from '../../types/blog';
 import type { BlogDashboardProps } from './types';
 import { resolveI18n } from '../../i18n';
 import { s, rootVars } from './styles';
+import { useBlogUI } from '../../context/BlogUIContext';
 
 /** fetch 래퍼 */
 function apiFetch(
@@ -120,6 +121,7 @@ export default function BlogDashboard({
   onNavigate,
 }: BlogDashboardProps) {
   const t = resolveI18n(i18n);
+  const { Card } = useBlogUI();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,23 +194,23 @@ export default function BlogDashboard({
       {/* 통계 카드 */}
       <div style={ds.grid}>
         {statCards.map((card) => (
-          <div
+          <Card
             key={card.label}
-            style={s.statCard}
+            style={{ padding: 20, textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s' }}
             onClick={card.onClick}
             role="button"
             tabIndex={0}
           >
             <div style={s.statValue}>{card.value}</div>
             <div style={s.statLabel}>{card.label}</div>
-          </div>
+          </Card>
         ))}
       </div>
 
       {/* 카테고리별 */}
       <div style={ds.section}>
         <h3 style={ds.sectionTitle}>{t.dashboardByCategory}</h3>
-        <div style={{ ...s.card, padding: 0 }}>
+        <Card style={{ padding: 0 }}>
           {Object.entries(stats.byCategory).map(([cat, count]) => (
             <div
               key={cat}
@@ -228,13 +230,13 @@ export default function BlogDashboard({
               {t.dashboardNoData}
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* 최근 글 */}
       <div style={ds.section}>
         <h3 style={ds.sectionTitle}>{t.dashboardRecentPosts}</h3>
-        <div style={{ ...s.card, padding: 0 }}>
+        <Card style={{ padding: 0 }}>
           {stats.recentPosts.map((post) => (
             <div key={post.id} style={ds.recentItem}>
               <span style={ds.recentTitle}>{post.title}</span>
@@ -248,7 +250,7 @@ export default function BlogDashboard({
               {t.dashboardNoData}
             </div>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

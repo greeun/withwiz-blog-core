@@ -369,3 +369,21 @@ export type {
 // Storage
 export { createS3StorageAdapter } from './storage';
 export type { S3StorageConfig } from './storage';
+
+// ── Design System Injection ──
+
+export { BlogThemeProvider, useBlogUI } from './context/BlogUIContext';
+export type { BlogThemeProviderProps } from './context/BlogUIContext';
+
+export type {
+  BlogUIComponents,
+  ButtonProps as BlogButtonProps,
+  ToggleProps as BlogToggleProps,
+  InputProps as BlogInputProps,
+  TextareaProps as BlogTextareaProps,
+  SelectProps as BlogSelectProps,
+  BadgeProps as BlogBadgeProps,
+  CardProps as BlogCardProps,
+} from './types/ui-components';
+
+export { defaultComponents } from './components/ui';

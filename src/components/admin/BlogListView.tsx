@@ -17,6 +17,7 @@ import type { PaginatedResult } from '../../types/common';
 import type { BlogListViewProps, SortField } from './types';
 import { resolveI18n } from '../../i18n';
 import { s, rootVars } from './styles';
+import { useBlogUI } from '../../context/BlogUIContext';
 
 /** fetch 래퍼 */
 function apiFetch(
@@ -40,22 +41,6 @@ const lv = {
     alignItems: 'center',
     marginBottom: 12,
     flexWrap: 'wrap' as const,
-  } as CSSProperties,
-
-  searchInput: {
-    ...s.input,
-    maxWidth: 250,
-    flex: '1 1 200px',
-  } as CSSProperties,
-
-  statusBadge: (published: boolean): CSSProperties => ({
-    ...s.badge,
-    ...(published ? s.badgePublished : s.badgeDraft),
-  }),
-
-  featuredBadge: {
-    ...s.badge,
-    ...s.badgeFeatured,
   } as CSSProperties,
 
   row: (isSelected: boolean): CSSProperties => ({
@@ -114,6 +99,7 @@ export default function BlogListView({
   onComments,
 }: BlogListViewProps) {
   const t = resolveI18n(i18n);
+  const { Button, Input, Select, Badge } = useBlogUI();
 
   const [items, setItems] = useState<BlogListItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -247,49 +233,42 @@ export default function BlogListView({
         </h2>
         <div style={{ display: 'flex', gap: 8 }}>
           {onDashboard && (
-            <button type="button" style={s.btn} onClick={onDashboard}>
+            <Button onClick={onDashboard}>
               {t.adminTabDashboard}
-            </button>
+            </Button>
           )}
           {onComments && (
-            <button type="button" style={s.btn} onClick={onComments}>
+            <Button onClick={onComments}>
               {t.moderationTitle}
-            </button>
+            </Button>
           )}
-          <button type="button" style={s.btnPrimary} onClick={onCreate}>
+          <Button variant="primary" onClick={onCreate}>
             {t.adminCreateButton}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* 필터 toolbar */}
       <div style={lv.toolbar}>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+        <Input
+          style={{ maxWidth: 250, flex: '1 1 200px' }}
           placeholder={t.adminSearchPlaceholder}
-          style={lv.searchInput}
+          value={search}
+          onChange={setSearch}
         />
-        <select
+        <Select
           value={category}
-          onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-          style={s.select}
-        >
-          <option value="">{t.adminCategoryAll}</option>
-          {catKeys.map((key) => (
-            <option key={key} value={key}>{categories[key].label}</option>
-          ))}
-        </select>
-        <select
+          onChange={(v) => { setCategory(v); setPage(1); }}
+          options={[
+            { value: '', label: t.adminCategoryAll },
+            ...catKeys.map((k) => ({ value: k, label: categories[k].label })),
+          ]}
+        />
+        <Select
           value={sortBy}
-          onChange={(e) => { setSortBy(e.target.value as SortField); setPage(1); }}
-          style={s.select}
-        >
-          {(Object.keys(sortLabels) as SortField[]).map((key) => (
-            <option key={key} value={key}>{sortLabels[key]}</option>
-          ))}
-        </select>
+          onChange={(v) => { setSortBy(v as SortField); setPage(1); }}
+          options={(Object.keys(sortLabels) as SortField[]).map((key) => ({ value: key, label: sortLabels[key] }))}
+        />
       </div>
 
       {/* 일괄 작업 toolbar */}
@@ -298,24 +277,24 @@ export default function BlogListView({
           <span style={{ fontSize: 12, color: 'var(--blog-text-muted)' }}>
             {selected.size}{t.adminBulkSelectedSuffix}
           </span>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkAction('publish')}>
+          <Button size="small" onClick={() => bulkAction('publish')}>
             {t.adminBulkPublish}
-          </button>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkAction('unpublish')}>
+          </Button>
+          <Button size="small" onClick={() => bulkAction('unpublish')}>
             {t.adminBulkUnpublish}
-          </button>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkAction('feature')}>
+          </Button>
+          <Button size="small" onClick={() => bulkAction('feature')}>
             {t.adminBulkFeature}
-          </button>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkAction('unfeature')}>
+          </Button>
+          <Button size="small" onClick={() => bulkAction('unfeature')}>
             {t.adminBulkUnfeature}
-          </button>
-          <button type="button" style={{ ...s.btnDanger, ...s.btnSmall }} onClick={() => bulkAction('delete')}>
+          </Button>
+          <Button variant="danger" size="small" onClick={() => bulkAction('delete')}>
             {t.adminBulkDelete}
-          </button>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => setSelected(new Set())}>
+          </Button>
+          <Button size="small" onClick={() => setSelected(new Set())}>
             {t.adminBulkClear}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -383,18 +362,18 @@ export default function BlogListView({
                   )}
                 </td>
                 <td style={s.td}>
-                  <span style={{ ...s.badge, backgroundColor: 'rgba(212,175,55,0.1)', color: 'var(--blog-accent)', fontSize: 11 }}>
+                  <Badge style={{ backgroundColor: 'rgba(74,144,217,0.1)', color: 'var(--blog-accent)', fontSize: 11 }}>
                     {categories[item.category]?.label || item.category}
-                  </span>
+                  </Badge>
                 </td>
                 <td style={s.td}>
-                  <span style={lv.statusBadge(item.published)}>
-                    {item.published ? t.adminPublishedSuffix : t.adminDraftSuffix}
-                  </span>
+                  <Badge variant={item.published ? 'published' : 'draft'}>
+                    {item.published ? t.adminPublishedLabel : t.adminUnpublishedLabel}
+                  </Badge>
                 </td>
                 <td style={{ ...s.td, textAlign: 'center' }}>
                   {item.featured && (
-                    <span style={lv.featuredBadge}>{t.adminFeaturedShort}</span>
+                    <Badge variant="featured">{t.adminFeaturedShort}</Badge>
                   )}
                 </td>
                 {hasViewCount && (

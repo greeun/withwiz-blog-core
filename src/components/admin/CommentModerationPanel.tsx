@@ -18,7 +18,8 @@ import type { Comment, CommentStatus } from '../../types/comment';
 import type { PaginatedResult } from '../../types/common';
 import type { CommentModerationPanelProps } from './types';
 import { resolveI18n } from '../../i18n';
-import { s, rootVars } from './styles';
+import { s } from './styles';
+import { useBlogUI } from '../../context/BlogUIContext';
 
 /** fetch 래퍼 */
 function apiFetch(
@@ -74,7 +75,7 @@ const cs = {
     fontWeight: active ? 600 : 400,
     border: `1px solid ${active ? 'var(--blog-accent)' : 'var(--blog-border)'}`,
     borderRadius: 'var(--blog-radius-sm)',
-    backgroundColor: active ? 'rgba(212,175,55,0.1)' : 'transparent',
+    backgroundColor: active ? 'rgba(74,144,217,0.1)' : 'transparent',
     color: active ? 'var(--blog-accent)' : 'var(--blog-text-muted)',
     cursor: 'pointer',
     fontFamily: 'var(--blog-font)',
@@ -95,12 +96,6 @@ const cs = {
     whiteSpace: 'nowrap' as const,
   } as CSSProperties,
 
-  actionBtn: {
-    ...s.btn,
-    ...s.btnSmall,
-    marginRight: 4,
-  } as CSSProperties,
-
   empty: {
     padding: 40,
     textAlign: 'center' as const,
@@ -116,6 +111,7 @@ export default function CommentModerationPanel({
   className,
 }: CommentModerationPanelProps) {
   const t = resolveI18n(i18n);
+  const { Button, Badge } = useBlogUI();
 
   const STATUS_OPTIONS: Array<{ value: CommentStatus | 'ALL'; label: string }> = [
     { value: 'ALL', label: t.moderationAll },
@@ -288,18 +284,18 @@ export default function CommentModerationPanel({
           <span style={{ fontSize: 12, color: 'var(--blog-text-muted)', alignSelf: 'center' }}>
             {selected.size}{t.adminBulkSelectedSuffix}
           </span>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkUpdate('APPROVED')} disabled={loading}>
+          <Button size="small" onClick={() => bulkUpdate('APPROVED')} disabled={loading}>
             {t.moderationBulkApprove}
-          </button>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkUpdate('REJECTED')} disabled={loading}>
+          </Button>
+          <Button size="small" onClick={() => bulkUpdate('REJECTED')} disabled={loading}>
             {t.moderationBulkReject}
-          </button>
-          <button type="button" style={{ ...s.btn, ...s.btnSmall }} onClick={() => bulkUpdate('SPAM')} disabled={loading}>
+          </Button>
+          <Button size="small" onClick={() => bulkUpdate('SPAM')} disabled={loading}>
             {t.moderationBulkSpam}
-          </button>
-          <button type="button" style={{ ...s.btnDanger, ...s.btnSmall }} onClick={bulkDelete} disabled={loading}>
+          </Button>
+          <Button variant="danger" size="small" onClick={bulkDelete} disabled={loading}>
             {t.moderationBulkDelete}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -356,32 +352,30 @@ export default function CommentModerationPanel({
                 </td>
                 <td style={{ ...s.td, ...cs.commentContent }}>{c.content}</td>
                 <td style={s.td}>
-                  <span style={{ ...s.badge, ...s.badgeStatus(c.status) }}>
-                    {c.status}
-                  </span>
+                  <Badge style={s.badgeStatus(c.status)}>{c.status}</Badge>
                 </td>
                 <td style={{ ...s.td, fontSize: 12, color: 'var(--blog-text-dim)' }}>
                   {fmtDate(c.createdAt)}
                 </td>
                 <td style={{ ...s.td, whiteSpace: 'nowrap' }}>
                   {c.status !== 'APPROVED' && (
-                    <button type="button" style={cs.actionBtn} onClick={() => updateStatus(c.id, 'APPROVED')}>
+                    <Button size="small" onClick={() => updateStatus(c.id, 'APPROVED')}>
                       {t.moderationApproveButton}
-                    </button>
+                    </Button>
                   )}
                   {c.status !== 'REJECTED' && (
-                    <button type="button" style={cs.actionBtn} onClick={() => updateStatus(c.id, 'REJECTED')}>
+                    <Button size="small" onClick={() => updateStatus(c.id, 'REJECTED')}>
                       {t.moderationRejectButton}
-                    </button>
+                    </Button>
                   )}
                   {c.status !== 'SPAM' && (
-                    <button type="button" style={cs.actionBtn} onClick={() => updateStatus(c.id, 'SPAM')}>
+                    <Button size="small" onClick={() => updateStatus(c.id, 'SPAM')}>
                       {t.moderationSpamButton}
-                    </button>
+                    </Button>
                   )}
-                  <button type="button" style={{ ...s.btnDanger, ...s.btnSmall }} onClick={() => deleteOne(c.id)}>
+                  <Button variant="danger" size="small" onClick={() => deleteOne(c.id)}>
                     {t.moderationDeleteButton}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
