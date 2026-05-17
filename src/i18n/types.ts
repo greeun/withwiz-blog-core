@@ -90,6 +90,14 @@ export interface BlogI18nStrings {
   adminContentPlaceholder: string;
   adminSlugPlaceholder: string;
 
+  // ── 관리자 폼: 에디터 선택 (6) ──
+  adminEditorTypeLabel: string;
+  adminEditorTextarea: string;
+  adminEditorRich: string;
+  adminEditorBlock: string;
+  adminEditorSwitchWarning: string;
+  adminRichLinkPrompt: string;
+
   // ── 관리자 폼: 업로드 & 첨부 (12) ──
   adminUploadFailed: string;
   adminUnsupportedFileType: string;

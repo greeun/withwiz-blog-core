@@ -15,7 +15,6 @@ import { s, rootVars } from './styles';
 import BlogListView from './BlogListView';
 import BlogEditForm from './BlogEditForm';
 import BlogDetailPreview from './BlogDetailPreview';
-import BlogListPreview from './BlogListPreview';
 import BlogDashboard from './BlogDashboard';
 import CommentModerationPanel from './CommentModerationPanel';
 
@@ -60,6 +59,35 @@ const ms = {
     ...s.btnSmall,
     marginBottom: 16,
   } as CSSProperties,
+
+  editSplit: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 0,
+    height: 'calc(100vh - 120px)',
+  } as CSSProperties,
+
+  editLeft: {
+    overflowY: 'auto' as const,
+    paddingRight: 16,
+  } as CSSProperties,
+
+  editRight: {
+    overflowY: 'auto' as const,
+    borderLeft: '1px solid var(--blog-border)',
+    paddingLeft: 16,
+    backgroundColor: '#fff',
+  } as CSSProperties,
+
+  previewLabel: {
+    fontSize: 10,
+    letterSpacing: '1.5px',
+    textTransform: 'uppercase' as const,
+    color: 'var(--blog-text-dim)',
+    textAlign: 'center' as const,
+    marginBottom: 12,
+    fontWeight: 600,
+  } as CSSProperties,
 };
 
 /** 빈 폼 데이터 */
@@ -70,6 +98,7 @@ function createEmptyForm(categories: Record<string, unknown>): BlogFormData {
     slug: '',
     category: firstCategory,
     content: '',
+    editorType: 'block',
     excerpt: '',
     coverImageUrl: '',
     coverImageKey: '',
@@ -102,42 +131,64 @@ export default function BlogManagerClient({
   onSave,
   onDelete,
   className,
+  BlockEditorComponent,
+  BlockEditorProviderComponent,
+  editorConfig,
+  adminBasePath,
+  initialMode = 'list',
+  initialEditId = null,
+  navigate,
+  uploadImage,
+  onImageUploaded,
 }: BlogManagerClientProps) {
   const t = resolveI18n(i18n);
 
-  const [mode, setMode] = useState<AdminMode>('list');
-  const [editId, setEditId] = useState<string | null>(null);
-  const [previewForm, setPreviewForm] = useState<BlogFormData>(createEmptyForm(categories));
+  const useRouting = !!(navigate && adminBasePath);
 
-  // 편집 모드 (미리보기 탭용)
-  const [editTab, setEditTab] = useState<'edit' | 'preview-detail' | 'preview-list'>('edit');
+  const [mode, setMode] = useState<AdminMode>(initialMode);
+  const [editId, setEditId] = useState<string | null>(initialEditId);
+  const [previewForm, setPreviewForm] = useState<BlogFormData>(createEmptyForm(categories));
 
   // 목록에서 항목 선택 -> 편집
   const handleSelect = useCallback((id: string) => {
-    setEditId(id);
-    setEditTab('edit');
-    setMode('edit');
-  }, []);
+    if (useRouting) {
+      navigate!(`${adminBasePath}/${id}`);
+    } else {
+      setEditId(id);
+      setMode('edit');
+    }
+  }, [useRouting, navigate, adminBasePath]);
 
   // 새 글 만들기
   const handleCreate = useCallback(() => {
-    setEditId(null);
-    setEditTab('edit');
-    setMode('edit');
-  }, []);
+    if (useRouting) {
+      navigate!(`${adminBasePath}/new`);
+    } else {
+      setEditId(null);
+      setMode('edit');
+    }
+  }, [useRouting, navigate, adminBasePath]);
 
   // 편집 완료 -> 목록으로
   const handleSave = useCallback((post: BlogListItem) => {
     onSave?.(post);
-    setMode('list');
-    setEditId(null);
-  }, [onSave]);
+    if (useRouting) {
+      navigate!(adminBasePath!);
+    } else {
+      setMode('list');
+      setEditId(null);
+    }
+  }, [onSave, useRouting, navigate, adminBasePath]);
 
   // 편집 취소 -> 목록으로
   const handleCancel = useCallback(() => {
-    setMode('list');
-    setEditId(null);
-  }, []);
+    if (useRouting) {
+      navigate!(adminBasePath!);
+    } else {
+      setMode('list');
+      setEditId(null);
+    }
+  }, [useRouting, navigate, adminBasePath]);
 
   // 대시보드
   const handleDashboard = useCallback(() => {
@@ -151,9 +202,13 @@ export default function BlogManagerClient({
 
   // 목록으로 돌아가기
   const goToList = useCallback(() => {
-    setMode('list');
-    setEditId(null);
-  }, []);
+    if (useRouting) {
+      navigate!(adminBasePath!);
+    } else {
+      setMode('list');
+      setEditId(null);
+    }
+  }, [useRouting, navigate, adminBasePath]);
 
   return (
     <div style={ms.container} className={className}>
@@ -173,81 +228,51 @@ export default function BlogManagerClient({
         />
       )}
 
-      {/* 편집 모드 */}
+      {/* 편집 모드 — 좌우 분할 */}
       {mode === 'edit' && (
         <div>
-          {/* 뒤로 가기 */}
           <button type="button" style={ms.backBtn} onClick={goToList}>
             {t.adminBackButton}
           </button>
 
-          {/* 편집/미리보기 탭 */}
-          <div style={ms.tabs}>
-            <button
-              type="button"
-              style={ms.tab(editTab === 'edit')}
-              onClick={() => setEditTab('edit')}
-            >
-              {t.adminViewEdit}
-            </button>
-            <button
-              type="button"
-              style={ms.tab(editTab === 'preview-detail')}
-              onClick={() => setEditTab('preview-detail')}
-            >
-              {t.adminViewPreviewDetail}
-            </button>
-            <button
-              type="button"
-              style={ms.tab(editTab === 'preview-list')}
-              onClick={() => setEditTab('preview-list')}
-            >
-              {t.adminViewPreviewList}
-            </button>
+          <div style={ms.editSplit}>
+            {/* 좌측: 편집 폼 */}
+            <div style={ms.editLeft}>
+              <BlogEditForm
+                apiBasePath={apiBasePath}
+                adminApiBasePath={adminApiBasePath}
+                authHeaders={authHeaders}
+                uploadEndpoint={uploadEndpoint}
+                categories={categories}
+                editId={editId}
+                enableCta={enableCta}
+                enableAttachments={enableAttachments}
+                maxAttachments={maxAttachments}
+                enableTags={enableTags}
+                i18n={i18n}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                basePath={basePath}
+                BlockEditorComponent={BlockEditorComponent}
+                BlockEditorProviderComponent={BlockEditorProviderComponent}
+                editorConfig={editorConfig}
+                onFormChange={setPreviewForm}
+                uploadImage={uploadImage}
+                onImageUploaded={onImageUploaded}
+              />
+            </div>
+
+            {/* 우측: 실시간 미리보기 */}
+            <div style={ms.editRight}>
+              <div style={ms.previewLabel}>{t.adminViewPreviewDetail}</div>
+              <BlogDetailPreview
+                form={previewForm}
+                categories={categories}
+                basePath={basePath}
+                i18n={i18n}
+              />
+            </div>
           </div>
-
-          {/* 편집 폼 */}
-          {editTab === 'edit' && (
-            <BlogEditForm
-              apiBasePath={apiBasePath}
-              adminApiBasePath={adminApiBasePath}
-              authHeaders={authHeaders}
-              uploadEndpoint={uploadEndpoint}
-              categories={categories}
-              editId={editId}
-              enableCta={enableCta}
-              enableAttachments={enableAttachments}
-              maxAttachments={maxAttachments}
-              enableTags={enableTags}
-              i18n={i18n}
-              onSave={handleSave}
-              onCancel={handleCancel}
-            />
-          )}
-
-          {/* 상세 미리보기 */}
-          {editTab === 'preview-detail' && (
-            <BlogDetailPreview
-              form={previewForm}
-              categories={categories}
-              basePath={basePath}
-              i18n={i18n}
-            />
-          )}
-
-          {/* 목록 미리보기 */}
-          {editTab === 'preview-list' && (
-            <BlogListPreview
-              apiBasePath={apiBasePath}
-              adminApiBasePath={adminApiBasePath}
-              authHeaders={authHeaders}
-              categories={categories}
-              basePath={basePath}
-              pageSize={pageSize}
-              i18n={i18n}
-              onSelectItem={handleSelect}
-            />
-          )}
         </div>
       )}
 

@@ -73,7 +73,7 @@ export const DEFAULT_I18N_KO: Required<BlogI18nStrings> = {
   adminSlugInvalid: '✗ 형식오류',
   adminSlugAvailable: '✓ 사용 가능',
   adminSlugChecking: '확인 중...',
-  adminCategoryLabel: '카테고리를 선택해주세요',
+  adminCategoryLabel: '카테고리',
   adminExcerptLabel: '부제 / 요약 (선택)',
   adminExcerptPlaceholder: '부제 / 요약 (선택)',
   adminCoverImageLabel: '대표 이미지',
@@ -92,6 +92,14 @@ export const DEFAULT_I18N_KO: Required<BlogI18nStrings> = {
   adminImageRatioHint: '16:9 비율 권장',
   adminContentPlaceholder: '본문을 입력하세요',
   adminSlugPlaceholder: '고유주소를 입력하세요',
+
+  // ── 관리자 폼: 에디터 선택 ──
+  adminEditorTypeLabel: '에디터',
+  adminEditorTextarea: 'HTML',
+  adminEditorRich: '표준 에디터',
+  adminEditorBlock: '블록 에디터',
+  adminEditorSwitchWarning: '에디터를 변경하면 본문 내용이 초기화될 수 있습니다. 계속하시겠습니까?',
+  adminRichLinkPrompt: 'URL을 입력하세요:',
 
   // ── 관리자 폼: 업로드 & 첨부 ──
   adminUploadFailed: '업로드 실패',

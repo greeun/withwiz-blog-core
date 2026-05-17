@@ -8,7 +8,6 @@
  */
 
 import { useEffect } from "react";
-import Link from "next/link";
 import type { BlogListPageProps } from "./types";
 import { resolveI18n } from "../../i18n";
 import { ps, publicRootVars } from "./styles";
@@ -37,7 +36,7 @@ export default function BlogListPage({
   sessionStorageKey,
 }: BlogListPageProps) {
   const t = resolveI18n(i18nOverride);
-  const { Badge } = useBlogUI();
+  const { Badge, Link } = useBlogUI();
 
   // URL 복원을 위한 세션 저장
   useEffect(() => {

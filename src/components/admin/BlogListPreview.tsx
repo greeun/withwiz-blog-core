@@ -34,7 +34,7 @@ const ls = {
     fontWeight: active ? 600 : 400,
     border: `1px solid ${active ? 'var(--blog-accent)' : 'var(--blog-border)'}`,
     borderRadius: 'var(--blog-radius-sm)',
-    backgroundColor: active ? 'rgba(212,175,55,0.1)' : 'transparent',
+    backgroundColor: active ? 'rgba(74,144,217,0.1)' : 'transparent',
     color: active ? 'var(--blog-accent)' : 'var(--blog-text-muted)',
     cursor: 'pointer',
     fontFamily: 'var(--blog-font)',
@@ -81,7 +81,7 @@ const ls = {
 
   cardCategory: {
     ...s.badge,
-    backgroundColor: 'rgba(212,175,55,0.15)',
+    backgroundColor: 'rgba(74,144,217,0.12)',
     color: 'var(--blog-accent)',
     marginBottom: 8,
     display: 'inline-block',

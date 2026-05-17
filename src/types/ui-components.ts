@@ -1,4 +1,4 @@
-import type { ComponentType, CSSProperties, ReactNode } from 'react';
+import type { AnchorHTMLAttributes, ComponentType, CSSProperties, ReactNode } from 'react';
 
 export interface ButtonProps {
   children: ReactNode;
@@ -60,6 +60,20 @@ export interface CardProps {
   tabIndex?: number;
 }
 
+/**
+ * 링크 컴포넌트 props.
+ *
+ * 표준 <a> 속성(className, style, title, target, rel, data-*)을 모두 받는다.
+ * 기본 구현은 평문 <a>이며, Next.js 등 라우터를 쓰는 호스트는
+ * BlogThemeProvider로 자체 Link 어댑터를 주입한다. 이로써 패키지가
+ * next/link에 하드 종속되지 않고 플랫폼 무관해진다.
+ */
+export interface LinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  href: string;
+  children?: ReactNode;
+  [dataAttr: `data-${string}`]: unknown;
+}
+
 export interface BlogUIComponents {
   Button: ComponentType<ButtonProps>;
   Toggle: ComponentType<ToggleProps>;
@@ -68,4 +82,5 @@ export interface BlogUIComponents {
   Select: ComponentType<SelectProps>;
   Badge: ComponentType<BadgeProps>;
   Card: ComponentType<CardProps>;
+  Link: ComponentType<LinkProps>;
 }

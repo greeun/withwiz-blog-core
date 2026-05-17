@@ -13,6 +13,7 @@ model BlogPost {
   category      String
   title         String
   content       String         @db.Text
+  editorType    String         @default("rich") @map("editor_type")
   excerpt       String?
   coverImageUrl String?        @map("cover_image_url")
   coverImageKey String?        @map("cover_image_key")

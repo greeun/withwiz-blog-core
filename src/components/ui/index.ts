@@ -1,3 +1,4 @@
+import 'client-only';
 import type { BlogUIComponents } from '../../types/ui-components';
 import { DefaultButton } from './DefaultButton';
 import { DefaultToggle } from './DefaultToggle';
@@ -6,6 +7,7 @@ import { DefaultTextarea } from './DefaultTextarea';
 import { DefaultSelect } from './DefaultSelect';
 import { DefaultBadge } from './DefaultBadge';
 import { DefaultCard } from './DefaultCard';
+import { DefaultLink } from './DefaultLink';
 
 export const defaultComponents: BlogUIComponents = {
   Button: DefaultButton,
@@ -15,6 +17,7 @@ export const defaultComponents: BlogUIComponents = {
   Select: DefaultSelect,
   Badge: DefaultBadge,
   Card: DefaultCard,
+  Link: DefaultLink,
 };
 
-export { DefaultButton, DefaultToggle, DefaultInput, DefaultTextarea, DefaultSelect, DefaultBadge, DefaultCard };
+export { DefaultButton, DefaultToggle, DefaultInput, DefaultTextarea, DefaultSelect, DefaultBadge, DefaultCard, DefaultLink };

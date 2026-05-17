@@ -34,9 +34,13 @@ export interface BlogListItem {
   tags?: Tag[];
 }
 
+/** 에디터 타입 */
+export type EditorType = 'textarea' | 'rich' | 'block';
+
 /** 블로그 상세 정보 */
 export interface BlogDetail extends BlogListItem {
   content: string;
+  editorType: EditorType;
   coverImageKey: string | null;
   attachments: Attachment[];
   authorId: string;
@@ -56,6 +60,7 @@ export interface CreateBlogPostInput {
   category: string;
   title: string;
   content: string;
+  editorType?: EditorType;
   excerpt?: string;
   coverImageUrl?: string;
   coverImageKey?: string;
