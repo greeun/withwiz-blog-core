@@ -7,87 +7,40 @@
  * - GET /admin/scheduler/pending: 예약 대기 글 목록
  * - POST /admin/scheduler/[id]/cancel: 예약 취소
  */
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { SchedulerService } from '../services/scheduler.service';
-import type { AuthMiddleware, AuthUser } from '../types/config';
-import { BlogError, BLOG_ERROR_CODES } from '../errors';
+import type { AuthMiddleware } from '../types/config';
+import { BLOG_ERROR_CODES } from '../errors';
+import {
+  successResponse,
+  errorResponse,
+  getRouteParam,
+  makeRouteKit,
+  type RouteHandler,
+} from './_shared';
 
-// ── 타입 ──
+const { handleError, withAuth } = makeRouteKit('[blog-core-v2] Scheduler error:');
 
-type RouteHandler = (
-  req: Request,
-  context?: { params: Promise<Record<string, string>> },
-) => Promise<Response>;
-
-// ── 헬퍼 ──
-
-function jsonResponse(data: unknown, status = 200, headers?: Record<string, string>): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-  });
-}
-
-function successResponse(data: unknown, status = 200, headers?: Record<string, string>): Response {
-  return jsonResponse({ success: true, data }, status, headers);
-}
-
-function errorResponse(code: string, message: string, status = 400): Response {
-  return jsonResponse({ success: false, error: { code, message } }, status);
-}
-
-function handleError(err: unknown): Response {
-  if (err instanceof BlogError) {
-    return errorResponse(err.code, err.message, err.statusCode);
-  }
-  // eslint-disable-next-line no-console
-  console.error('[blog-core-v2] Scheduler error:', err);
-  return errorResponse(
-    BLOG_ERROR_CODES.INTERNAL_ERROR,
-    err instanceof Error ? err.message : 'Internal server error',
-    500,
-  );
+/**
+ * 길이 노출 없는 상수시간 문자열 비교.
+ * 양쪽을 SHA-256 고정 길이 다이제스트로 만든 뒤 timingSafeEqual로 비교하여
+ * 타이밍 공격 및 길이 불일치 예외를 회피한다.
+ */
+function constantTimeEquals(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest();
+  const hb = createHash('sha256').update(b).digest();
+  return timingSafeEqual(ha, hb);
 }
 
 /**
  * cronSecret 인증 검증
- * Authorization: Bearer {cronSecret} 헤더로 인증한다.
+ * Authorization: Bearer {cronSecret} 헤더로 인증한다 (상수시간 비교).
  */
 function verifyCronSecret(request: Request, cronSecret: string): boolean {
   if (!cronSecret) return false;
   const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
   if (!authHeader) return false;
-  return authHeader === `Bearer ${cronSecret}`;
-}
-
-function withAuth(
-  authMiddleware: AuthMiddleware | undefined,
-  handler: (req: Request, user: AuthUser, context?: { params: Promise<Record<string, string>> }) => Promise<Response>,
-): RouteHandler {
-  return async (req, context) => {
-    try {
-      if (authMiddleware) {
-        const user = await authMiddleware(req);
-        if (!user) {
-          return errorResponse(BLOG_ERROR_CODES.UNAUTHORIZED, 'Authentication required', 401);
-        }
-        return await handler(req, user, context);
-      }
-      return await handler(req, { id: 'anonymous' }, context);
-    } catch (err) {
-      return handleError(err);
-    }
-  };
-}
-
-async function getRouteParam(context: { params: Promise<Record<string, string>> } | undefined, key: string): Promise<string> {
-  if (!context) throw new BlogError(BLOG_ERROR_CODES.VALIDATION_FAILED, `Missing route parameter: ${key}`);
-  const params = await context.params;
-  const value = params[key];
-  if (!value) throw new BlogError(BLOG_ERROR_CODES.VALIDATION_FAILED, `Missing route parameter: ${key}`);
-  return value;
+  return constantTimeEquals(authHeader, `Bearer ${cronSecret}`);
 }
 
 // ── 라우트 타입 ──
@@ -146,6 +99,14 @@ export function createSchedulerRoutes(
         if (!user) {
           return errorResponse(BLOG_ERROR_CODES.UNAUTHORIZED, 'Authentication required', 401);
         }
+      } else {
+        // fail-closed: cronSecret·authMiddleware 둘 다 미주입 시 더 이상
+        // 무인증으로 예약 발행을 실행하지 않는다(withAuth와 동일한 정책).
+        return errorResponse(
+          BLOG_ERROR_CODES.UNAUTHORIZED,
+          'scheduler requires cronSecret or authMiddleware; process endpoint is disabled',
+          401,
+        );
       }
 
       const result = await schedulerService.processScheduledPosts();
