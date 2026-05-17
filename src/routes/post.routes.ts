@@ -5,58 +5,24 @@
  * @withwiz/toolkit 미들웨어에 의존하지 않고 독립적으로 동작한다.
  */
 import type { BlogService } from '../services/blog.service';
-import type { AuthMiddleware, AuthUser } from '../types/config';
+import type { AuthMiddleware } from '../types/config';
 import type { BlogI18nStrings } from '../i18n/types';
-import { BlogError, BLOG_ERROR_CODES } from '../errors';
+import { BLOG_ERROR_CODES } from '../errors';
 import { createBlogSchemas } from '../validators/blog.validator';
+import {
+  successResponse,
+  errorResponse,
+  getSearchParam,
+  getSearchParams,
+  parsePagination,
+  getRouteParam,
+  validateIds,
+  validateWithSchema,
+  makeRouteKit,
+  type RouteHandler,
+} from './_shared';
 
-// ── Next.js 타입 (duck typing으로 직접 import 회피 가능하게) ──
-
-type RouteHandler = (
-  req: Request,
-  context?: { params: Promise<Record<string, string>> },
-) => Promise<Response>;
-
-// ── 헬퍼 ──
-
-function jsonResponse(data: unknown, status = 200, headers?: Record<string, string>): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-  });
-}
-
-function successResponse(data: unknown, status = 200, headers?: Record<string, string>): Response {
-  return jsonResponse({ success: true, data }, status, headers);
-}
-
-function errorResponse(code: string, message: string, status = 400): Response {
-  return jsonResponse({ success: false, error: { code, message } }, status);
-}
-
-function getSearchParams(req: Request): URLSearchParams {
-  const url = new URL(req.url);
-  return url.searchParams;
-}
-
-function getSearchParam(req: Request, key: string): string | undefined {
-  const value = getSearchParams(req).get(key);
-  return value ?? undefined;
-}
-
-function parsePagination(req: Request, defaultPageSize = 12, maxPageSize = 50) {
-  const params = getSearchParams(req);
-  const rawPage = params.get('page');
-  const rawLimit = params.get('limit');
-  const page = rawPage ? Math.max(1, parseInt(rawPage, 10) || 1) : 1;
-  const limit = rawLimit
-    ? Math.min(maxPageSize, Math.max(1, parseInt(rawLimit, 10) || defaultPageSize))
-    : defaultPageSize;
-  return { page, limit };
-}
+const { withAuth, withPublic } = makeRouteKit('[blog-core-v2] Unhandled error:');
 
 const VALID_SORT_KEYS = ['createdAt', 'publishedAt', 'updatedAt'] as const;
 
@@ -68,98 +34,7 @@ function parseSortKey(params: URLSearchParams): 'createdAt' | 'publishedAt' | 'u
   return 'updatedAt';
 }
 
-async function getRouteParam(context: { params: Promise<Record<string, string>> } | undefined, key: string): Promise<string> {
-  if (!context) throw new BlogError(BLOG_ERROR_CODES.VALIDATION_FAILED, `Missing route parameter: ${key}`);
-  const params = await context.params;
-  const value = params[key];
-  if (!value) throw new BlogError(BLOG_ERROR_CODES.VALIDATION_FAILED, `Missing route parameter: ${key}`);
-  return value;
-}
-
-function validateIds(ids: unknown): { valid: true; ids: string[] } | { valid: false; response: Response } {
-  if (!Array.isArray(ids) || ids.length === 0) {
-    return {
-      valid: false,
-      response: errorResponse(BLOG_ERROR_CODES.VALIDATION_FAILED, 'ids array is required', 400),
-    };
-  }
-  return { valid: true, ids: ids as string[] };
-}
-
-/**
- * Zod 스키마로 입력을 검증한다.
- * 검증 실패 시 에러 응답을 반환하고, 성공 시 파싱된 데이터를 반환한다.
- * ZodType 대신 duck typing(safeParse)을 사용하여 zod import를 회피한다.
- */
-function validateWithSchema(
-  schema: { safeParse: (data: unknown) => { success: boolean; error?: { errors: Array<{ path: (string | number)[]; message: string }> }; data?: unknown } } | undefined,
-  data: unknown,
-): { valid: true; data: unknown } | { valid: false; response: Response } {
-  if (!schema) {
-    return { valid: true, data };
-  }
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    const firstError = result.error?.errors[0];
-    const message = firstError
-      ? `${firstError.path.join('.')}: ${firstError.message}`
-      : 'Validation failed';
-    return {
-      valid: false,
-      response: errorResponse(BLOG_ERROR_CODES.VALIDATION_FAILED, message, 400),
-    };
-  }
-  return { valid: true, data: result.data };
-}
-
-function handleError(err: unknown): Response {
-  if (err instanceof BlogError) {
-    return errorResponse(err.code, err.message, err.statusCode);
-  }
-  // eslint-disable-next-line no-console
-  console.error('[blog-core-v2] Unhandled error:', err);
-  return errorResponse(
-    BLOG_ERROR_CODES.INTERNAL_ERROR,
-    err instanceof Error ? err.message : 'Internal server error',
-    500,
-  );
-}
-
-/**
- * 인증 래퍼: authMiddleware가 있으면 사용자를 검증하고, 없으면 통과.
- */
-function withAuth(
-  authMiddleware: AuthMiddleware | undefined,
-  handler: (req: Request, user: AuthUser, context?: { params: Promise<Record<string, string>> }) => Promise<Response>,
-): RouteHandler {
-  return async (req, context) => {
-    try {
-      if (authMiddleware) {
-        const user = await authMiddleware(req);
-        if (!user) {
-          return errorResponse(BLOG_ERROR_CODES.UNAUTHORIZED, 'Authentication required', 401);
-        }
-        return await handler(req, user, context);
-      }
-      // authMiddleware가 없으면 더미 사용자로 통과 (개발용)
-      return await handler(req, { id: 'anonymous' }, context);
-    } catch (err) {
-      return handleError(err);
-    }
-  };
-}
-
-function withPublic(
-  handler: (req: Request, context?: { params: Promise<Record<string, string>> }) => Promise<Response>,
-): RouteHandler {
-  return async (req, context) => {
-    try {
-      return await handler(req, context);
-    } catch (err) {
-      return handleError(err);
-    }
-  };
-}
+// 응답/인증/검증/페이지네이션 헬퍼는 ./_shared로 단일화되었다.
 
 // ── 라우트 타입 ──
 
@@ -226,7 +101,7 @@ export function createPostRoutes(
     public: {
       list: {
         GET: withPublic(async (req) => {
-          const { page, limit } = parsePagination(req, pageSize);
+          const { page, limit } = parsePagination(req, pageSize, 50);
           const category = getSearchParam(req, 'category');
           const search = getSearchParam(req, 'search');
           const tagSlug = getSearchParam(req, 'tagSlug');
@@ -271,7 +146,7 @@ export function createPostRoutes(
     admin: {
       list: {
         GET: withAuth(authMiddleware, async (req) => {
-          const { page, limit } = parsePagination(req);
+          const { page, limit } = parsePagination(req, 12, 50);
           const params = getSearchParams(req);
           const category = getSearchParam(req, 'category');
           const published = getSearchParam(req, 'published');
