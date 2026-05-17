@@ -19,146 +19,20 @@ import type { PrismaClientLike, StorageAdapter } from '../types/config';
 import { buildPaginatedResult } from '../utils/pagination';
 import { sanitizeHtmlContent } from '../utils/html-sanitizer';
 import { BlogError, BLOG_ERROR_CODES } from '../errors';
+import {
+  type PrismaDelegate,
+  listSelect,
+  tagInclude,
+  detailSelect,
+  navSelect,
+  toListItem,
+  flattenTags,
+  toDetail,
+  uniqueSlug,
+} from './blog.service.internal';
 
-// ── Prisma 타입 (덕 타이핑) ──
-
-interface PrismaDelegate<TCreate = any, TWhere = any, TRow = any> {
-  findMany(args: {
-    where?: TWhere;
-    select?: any;
-    orderBy?: any;
-    skip?: number;
-    take?: number;
-    include?: any;
-  }): Promise<TRow[]>;
-  findFirst(args: {
-    where?: TWhere;
-    select?: any;
-    orderBy?: any;
-    include?: any;
-  }): Promise<TRow | null>;
-  findUnique(args: {
-    where: TWhere;
-    select?: any;
-    include?: any;
-  }): Promise<TRow | null>;
-  create(args: { data: TCreate; select?: any; include?: any }): Promise<TRow>;
-  update(args: {
-    where: TWhere;
-    data: Partial<TCreate>;
-    select?: any;
-    include?: any;
-  }): Promise<TRow>;
-  delete(args: { where: TWhere }): Promise<TRow>;
-  deleteMany(args: { where?: TWhere }): Promise<{ count: number }>;
-  updateMany(args: { where?: TWhere; data: Partial<TCreate> }): Promise<{ count: number }>;
-  count(args: { where?: TWhere }): Promise<number>;
-  groupBy(args: any): Promise<any[]>;
-}
-
-// ── Select 정의 ──
-
-const listSelect = {
-  id: true,
-  slug: true,
-  category: true,
-  title: true,
-  excerpt: true,
-  coverImageUrl: true,
-  attachments: true,
-  featured: true,
-  published: true,
-  publishedAt: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
-const tagInclude = {
-  tags: {
-    select: {
-      tag: {
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          description: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
-  },
-};
-
-const detailSelect = {
-  ...listSelect,
-  content: true,
-  coverImageKey: true,
-  attachments: true,
-  authorId: true,
-};
-
-const navSelect = {
-  slug: true,
-  title: true,
-};
-
-// ── 헬퍼 ──
-
-function toListItem(row: Record<string, unknown>): BlogListItem {
-  const attachments = row.attachments;
-  const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
-  const tags = flattenTags(row);
-  const { attachments: _a, tags: _t, ...rest } = row as any;
-  void _a;
-  void _t;
-  return {
-    ...rest,
-    hasAttachments,
-    ...(tags !== undefined ? { tags } : {}),
-  } as BlogListItem;
-}
-
-function flattenTags(row: Record<string, unknown>): Tag[] | undefined {
-  const rawTags = row.tags;
-  if (!Array.isArray(rawTags)) return undefined;
-  if (rawTags.length === 0) return [];
-  if (typeof rawTags[0] === 'object' && rawTags[0] !== null && 'tag' in (rawTags[0] as object)) {
-    return (rawTags as Array<{ tag: Tag }>).map((pt) => pt.tag).filter(Boolean) as Tag[];
-  }
-  return rawTags as Tag[];
-}
-
-function toDetail(row: Record<string, unknown>): BlogDetail {
-  const tags = flattenTags(row);
-  const { tags: _t, ...rest } = row as any;
-  void _t;
-  return {
-    ...rest,
-    attachments: ((rest as any).attachments as Attachment[] | null) || [],
-    hasAttachments: Array.isArray((rest as any).attachments) && ((rest as any).attachments as Attachment[]).length > 0,
-    ...(tags !== undefined ? { tags } : {}),
-  } as BlogDetail;
-}
-
-async function uniqueSlug(delegate: PrismaDelegate, base: string): Promise<string> {
-  const exact = await delegate.findFirst({
-    where: { slug: base },
-    select: { id: true },
-  });
-
-  if (!exact) return base;
-
-  const existing = await delegate.findMany({
-    where: { slug: { startsWith: `${base}-` } },
-    select: { slug: true },
-  });
-
-  const slugs = new Set(existing.map((e: any) => e.slug));
-  let suffix = 2;
-  while (slugs.has(`${base}-${suffix}`)) suffix++;
-  return `${base}-${suffix}`;
-}
+// Prisma 덕타이핑 / select 정의 / 행→DTO 매퍼 / uniqueSlug 는
+// ./blog.service.internal 로 분리되었다 (동작 불변).
 
 // ── 서비스 설정 ──
 
