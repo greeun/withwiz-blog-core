@@ -12,6 +12,7 @@ export default defineConfig({
     'i18n/index': 'src/i18n/index.ts',
     'validators/index': 'src/validators/index.ts',
     'storage/index': 'src/storage/index.ts',
+    'themes/index': 'src/themes/index.ts',
     'components/admin/index': 'src/components/admin/index.ts',
     'components/public/index': 'src/components/public/index.ts',
     'components/admin/editor/index': 'src/components/admin/editor/index.ts',
@@ -41,7 +42,6 @@ export default defineConfig({
     '@tiptap/starter-kit',
     '@tiptap/extension-link',
     '@tiptap/pm',
-    'slugify',
     'client-only',
   ],
 });
