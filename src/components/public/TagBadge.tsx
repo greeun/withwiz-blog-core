@@ -1,14 +1,16 @@
+"use client";
+
 /**
  * 태그 배지 컴포넌트
  *
  * 블로그 상세/목록 페이지에서 태그 하나를 표시할 때 사용한다.
- * href 또는 basePath가 주어지면 Next.js Link로 감싼다.
+ * href 또는 basePath가 주어지면 주입형 Link로 감싼다(기본: 평문 <a>).
  * onClick이 주어지면 버튼으로 동작한다.
  */
 
-import Link from "next/link";
 import type { TagBadgeProps } from "./types";
 import { ps } from "./styles";
+import { useBlogUI } from "../../context/BlogUIContext";
 
 export default function TagBadge({
   tag,
@@ -17,6 +19,7 @@ export default function TagBadge({
   onClick,
   className,
 }: TagBadgeProps) {
+  const { Link } = useBlogUI();
   const content = <>#{tag.name}</>;
   const resolvedHref = href || (basePath ? `${basePath}?tag=${tag.slug}` : undefined);
 

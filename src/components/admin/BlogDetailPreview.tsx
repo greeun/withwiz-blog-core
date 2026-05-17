@@ -7,7 +7,7 @@
  * 공개 UI 컴포넌트(Sprint 6)에 의존하지 않고 자체 렌더링한다.
  */
 
-import { useMemo, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 import type { BlogDetailPreviewProps } from './types';
 import { resolveI18n } from '../../i18n';
 import { formatFileSize, getFileIcon } from '../../utils/file-helpers';
@@ -27,42 +27,44 @@ const ps = {
     maxHeight: 300,
     objectFit: 'cover' as const,
     display: 'block',
-    borderBottom: '1px solid var(--blog-border)',
+    marginBottom: 0,
   } as CSSProperties,
 
   body: {
-    padding: 24,
+    padding: '32px 24px',
   } as CSSProperties,
 
   category: {
-    ...s.badge,
-    backgroundColor: 'rgba(212,175,55,0.15)',
-    color: 'var(--blog-accent)',
-    marginBottom: 12,
     display: 'inline-block',
+    padding: '4px 10px',
+    fontSize: 11,
+    letterSpacing: '1.5px',
+    textTransform: 'uppercase' as const,
+    color: '#fff',
+    fontWeight: 500,
+    marginBottom: 12,
   } as CSSProperties,
 
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 700,
     color: 'var(--blog-text)',
     marginBottom: 8,
-    lineHeight: 1.3,
-  } as CSSProperties,
-
-  excerpt: {
-    fontSize: 14,
-    color: 'var(--blog-text-muted)',
-    marginBottom: 16,
     lineHeight: 1.5,
   } as CSSProperties,
 
-  meta: {
-    fontSize: 12,
-    color: 'var(--blog-text-dim)',
-    marginBottom: 20,
-    display: 'flex',
-    gap: 12,
+  excerpt: {
+    fontSize: 15,
+    color: 'var(--blog-text-muted)',
+    marginBottom: 0,
+    lineHeight: 1.6,
+  } as CSSProperties,
+
+  divider: {
+    width: 32,
+    height: 2,
+    marginTop: 20,
+    marginBottom: 24,
   } as CSSProperties,
 
   content: {
@@ -95,7 +97,7 @@ const ps = {
     textAlign: 'center' as const,
     borderRadius: 'var(--blog-radius)',
     border: '1px solid var(--blog-accent)',
-    backgroundColor: 'rgba(212,175,55,0.05)',
+    backgroundColor: 'rgba(74,144,217,0.05)',
   } as CSSProperties,
 
   ctaMsg: {
@@ -115,16 +117,6 @@ const ps = {
     textDecoration: 'none',
   } as CSSProperties,
 
-  navRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: 24,
-    padding: '12px 0',
-    borderTop: '1px solid var(--blog-border)',
-    fontSize: 13,
-    color: 'var(--blog-text-dim)',
-  } as CSSProperties,
-
   empty: {
     padding: 60,
     textAlign: 'center' as const,
@@ -132,14 +124,6 @@ const ps = {
     fontSize: 13,
   } as CSSProperties,
 };
-
-/** 날짜 포맷 */
-function fmtDate(v: string | null): string {
-  if (!v) return '-';
-  const d = new Date(v);
-  if (isNaN(d.getTime())) return '-';
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-}
 
 export default function BlogDetailPreview({
   form,
@@ -164,7 +148,7 @@ export default function BlogDetailPreview({
 
       <div style={ps.body}>
         {/* 카테고리 */}
-        <span style={ps.category}>{categoryLabel}</span>
+        <span style={{ ...ps.category, backgroundColor: categories[form.category]?.main || 'var(--blog-accent)' }}>{categoryLabel}</span>
 
         {/* 제목 */}
         <h1 style={ps.title}>{form.title || t.adminItemNoTitle}</h1>
@@ -172,18 +156,8 @@ export default function BlogDetailPreview({
         {/* 요약 */}
         {form.excerpt && <p style={ps.excerpt}>{form.excerpt}</p>}
 
-        {/* 메타 */}
-        <div style={ps.meta}>
-          <span>{fmtDate(form.publishedAt || null)}</span>
-          {form.featured && (
-            <span style={{ color: 'var(--blog-accent)' }}>{t.adminFeaturedLabel}</span>
-          )}
-          {form.published ? (
-            <span style={{ color: 'var(--blog-success)' }}>{t.adminPublishedLabel}</span>
-          ) : (
-            <span>{t.adminUnpublishedLabel}</span>
-          )}
-        </div>
+        {/* 구분선 */}
+        <div style={{ ...ps.divider, backgroundColor: categories[form.category]?.main || 'var(--blog-accent)' }} />
 
         {/* 본문 */}
         <div
@@ -217,11 +191,6 @@ export default function BlogDetailPreview({
           </div>
         )}
 
-        {/* 이전/다음 네비게이션 (더미) */}
-        <div style={ps.navRow}>
-          <span>{t.publicPrevPost}</span>
-          <span>{t.publicNextPost}</span>
-        </div>
       </div>
     </div>
   );

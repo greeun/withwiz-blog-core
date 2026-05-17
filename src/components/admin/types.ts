@@ -1,7 +1,7 @@
 /**
  * 관리자 UI 컴포넌트 공통 타입 정의
  */
-import type { Attachment, BlogListItem, CategoryTheme, DashboardStats } from '../../types/blog';
+import type { Attachment, BlogListItem, CategoryTheme, DashboardStats, EditorType } from '../../types/blog';
 import type { Tag } from '../../types/tag';
 import type { Comment, CommentStatus } from '../../types/comment';
 import type { PaginatedResult } from '../../types/common';
@@ -30,7 +30,7 @@ export type CategoryMap = Record<string, CategoryTheme>;
 
 export type AdminMode = 'list' | 'edit' | 'preview-detail' | 'preview-list' | 'dashboard' | 'comments';
 
-export interface BlogManagerClientProps extends BlogAdminApiProps {
+export interface BlogManagerClientProps extends BlogAdminApiProps, BlockEditorInjection {
   /** 카테고리 목록 및 테마 */
   categories: CategoryMap;
   /** 공개 URL 기본 경로 (예: "/blog") */
@@ -55,6 +55,18 @@ export interface BlogManagerClientProps extends BlogAdminApiProps {
   onDelete?: (ids: string[]) => void;
   /** 추가 CSS 클래스 */
   className?: string;
+  /** 관리자 페이지 기본 경로 (예: "/admin/blog") — 설정 시 라우트 기반 네비게이션 활성화 */
+  adminBasePath?: string;
+  /** 초기 모드 (default: 'list') */
+  initialMode?: AdminMode;
+  /** 초기 편집 대상 ID */
+  initialEditId?: string | null;
+  /** 라우트 네비게이션 콜백 (예: router.push) */
+  navigate?: (path: string) => void;
+  /** 이미지 업로드 함수 (제공 시 uploadEndpoint 대신 사용) */
+  uploadImage?: (file: File) => Promise<{ url: string; key?: string }>;
+  /** 블록 에디터 내 이미지 업로드 완료 시 key 추적 콜백 */
+  onImageUploaded?: (key: string) => void;
 }
 
 // ── BlogListView Props ──
@@ -83,6 +95,7 @@ export interface BlogFormData {
   slug: string;
   category: string;
   content: string;
+  editorType: EditorType;
   excerpt: string;
   coverImageUrl: string;
   coverImageKey: string;
@@ -99,7 +112,51 @@ export interface BlogFormData {
 
 export type SlugStatus = 'idle' | 'checking' | 'available' | 'duplicate' | 'invalid';
 
-export interface BlogEditFormProps extends BlogAdminApiProps {
+/** Block Editor 블록 데이터 */
+export interface BlockData {
+  id: number;
+  type: string;
+  [key: string]: unknown;
+}
+
+/** Block Editor 블록 정의 */
+export interface BlockDef {
+  type: string;
+  label: string;
+  icon: string;
+  desc?: string;
+  cats?: string[];
+  createEmpty: (id: number) => BlockData;
+}
+
+/** Block Editor 설정 */
+export interface BlockEditorConfig {
+  blocks: BlockDef[];
+  marker: string;
+  cssPrefix: string;
+  enableDragDrop?: boolean;
+  enableCategoryFilter?: boolean;
+  categories?: string[];
+  catClasses?: Record<string, string>;
+  templates?: Record<string, Array<Omit<BlockData, 'id'>>>;
+  samples?: Record<string, Array<Omit<BlockData, 'id'>>>;
+}
+
+/** Block Editor 컴포넌트 주입 Props */
+export interface BlockEditorInjection {
+  /** Block Editor React 컴포넌트 */
+  BlockEditorComponent?: React.ComponentType<Record<string, unknown>>;
+  /** Block Editor Provider 컴포넌트 */
+  BlockEditorProviderComponent?: React.ComponentType<{
+    uploadImage?: (file: File) => Promise<{ url: string; key?: string }>;
+    onError?: (msg: string) => void;
+    children: React.ReactNode;
+  }>;
+  /** Block Editor 설정 */
+  editorConfig?: BlockEditorConfig;
+}
+
+export interface BlogEditFormProps extends BlogAdminApiProps, BlockEditorInjection {
   categories: CategoryMap;
   /** 편집 대상 ID (null = 신규) */
   editId: string | null;
@@ -117,6 +174,14 @@ export interface BlogEditFormProps extends BlogAdminApiProps {
   onSave: (post: BlogListItem) => void;
   /** 취소 시 콜백 */
   onCancel: () => void;
+  /** 공개 URL 기본 경로 (미리보기 용) */
+  basePath?: string;
+  /** 폼 변경 시 실시간 콜백 (미리보기 연동용) */
+  onFormChange?: (form: BlogFormData) => void;
+  /** 이미지 업로드 함수 (제공 시 uploadEndpoint 대신 사용) */
+  uploadImage?: (file: File) => Promise<{ url: string; key?: string }>;
+  /** 블록 에디터 내 이미지 업로드 완료 시 key 추적 콜백 */
+  onImageUploaded?: (key: string) => void;
 }
 
 // ── 미리보기 Props ──

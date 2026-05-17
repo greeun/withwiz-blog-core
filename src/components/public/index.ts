@@ -1,6 +1,8 @@
 /**
- * 공개 블로그 컴포넌트 barrel export
+ * 공개 블로그 컴포넌트 barrel export (클라이언트 전용)
  */
+import 'client-only';
+
 export { default as BlogListPage } from './BlogListPage';
 export { default as BlogDetailPage } from './BlogDetailPage';
 export { default as CommentList } from './CommentList';

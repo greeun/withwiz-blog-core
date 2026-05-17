@@ -10,6 +10,7 @@ export type {
   UpdateBlogPostInput,
   CategoryTheme,
   DashboardStats,
+  EditorType,
 } from './blog';
 
 export type { PaginatedResult, SortOrder } from './common';

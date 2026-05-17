@@ -16,38 +16,7 @@ import type { BlockPresetConfig } from "./presets";
 import type { CtaData } from "./cta-serializer";
 import { embedCta, deserializeCta, stripCta } from "./cta-serializer";
 import { applyPresetToBlocks } from "./presets";
-
-// ── Block Editor 타입 (선택적 import이므로 인라인 정의) ──
-
-/** @withwiz/block-editor의 BlockData와 호환 */
-interface BlockData {
-  id: number;
-  type: string;
-  [key: string]: unknown;
-}
-
-/** @withwiz/block-editor의 BlockDef와 호환 */
-interface BlockDef {
-  type: string;
-  label: string;
-  icon: string;
-  desc?: string;
-  cats?: string[];
-  createEmpty: (id: number) => BlockData;
-}
-
-/** @withwiz/block-editor의 BlockEditorConfig와 호환 */
-interface BlockEditorConfig {
-  blocks: BlockDef[];
-  marker: string;
-  cssPrefix: string;
-  enableDragDrop?: boolean;
-  enableCategoryFilter?: boolean;
-  categories?: string[];
-  catClasses?: Record<string, string>;
-  templates?: Record<string, Omit<BlockData, "id">[]>;
-  samples?: Record<string, Omit<BlockData, "id">[]>;
-}
+import type { BlockData, BlockDef, BlockEditorConfig } from "../types";
 
 // ── Props ──
 
@@ -62,10 +31,14 @@ export interface BlockEditorFormProps {
   editorConfig: BlockEditorConfig;
   /** 블록 프리셋 (optional) */
   preset?: BlockPresetConfig;
-  /** 이미지 업로드 함수 */
-  onUpload?: (file: File) => Promise<{ url: string; key?: string }>;
-  /** 에러 표시 함수 */
+  /** 이미지 업로드 함수 (BlockEditorProvider에 전달) */
+  uploadImage?: (file: File) => Promise<{ url: string; key?: string }>;
+  /** 에러 표시 함수 (BlockEditorProvider에 전달) */
   onError?: (message: string) => void;
+  /** 블록 에디터 내 이미지 업로드 완료 시 key 추적 콜백 */
+  onImageUploaded?: (key: string) => void;
+  /** 템플릿/샘플 모드 전환 콜백 */
+  onModeChange?: (mode: 'template' | 'sample') => void;
   /** CTA 데이터 (optional, CTA 활성화 시) */
   ctaData?: CtaData | null;
   /** CTA 변경 콜백 */
@@ -83,7 +56,8 @@ export interface BlockEditorFormProps {
    * 호스트가 `import { BlockEditorProvider } from '@withwiz/block-editor'`를 전달.
    */
   BlockEditorProviderComponent?: React.ComponentType<{
-    config: BlockEditorConfig;
+    uploadImage?: (file: File) => Promise<{ url: string; key?: string }>;
+    onError?: (msg: string) => void;
     children: React.ReactNode;
   }>;
 }
@@ -109,7 +83,7 @@ const editorStyles = {
   fallbackCode: {
     display: "inline-block",
     padding: "2px 8px",
-    backgroundColor: "var(--blog-bg-input, #141414)",
+    backgroundColor: "var(--blog-bg-input, #ffffff)",
     borderRadius: 4,
     fontSize: 13,
     fontFamily: "var(--blog-font-mono, monospace)",
@@ -128,8 +102,10 @@ export default function BlockEditorForm({
   category,
   editorConfig,
   preset,
-  onUpload,
+  uploadImage,
   onError,
+  onImageUploaded,
+  onModeChange,
   ctaData,
   onCtaChange,
   className,
@@ -180,16 +156,15 @@ export default function BlockEditorForm({
         onChange={onContentChange}
         category={category}
         config={resolvedConfig}
-        onUpload={onUpload}
-        onError={onError}
+        onImageUploaded={onImageUploaded}
+        onModeChange={onModeChange}
       />
     </div>
   );
 
-  // Provider가 있으면 감싸서 렌더링
   if (BlockEditorProviderComponent) {
     return (
-      <BlockEditorProviderComponent config={resolvedConfig}>
+      <BlockEditorProviderComponent uploadImage={uploadImage} onError={onError}>
         {editorNode}
       </BlockEditorProviderComponent>
     );

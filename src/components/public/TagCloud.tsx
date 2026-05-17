@@ -1,13 +1,15 @@
+"use client";
+
 /**
  * 태그 클라우드 컴포넌트
  *
  * 여러 태그를 포스트 수에 비례한 폰트 크기로 표시한다.
  */
 
-import Link from "next/link";
 import type { TagCloudProps } from "./types";
 import { resolveI18n } from "../../i18n";
 import { ps, publicRootVars } from "./styles";
+import { useBlogUI } from "../../context/BlogUIContext";
 
 /** postCount를 min~max 폰트 크기로 선형 변환 */
 function scaleFontSize(
@@ -31,6 +33,7 @@ export default function TagCloud({
   i18n: i18nOverride,
   className,
 }: TagCloudProps) {
+  const { Link } = useBlogUI();
   const t = resolveI18n(i18nOverride);
 
   if (!tags || tags.length === 0) {

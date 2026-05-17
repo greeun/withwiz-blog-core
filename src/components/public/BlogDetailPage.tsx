@@ -7,12 +7,12 @@
  */
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import type { Attachment } from "../../types/blog";
 import type { BlogDetailPageProps } from "./types";
 import { formatFileSize, getFileIcon } from "../../utils/file-helpers";
 import { resolveI18n } from "../../i18n";
 import { ps, publicRootVars } from "./styles";
+import { useBlogUI } from "../../context/BlogUIContext";
 
 /** HTML 텍스트 노드 안의 URL을 클릭 가능한 링크로 변환 */
 function linkifyHtml(html: string): string {
@@ -60,6 +60,7 @@ export default function BlogDetailPage({
   className,
   sessionStorageKey,
 }: BlogDetailPageProps) {
+  const { Link } = useBlogUI();
   const t = resolveI18n(i18nOverride);
 
   // 조회수 카운팅

@@ -110,6 +110,7 @@ export function createBlogSchemas(config?: BlogSchemaConfig): BlogSchemas {
   const CreateSchema = z.object({
     title: z.string().min(1, t.validationTitleRequired).max(200, t.validationTitleMaxLength),
     content: z.string().min(1, t.validationContentRequired),
+    editorType: z.enum(['textarea', 'rich', 'block']).optional().default('rich'),
     excerpt: z.string().max(500, t.validationExcerptMaxLength).optional(),
     category: z.string().min(1, t.validationCategoryRequired),
     coverImageUrl: localOptionalUrl,
@@ -126,6 +127,7 @@ export function createBlogSchemas(config?: BlogSchemaConfig): BlogSchemas {
   const UpdateSchema = z.object({
     title: z.string().min(1, t.validationTitleRequired).max(200, t.validationTitleMaxLength),
     content: z.string().min(1, t.validationContentRequired),
+    editorType: z.enum(['textarea', 'rich', 'block']),
     excerpt: z.string().max(500, t.validationExcerptMaxLength),
     category: z.string().min(1, t.validationCategoryRequired),
     coverImageUrl: localOptionalUrl,
@@ -158,6 +160,7 @@ export function createBlogSchemas(config?: BlogSchemaConfig): BlogSchemas {
 export const CreateBlogPostSchema = z.object({
   title: z.string().min(1, '제목을 입력해주세요').max(200, '제목은 200자 이내로 입력해주세요'),
   content: z.string().min(1, '본문을 입력해주세요'),
+  editorType: z.enum(['textarea', 'rich', 'block']).optional().default('rich'),
   excerpt: z.string().max(500, '요약은 500자 이내로 입력해주세요').optional(),
   /** 카테고리 -- 문자열 기반 (호스트 프로젝트에서 설정) */
   category: z.string().min(1, '카테고리를 선택해주세요'),
@@ -176,6 +179,7 @@ export const CreateBlogPostSchema = z.object({
 export const UpdateBlogPostSchema = z.object({
   title: z.string().min(1, '제목을 입력해주세요').max(200, '제목은 200자 이내로 입력해주세요'),
   content: z.string().min(1, '본문을 입력해주세요'),
+  editorType: z.enum(['textarea', 'rich', 'block']),
   excerpt: z.string().max(500, '요약은 500자 이내로 입력해주세요'),
   category: z.string().min(1, '카테고리를 선택해주세요'),
   coverImageUrl: optionalUrlSchema,

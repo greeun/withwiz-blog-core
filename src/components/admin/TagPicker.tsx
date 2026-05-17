@@ -83,7 +83,7 @@ const styles = {
     alignItems: 'center',
     gap: 4,
     padding: '2px 8px',
-    backgroundColor: 'rgba(212,175,55,0.15)',
+    backgroundColor: 'rgba(74,144,217,0.12)',
     color: 'var(--blog-accent)',
     borderRadius: 10,
     fontSize: 12,
