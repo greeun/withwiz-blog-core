@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Next.js App Router blog package with CRUD, tags, comments, search, scheduling, and SEO",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "license": "MIT",
@@ -14,73 +14,138 @@
     "build": "tsup",
     "build:types": "tsc --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests yet\""
+    "test": "npm run build && node --test test/runtime/*.test.mjs"
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./types": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/types/index.mjs",
-      "require": "./dist/types/index.js"
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/types/index.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.cts",
+        "default": "./dist/types/index.cjs"
+      }
     },
     "./services": {
-      "types": "./dist/services/index.d.ts",
-      "import": "./dist/services/index.mjs",
-      "require": "./dist/services/index.js"
+      "import": {
+        "types": "./dist/services/index.d.ts",
+        "default": "./dist/services/index.mjs"
+      },
+      "require": {
+        "types": "./dist/services/index.d.cts",
+        "default": "./dist/services/index.cjs"
+      }
     },
     "./routes": {
-      "types": "./dist/routes/index.d.ts",
-      "import": "./dist/routes/index.mjs",
-      "require": "./dist/routes/index.js"
+      "import": {
+        "types": "./dist/routes/index.d.ts",
+        "default": "./dist/routes/index.mjs"
+      },
+      "require": {
+        "types": "./dist/routes/index.d.cts",
+        "default": "./dist/routes/index.cjs"
+      }
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.mjs",
-      "require": "./dist/utils/index.js"
+      "import": {
+        "types": "./dist/utils/index.d.ts",
+        "default": "./dist/utils/index.mjs"
+      },
+      "require": {
+        "types": "./dist/utils/index.d.cts",
+        "default": "./dist/utils/index.cjs"
+      }
     },
     "./errors": {
-      "types": "./dist/errors/index.d.ts",
-      "import": "./dist/errors/index.mjs",
-      "require": "./dist/errors/index.js"
+      "import": {
+        "types": "./dist/errors/index.d.ts",
+        "default": "./dist/errors/index.mjs"
+      },
+      "require": {
+        "types": "./dist/errors/index.d.cts",
+        "default": "./dist/errors/index.cjs"
+      }
     },
     "./seo": {
-      "types": "./dist/seo/index.d.ts",
-      "import": "./dist/seo/index.mjs",
-      "require": "./dist/seo/index.js"
+      "import": {
+        "types": "./dist/seo/index.d.ts",
+        "default": "./dist/seo/index.mjs"
+      },
+      "require": {
+        "types": "./dist/seo/index.d.cts",
+        "default": "./dist/seo/index.cjs"
+      }
     },
     "./i18n": {
-      "types": "./dist/i18n/index.d.ts",
-      "import": "./dist/i18n/index.mjs",
-      "require": "./dist/i18n/index.js"
+      "import": {
+        "types": "./dist/i18n/index.d.ts",
+        "default": "./dist/i18n/index.mjs"
+      },
+      "require": {
+        "types": "./dist/i18n/index.d.cts",
+        "default": "./dist/i18n/index.cjs"
+      }
     },
     "./validators": {
-      "types": "./dist/validators/index.d.ts",
-      "import": "./dist/validators/index.mjs",
-      "require": "./dist/validators/index.js"
+      "import": {
+        "types": "./dist/validators/index.d.ts",
+        "default": "./dist/validators/index.mjs"
+      },
+      "require": {
+        "types": "./dist/validators/index.d.cts",
+        "default": "./dist/validators/index.cjs"
+      }
     },
     "./storage": {
-      "types": "./dist/storage/index.d.ts",
-      "import": "./dist/storage/index.mjs",
-      "require": "./dist/storage/index.js"
+      "import": {
+        "types": "./dist/storage/index.d.ts",
+        "default": "./dist/storage/index.mjs"
+      },
+      "require": {
+        "types": "./dist/storage/index.d.cts",
+        "default": "./dist/storage/index.cjs"
+      }
     },
     "./components/admin": {
-      "types": "./dist/components/admin/index.d.ts",
-      "import": "./dist/components/admin/index.mjs",
-      "require": "./dist/components/admin/index.js"
+      "import": {
+        "types": "./dist/components/admin/index.d.ts",
+        "default": "./dist/components/admin/index.mjs"
+      },
+      "require": {
+        "types": "./dist/components/admin/index.d.cts",
+        "default": "./dist/components/admin/index.cjs"
+      }
     },
     "./components/public": {
-      "types": "./dist/components/public/index.d.ts",
-      "import": "./dist/components/public/index.mjs",
-      "require": "./dist/components/public/index.js"
+      "import": {
+        "types": "./dist/components/public/index.d.ts",
+        "default": "./dist/components/public/index.mjs"
+      },
+      "require": {
+        "types": "./dist/components/public/index.d.cts",
+        "default": "./dist/components/public/index.cjs"
+      }
     },
     "./components/admin/editor": {
-      "types": "./dist/components/admin/editor/index.d.ts",
-      "import": "./dist/components/admin/editor/index.mjs",
-      "require": "./dist/components/admin/editor/index.js"
+      "import": {
+        "types": "./dist/components/admin/editor/index.d.ts",
+        "default": "./dist/components/admin/editor/index.mjs"
+      },
+      "require": {
+        "types": "./dist/components/admin/editor/index.d.cts",
+        "default": "./dist/components/admin/editor/index.cjs"
+      }
     }
   },
   "files": [
@@ -88,15 +153,21 @@
     "prisma"
   ],
   "dependencies": {
+    "@tiptap/extension-link": "3.23.1",
+    "@tiptap/pm": "3.23.1",
+    "@tiptap/react": "3.23.1",
+    "@tiptap/starter-kit": "3.23.1",
+    "client-only": "0.0.1",
     "slugify": "^1.6.6"
   },
   "peerDependencies": {
+    "@aws-sdk/client-s3": ">=3.0.0",
     "@prisma/client": ">=5.0.0",
+    "@withwiz/block-editor": ">=0.1.0",
+    "isomorphic-dompurify": ">=2.0.0",
     "next": ">=14.0.0",
     "react": ">=18.0.0",
-    "zod": ">=3.20.0",
-    "@aws-sdk/client-s3": ">=3.0.0",
-    "@withwiz/block-editor": ">=0.1.0"
+    "zod": ">=3.20.0"
   },
   "peerDependenciesMeta": {
     "@prisma/client": {
@@ -114,17 +185,20 @@
     "@aws-sdk/client-s3": {
       "optional": true
     },
-    "@withwiz/block-editor": {
+    "isomorphic-dompurify": {
       "optional": true
+    },
+    "@withwiz/block-editor": {
+      "optional": false
     }
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0",
-    "next": "^15.0.0",
-    "@types/react": "^19.0.0",
-    "react": "^19.0.0",
     "zod": "^3.23.0"
   }
 }
