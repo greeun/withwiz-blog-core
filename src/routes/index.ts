@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 라우트 핸들러 re-export
+ * blog-core-v2 라우트 핸들러 re-export (서버 전용 — 엔트리 분리로 경계 강제)
  */
 export { createPostRoutes } from './post.routes';
 export type { PostPublicRoutes, PostAdminRoutes, PostRoutesConfig } from './post.routes';

@@ -2,6 +2,10 @@
  * blog-core-v2 메인 진입점
  *
  * createBlog() 팩토리 함수와 핵심 타입/유틸리티를 export한다.
+ *
+ * 이 엔트리는 서버 전용이다(createBlog/services/routes/Prisma/node:crypto).
+ * 경계는 엔트리포인트 분리 + 서버 전용 Node API 특성으로 강제된다.
+ * 클라이언트 UI는 `blog-core-v2/components/*`에서 import한다.
  */
 import type { BlogConfig, CommentFeatureConfig, SchedulerFeatureConfig } from './types/config';
 import type { BlogService } from './services/blog.service';
@@ -148,6 +152,7 @@ export function createBlog(config: BlogConfig): BlogInstance {
       authMiddleware: config.authMiddleware,
       hmacSecret: config.commentHmacSecret,
       i18n: config.i18n,
+      ipHeader: commentConfig.ipHeader,
     });
   }
 
@@ -383,4 +388,5 @@ export type {
   SelectProps as BlogSelectProps,
   BadgeProps as BlogBadgeProps,
   CardProps as BlogCardProps,
+  LinkProps as BlogLinkProps,
 } from './types/ui-components';

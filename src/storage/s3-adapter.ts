@@ -64,13 +64,15 @@ const ATTR_URL_RE = /(?:src|href)=["']([^"']+)["']/gi;
  * ```typescript
  * import { createS3StorageAdapter } from 'blog-core-v2/storage';
  *
+ * // 자격증명은 호스트가 주입한다. 이 라이브러리는 환경 변수를 읽지 않으므로
+ * // 호스트가 자체 설정/시크릿 매니저에서 읽어 값으로 넘긴다.
  * const storage = createS3StorageAdapter({
  *   bucket: 'my-blog-assets',
  *   region: 'auto',
  *   endpoint: 'https://<account>.r2.cloudflarestorage.com',
  *   credentials: {
- *     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
- *     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+ *     accessKeyId: r2AccessKeyId,        // 호스트가 주입
+ *     secretAccessKey: r2SecretAccessKey, // 호스트가 주입
  *   },
  *   keyPrefix: 'blog/',
  * });

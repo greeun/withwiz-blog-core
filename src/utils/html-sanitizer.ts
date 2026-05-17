@@ -22,7 +22,29 @@ const STRIP_TAGS_WITH_CONTENT = /(<\s*\/?\s*(script|object|embed|applet|form|inp
 const UNTRUSTED_IFRAME = /<\s*iframe\b[^>]*>[\s\S]*?<\s*\/\s*iframe\s*>/gi;
 const STRIP_TAG_CONTENT = /<\s*(script|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
 const EVENT_HANDLER_ATTRS = /\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi;
-const DANGEROUS_PROTOCOL = /(href|src|action)\s*=\s*["']\s*(javascript|vbscript|data\s*:(?!image\/))[^"']*["']/gi;
+
+// 위험 프로토콜 차단: 속성명 확장(formaction, xlink:href) + 따옴표/무따옴표 +
+// 공백·제어문자 난독화 + data:image 예외 유지. 정규식 새니타이저는 best-effort이며
+// 신뢰 불가 HTML에는 isomorphic-dompurify 사용을 권장한다(폴백 시 1회 warn).
+const DANGEROUS_ATTR_NAMES = 'href|src|action|formaction|xlink:href';
+const DANGEROUS_PROTOCOL_QUOTED = new RegExp(
+  `(${DANGEROUS_ATTR_NAMES})(\\s*=\\s*)(["'])\\s*(?:javascript|vbscript|data\\s*:(?!\\s*image\\/))[^"']*\\3`,
+  'gi',
+);
+const DANGEROUS_PROTOCOL_UNQUOTED = new RegExp(
+  `(${DANGEROUS_ATTR_NAMES})(\\s*=\\s*)(?:javascript|vbscript|data:(?!image\\/))[^\\s>]*`,
+  'gi',
+);
+// 공백/제어문자로 쪼갠 난독화: java\nscript:, ja v ascript:, jav&#9;ascript:
+const OBFUSCATED_JS_PROTOCOL = new RegExp(
+  `(${DANGEROUS_ATTR_NAMES})(\\s*=\\s*)["']?\\s*j[\\s\\u0000-\\u0020]*a[\\s\\u0000-\\u0020]*v[\\s\\u0000-\\u0020]*a[\\s\\u0000-\\u0020]*s[\\s\\u0000-\\u0020]*c[\\s\\u0000-\\u0020]*r[\\s\\u0000-\\u0020]*i[\\s\\u0000-\\u0020]*p[\\s\\u0000-\\u0020]*t[\\s\\u0000-\\u0020]*:`,
+  'gi',
+);
+// iframe srcdoc(HTML 주입 벡터) 속성 제거
+const STRIP_SRCDOC = /\s+srcdoc\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
+// 위험 토큰 포함 style 속성 제거 (expression(), javascript:, url(javascript:))
+const DANGEROUS_STYLE =
+  /\s+style\s*=\s*(?:"[^"]*(?:expression\s*\(|javascript:|url\(\s*["']?\s*javascript:)[^"]*"|'[^']*(?:expression\s*\(|javascript:|url\(\s*["']?\s*javascript:)[^']*')/gi;
 
 /** 새니타이저 설정 */
 export interface SanitizerConfig {
@@ -43,6 +65,24 @@ type DOMPurifyLike = {
 };
 
 let cachedDomPurify: DOMPurifyLike | null | undefined;
+let weakSanitizerWarned = false;
+
+/**
+ * 정규식 폴백 새니타이저가 처음 사용될 때 1회 경고한다.
+ * 정규식 기반 HTML 새니타이저는 우회 가능성이 알려져 있으므로,
+ * 신뢰할 수 없는 HTML을 다룰 경우 isomorphic-dompurify(선택적 peer) 설치를 권장한다.
+ */
+function warnWeakSanitizerOnce(): void {
+  if (weakSanitizerWarned) return;
+  weakSanitizerWarned = true;
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[blog-core-v2/html-sanitizer] isomorphic-dompurify가 설치되지 않아 ' +
+      '정규식 기반 폴백 새니타이저를 사용합니다. 정규식 새니타이저는 우회 ' +
+      '가능성이 있으므로, 신뢰할 수 없는 HTML을 처리한다면 ' +
+      'isomorphic-dompurify 설치를 권장합니다.',
+  );
+}
 
 function tryLoadDomPurify(): DOMPurifyLike | null {
   if (cachedDomPurify !== undefined) return cachedDomPurify;
@@ -77,7 +117,11 @@ function regexSanitize(html: string, trustedOrigins: readonly string[]): string 
     return '';
   });
   result = result.replace(EVENT_HANDLER_ATTRS, '');
-  result = result.replace(DANGEROUS_PROTOCOL, '$1=""');
+  result = result.replace(STRIP_SRCDOC, '');
+  result = result.replace(DANGEROUS_STYLE, '');
+  result = result.replace(OBFUSCATED_JS_PROTOCOL, '$1=""');
+  result = result.replace(DANGEROUS_PROTOCOL_QUOTED, '$1=""');
+  result = result.replace(DANGEROUS_PROTOCOL_UNQUOTED, '$1=""');
   return result;
 }
 
@@ -142,6 +186,7 @@ export function createSanitizer(
     if (purify) {
       return dompurifySanitize(html, purify, { ...config, trustedIframeOrigins: trustedOrigins });
     }
+    warnWeakSanitizerOnce();
     return regexSanitize(html, trustedOrigins);
   };
 }

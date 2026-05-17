@@ -6,6 +6,15 @@ import type { BlogI18nStrings } from '../i18n/types';
 
 // ── Feature 토글 ──
 
+/**
+ * 클라이언트 IP 추출 전략 (스푸핑 가능한 프록시 헤더 신뢰 범위 제어).
+ * - 'auto'  : cf-connecting-ip → x-real-ip → x-forwarded-for[0] (기본, 신뢰 프록시 뒤 가정)
+ * - 'none'  : 어떤 헤더도 신뢰하지 않음 → IP 미수집(ipHash undefined)
+ * - 그 외 문자열: 해당 헤더명 **하나만** 신뢰 (예: 'cf-connecting-ip')
+ * 환경 변수가 아니라 반드시 주입으로 결정한다.
+ */
+export type IpHeaderStrategy = 'auto' | 'none' | (string & {});
+
 /** 댓글 기능 설정 */
 export interface CommentFeatureConfig {
   enabled: boolean;
@@ -20,6 +29,11 @@ export interface CommentFeatureConfig {
     /** 동일 IP의 시간당 최대 댓글 수 (default: 10) */
     maxPerHour?: number;
   };
+  /**
+   * 클라이언트 IP 추출 전략 (default: 'auto').
+   * 신뢰 프록시가 없거나 헤더 스푸핑이 우려되면 'none' 또는 특정 헤더명을 주입.
+   */
+  ipHeader?: IpHeaderStrategy;
 }
 
 /** 스케줄러 기능 설정 */
@@ -111,7 +125,12 @@ export interface BlogConfig {
   /** 인증 미들웨어 (optional, admin 라우트에서 사용) */
   authMiddleware?: AuthMiddleware;
 
-  /** 댓글 IP 해시에 사용할 HMAC 시크릿 (optional) */
+  /**
+   * 댓글 IP 해시에 사용할 HMAC 시크릿.
+   * 댓글 기능을 활성화하면 필수 주입이다. 라이브러리는 환경 변수를
+   * 직접 읽지 않으므로 호스트가 반드시 주입해야 하며, 미주입 시
+   * createBlog()가 즉시 throw 한다(fail-closed, 무조건 주입).
+   */
   commentHmacSecret?: string;
 
   /** 검색용 DB 테이블명 (default: 'blog_posts') */
