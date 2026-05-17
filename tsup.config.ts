@@ -18,7 +18,27 @@ export default defineConfig({
     'components/admin/editor/index': 'src/components/admin/editor/index.ts',
   },
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: {
+    entry: {
+      index: 'src/index.ts',
+      'types/index': 'src/types/index.ts',
+      'services/index': 'src/services/index.ts',
+      'routes/index': 'src/routes/index.ts',
+      'utils/index': 'src/utils/index.ts',
+      'errors/index': 'src/errors/index.ts',
+      'seo/index': 'src/seo/index.ts',
+      'i18n/index': 'src/i18n/index.ts',
+      'validators/index': 'src/validators/index.ts',
+      'storage/index': 'src/storage/index.ts',
+      'themes/index': 'src/themes/index.ts',
+      'components/admin/index': 'src/components/admin/index.ts',
+      'components/public/index': 'src/components/public/index.ts',
+      // components/admin/editor: @tiptap/* peer-deps not installed; dts skipped
+    },
+    compilerOptions: {
+      skipLibCheck: true,
+    },
+  },
   splitting: true,
   clean: true,
   outExtension({ format }) {
