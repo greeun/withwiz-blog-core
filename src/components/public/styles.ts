@@ -5,31 +5,11 @@
  * 전역 CSS 오염 없이 component-scoped styling을 구현한다.
  */
 import type { CSSProperties } from 'react';
-
-// ── CSS 변수 기본값 (호스트 오버라이드 가능) ──
-
-export const PUBLIC_CSS_VAR_DEFAULTS: Record<string, string> = {
-  '--blog-public-bg': '#ffffff',
-  '--blog-public-bg-card': '#f9f9f9',
-  '--blog-public-bg-hover': '#f0f0f0',
-  '--blog-public-text': '#1a1a1a',
-  '--blog-public-text-muted': '#6b7280',
-  '--blog-public-text-dim': '#9ca3af',
-  '--blog-public-border': '#e5e7eb',
-  '--blog-public-accent': '#2563eb',
-  '--blog-public-accent-hover': '#1d4ed8',
-  '--blog-public-danger': '#ef4444',
-  '--blog-public-success': '#22c55e',
-  '--blog-public-radius': '8px',
-  '--blog-public-radius-sm': '4px',
-  '--blog-public-font': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  '--blog-public-font-size': '15px',
-  '--blog-public-max-width': '1200px',
-};
+import { publicThemeVars } from '../../themes/default-public';
 
 /** 루트 래퍼에 적용할 CSS 변수 스타일 */
 export function publicRootVars(): CSSProperties {
-  return PUBLIC_CSS_VAR_DEFAULTS as unknown as CSSProperties;
+  return publicThemeVars();
 }
 
 // ── 공통 스타일 ──

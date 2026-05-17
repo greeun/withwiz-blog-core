@@ -22,4 +22,9 @@ export type {
 } from './types';
 
 // 스타일 export
-export { ps as publicStyles, publicRootVars, PUBLIC_CSS_VAR_DEFAULTS } from './styles';
+export { ps as publicStyles, publicRootVars } from './styles';
+export { PUBLIC_THEME_DEFAULTS, PUBLIC_VAR_MAP, publicThemeVars } from '../../themes/default-public';
+
+// Context provider (호스트가 next/link 등을 주입할 때 사용)
+export { BlogThemeProvider, useBlogUI } from '../../context/BlogUIContext';
+export type { BlogThemeProviderProps } from '../../context/BlogUIContext';
