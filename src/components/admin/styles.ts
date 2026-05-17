@@ -5,36 +5,10 @@
  * 전역 CSS 오염 없이 component-scoped styling을 구현한다.
  */
 import type { CSSProperties } from 'react';
+import { adminThemeVars } from '../../themes/default-admin';
 
-// ── CSS 변수 기본값 (호스트 오버라이드 가능) ──
-
-export const CSS_VAR_DEFAULTS: Record<string, string> = {
-  '--blog-bg': '#fafafa',
-  '--blog-bg-card': '#ffffff',
-  '--blog-bg-input': '#ffffff',
-  '--blog-bg-hover': '#f0f0f0',
-  '--blog-bg-selected': '#e8f0fe',
-  '--blog-text': '#171717',
-  '--blog-text-muted': '#737373',
-  '--blog-text-dim': '#a3a3a3',
-  '--blog-border': '#e5e5e5',
-  '--blog-border-focus': '#bbb',
-  '--blog-accent': '#4A90D9',
-  '--blog-accent-hover': '#3a7bc8',
-  '--blog-danger': '#ef4444',
-  '--blog-danger-hover': '#dc2626',
-  '--blog-success': '#22c55e',
-  '--blog-warning': '#f59e0b',
-  '--blog-info': '#3b82f6',
-  '--blog-radius': '6px',
-  '--blog-radius-sm': '4px',
-  '--blog-font': '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  '--blog-font-mono': '"SF Mono", "Fira Code", monospace',
-};
-
-/** 루트 래퍼에 적용할 CSS 변수 스타일 */
-export function rootVars(): CSSProperties {
-  return CSS_VAR_DEFAULTS as unknown as CSSProperties;
+export function rootVars() {
+  return adminThemeVars();
 }
 
 // ── 공통 스타일 ──
@@ -42,9 +16,9 @@ export function rootVars(): CSSProperties {
 export const s = {
   // -- 레이아웃 --
   root: {
-    fontFamily: 'var(--blog-font)',
-    color: 'var(--blog-text)',
-    backgroundColor: 'var(--blog-bg)',
+    fontFamily: 'var(--blog-admin-font)',
+    color: 'var(--blog-admin-text)',
+    backgroundColor: 'var(--blog-admin-bg)',
     minHeight: '100%',
     fontSize: 14,
     lineHeight: 1.5,
@@ -52,9 +26,9 @@ export const s = {
 
   // -- 카드/섹션 --
   card: {
-    backgroundColor: 'var(--blog-bg-card)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius)',
+    backgroundColor: 'var(--blog-admin-bg-card)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius)',
     padding: 16,
   } as CSSProperties,
 
@@ -62,14 +36,14 @@ export const s = {
   input: {
     width: '100%',
     padding: '8px 12px',
-    backgroundColor: 'var(--blog-bg-input)',
-    color: 'var(--blog-text)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius-sm)',
+    backgroundColor: 'var(--blog-admin-bg-input)',
+    color: 'var(--blog-admin-text)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
     fontSize: 14,
     outline: 'none',
     boxSizing: 'border-box' as const,
-    fontFamily: 'var(--blog-font)',
+    fontFamily: 'var(--blog-admin-font)',
     transition: 'border-color 0.15s',
   } as CSSProperties,
 
@@ -77,12 +51,12 @@ export const s = {
     width: '100%',
     minHeight: 300,
     padding: '12px',
-    backgroundColor: 'var(--blog-bg-input)',
-    color: 'var(--blog-text)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius-sm)',
+    backgroundColor: 'var(--blog-admin-bg-input)',
+    color: 'var(--blog-admin-text)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
     fontSize: 14,
-    fontFamily: 'var(--blog-font)',
+    fontFamily: 'var(--blog-admin-font)',
     resize: 'vertical' as const,
     outline: 'none',
     boxSizing: 'border-box' as const,
@@ -91,14 +65,14 @@ export const s = {
 
   select: {
     padding: '8px 12px',
-    backgroundColor: 'var(--blog-bg-input)',
-    color: 'var(--blog-text)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius-sm)',
+    backgroundColor: 'var(--blog-admin-bg-input)',
+    color: 'var(--blog-admin-text)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
     fontSize: 14,
     outline: 'none',
     cursor: 'pointer',
-    fontFamily: 'var(--blog-font)',
+    fontFamily: 'var(--blog-admin-font)',
   } as CSSProperties,
 
   // -- 버튼 --
@@ -109,11 +83,11 @@ export const s = {
     padding: '8px 16px',
     fontSize: 13,
     fontWeight: 500,
-    fontFamily: 'var(--blog-font)',
-    borderRadius: 'var(--blog-radius-sm)',
-    border: '1px solid var(--blog-border)',
-    backgroundColor: 'var(--blog-bg-card)',
-    color: 'var(--blog-text)',
+    fontFamily: 'var(--blog-admin-font)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
+    border: '1px solid var(--blog-admin-border)',
+    backgroundColor: 'var(--blog-admin-bg-card)',
+    color: 'var(--blog-admin-text)',
     cursor: 'pointer',
     transition: 'background-color 0.15s, border-color 0.15s',
     whiteSpace: 'nowrap' as const,
@@ -126,10 +100,10 @@ export const s = {
     padding: '8px 16px',
     fontSize: 13,
     fontWeight: 600,
-    fontFamily: 'var(--blog-font)',
-    borderRadius: 'var(--blog-radius-sm)',
-    border: '1px solid var(--blog-accent)',
-    backgroundColor: 'var(--blog-accent)',
+    fontFamily: 'var(--blog-admin-font)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
+    border: '1px solid var(--blog-admin-accent)',
+    backgroundColor: 'var(--blog-admin-accent)',
     color: '#fff',
     cursor: 'pointer',
     transition: 'background-color 0.15s, opacity 0.15s',
@@ -143,11 +117,11 @@ export const s = {
     padding: '8px 16px',
     fontSize: 13,
     fontWeight: 500,
-    fontFamily: 'var(--blog-font)',
-    borderRadius: 'var(--blog-radius-sm)',
-    border: '1px solid var(--blog-danger)',
+    fontFamily: 'var(--blog-admin-font)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
+    border: '1px solid var(--blog-admin-danger)',
     backgroundColor: 'transparent',
-    color: 'var(--blog-danger)',
+    color: 'var(--blog-admin-danger)',
     cursor: 'pointer',
     transition: 'background-color 0.15s',
     whiteSpace: 'nowrap' as const,
@@ -175,8 +149,8 @@ export const s = {
     padding: '10px 12px',
     textAlign: 'left' as const,
     fontWeight: 600,
-    color: 'var(--blog-text-muted)',
-    borderBottom: '1px solid var(--blog-border)',
+    color: 'var(--blog-admin-text-muted)',
+    borderBottom: '1px solid var(--blog-admin-border)',
     fontSize: 12,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -184,7 +158,7 @@ export const s = {
 
   td: {
     padding: '10px 12px',
-    borderBottom: '1px solid var(--blog-border)',
+    borderBottom: '1px solid var(--blog-admin-border)',
     verticalAlign: 'middle' as const,
   } as CSSProperties,
 
@@ -200,25 +174,25 @@ export const s = {
 
   badgePublished: {
     backgroundColor: 'rgba(34,197,94,0.15)',
-    color: 'var(--blog-success)',
+    color: 'var(--blog-admin-success)',
   } as CSSProperties,
 
   badgeDraft: {
     backgroundColor: 'rgba(136,136,136,0.15)',
-    color: 'var(--blog-text-muted)',
+    color: 'var(--blog-admin-text-muted)',
   } as CSSProperties,
 
   badgeFeatured: {
     backgroundColor: 'rgba(74,144,217,0.12)',
-    color: 'var(--blog-accent)',
+    color: 'var(--blog-admin-accent)',
   } as CSSProperties,
 
   badgeStatus: (status: string): CSSProperties => {
     switch (status) {
-      case 'PENDING': return { backgroundColor: 'rgba(245,158,11,0.15)', color: 'var(--blog-warning)' };
-      case 'APPROVED': return { backgroundColor: 'rgba(34,197,94,0.15)', color: 'var(--blog-success)' };
-      case 'REJECTED': return { backgroundColor: 'rgba(239,68,68,0.15)', color: 'var(--blog-danger)' };
-      case 'SPAM': return { backgroundColor: 'rgba(136,136,136,0.15)', color: 'var(--blog-text-muted)' };
+      case 'PENDING': return { backgroundColor: 'rgba(245,158,11,0.15)', color: 'var(--blog-admin-warning)' };
+      case 'APPROVED': return { backgroundColor: 'rgba(34,197,94,0.15)', color: 'var(--blog-admin-success)' };
+      case 'REJECTED': return { backgroundColor: 'rgba(239,68,68,0.15)', color: 'var(--blog-admin-danger)' };
+      case 'SPAM': return { backgroundColor: 'rgba(136,136,136,0.15)', color: 'var(--blog-admin-text-muted)' };
       default: return {};
     }
   },
@@ -228,7 +202,7 @@ export const s = {
     display: 'block',
     fontSize: 12,
     fontWeight: 600,
-    color: 'var(--blog-text-muted)',
+    color: 'var(--blog-admin-text-muted)',
     marginBottom: 6,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -251,7 +225,7 @@ export const s = {
     right: 0,
     bottom: 0,
     borderRadius: 11,
-    backgroundColor: active ? 'var(--blog-accent)' : 'var(--blog-border)',
+    backgroundColor: active ? 'var(--blog-admin-accent)' : 'var(--blog-admin-border)',
     transition: 'background-color 0.2s',
   }),
 
@@ -286,26 +260,26 @@ export const s = {
 
   helperText: {
     fontSize: 11,
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
     marginTop: 4,
   } as CSSProperties,
 
   errorText: {
     fontSize: 12,
-    color: 'var(--blog-danger)',
+    color: 'var(--blog-admin-danger)',
     marginTop: 4,
   } as CSSProperties,
 
   successText: {
     fontSize: 12,
-    color: 'var(--blog-success)',
+    color: 'var(--blog-admin-success)',
     marginTop: 4,
   } as CSSProperties,
 
   // -- 드롭존 --
   dropzone: (isDragOver: boolean): CSSProperties => ({
-    border: `2px dashed ${isDragOver ? 'var(--blog-accent)' : 'var(--blog-border)'}`,
-    borderRadius: 'var(--blog-radius)',
+    border: `2px dashed ${isDragOver ? 'var(--blog-admin-accent)' : 'var(--blog-admin-border)'}`,
+    borderRadius: 'var(--blog-admin-radius)',
     padding: 24,
     textAlign: 'center',
     cursor: 'pointer',
@@ -325,21 +299,21 @@ export const s = {
   pageBtn: (active: boolean): CSSProperties => ({
     padding: '6px 10px',
     fontSize: 13,
-    border: active ? '1px solid var(--blog-accent)' : '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius-sm)',
-    backgroundColor: active ? 'var(--blog-accent)' : 'transparent',
-    color: active ? '#fff' : 'var(--blog-text)',
+    border: active ? '1px solid var(--blog-admin-accent)' : '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
+    backgroundColor: active ? 'var(--blog-admin-accent)' : 'transparent',
+    color: active ? '#fff' : 'var(--blog-admin-text)',
     cursor: 'pointer',
-    fontFamily: 'var(--blog-font)',
+    fontFamily: 'var(--blog-admin-font)',
     minWidth: 32,
     textAlign: 'center',
   }),
 
   // -- 스탯 카드 --
   statCard: {
-    backgroundColor: 'var(--blog-bg-card)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius)',
+    backgroundColor: 'var(--blog-admin-bg-card)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius)',
     padding: 20,
     textAlign: 'center' as const,
     cursor: 'pointer',
@@ -349,13 +323,13 @@ export const s = {
   statValue: {
     fontSize: 28,
     fontWeight: 700,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     marginBottom: 4,
   } as CSSProperties,
 
   statLabel: {
     fontSize: 12,
-    color: 'var(--blog-text-muted)',
+    color: 'var(--blog-admin-text-muted)',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
   } as CSSProperties,
