@@ -474,7 +474,7 @@ export default function BlogEditForm({
           {t.adminTitleLabel} <span style={ef.sectionTag}>*</span>
         </div>
         <Input style={{ padding: '10px 12px', fontSize: 16, fontWeight: 600 }} value={form.title} onChange={(v) => updateField('title', v)} placeholder={t.adminTitlePlaceholder} disabled={saving} />
-        <Input style={{ marginTop: 8 }} value={form.excerpt} onChange={(v) => updateField('excerpt', v)} placeholder={t.adminExcerptPlaceholder} disabled={saving} />
+        <Input style={{ marginTop: 12 }} value={form.excerpt} onChange={(v) => updateField('excerpt', v)} placeholder={t.adminExcerptPlaceholder} disabled={saving} />
       </div>
 
       {/* 대표 이미지 */}
