@@ -21,8 +21,10 @@ export default defineConfig({
   splitting: true,
   clean: true,
   outExtension({ format }) {
+    // package.json이 "type":"module"이므로 CJS는 반드시 .cjs로 출력해야
+    // require() 경로에서 ESM으로 오인되지 않는다.
     return {
-      js: format === 'esm' ? '.mjs' : '.js',
+      js: format === 'esm' ? '.mjs' : '.cjs',
     };
   },
   external: [
@@ -35,6 +37,11 @@ export default defineConfig({
     'isomorphic-dompurify',
     '@aws-sdk/client-s3',
     '@withwiz/block-editor',
+    '@tiptap/react',
+    '@tiptap/starter-kit',
+    '@tiptap/extension-link',
+    '@tiptap/pm',
     'slugify',
+    'client-only',
   ],
 });
