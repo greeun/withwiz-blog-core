@@ -95,11 +95,15 @@ export const blog = createBlog({
   adminBasePath: '/admin/blog',
   apiBasePath: '/api/blog',
   adminApiBasePath: '/api/admin/blog',
+  // 시크릿은 호스트가 주입한다. 이 라이브러리는 process.env를 읽지 않는다.
+  // 댓글 활성 시 commentHmacSecret은 필수 — 미주입이면 createBlog()가
+  // 생성 시점에 throw 한다(fail-closed, env 미사용, 폴백 없음).
+  commentHmacSecret: hostCommentHmacSecret, // 호스트 주입(자체 설정/시크릿 매니저)
   features: {
     tags: true,
     comments: { enabled: true, autoApprove: false, maxDepth: 3 },
     search: true,
-    scheduler: { enabled: true, cronSecret: process.env.CRON_SECRET },
+    scheduler: { enabled: true, cronSecret: hostCronSecret }, // 호스트 주입
   },
 });
 
@@ -298,6 +302,28 @@ import {
 } from 'blog-core-v2/components/public';
 ```
 
+공개 컴포넌트는 `next/link`에 의존하지 않습니다. 기본은 평문 `<a>`이며,
+클라이언트 내비게이션/프리페치(Next.js 등)가 필요하면 `BlogThemeProvider`로
+링크 어댑터를 주입합니다(Button/Card 등과 동일한 디자인시스템 주입):
+
+```tsx
+import NextLink from 'next/link';
+import { BlogThemeProvider } from 'blog-core-v2/components/admin';
+
+<BlogThemeProvider
+  components={{
+    Link: ({ href, children, ...rest }) => (
+      <NextLink href={href} {...rest}>{children}</NextLink>
+    ),
+  }}
+>
+  {/* BlogListPage / BlogDetailPage / TagBadge / TagCloud ... */}
+</BlogThemeProvider>;
+```
+
+Provider가 없으면 `useBlogUI()`가 내장 `DefaultLink`(평문 `<a>`)로
+폴백하므로 패키지는 플랫폼 무관을 유지합니다.
+
 ### Block Editor (확장 UI)
 
 `@withwiz/block-editor`를 별도 설치 후 사용합니다.
@@ -363,12 +389,14 @@ S3 호환 스토리지(R2, MinIO 등)를 사용하는 경우:
 ```typescript
 import { createS3StorageAdapter } from 'blog-core-v2/storage';
 
+// 자격증명은 호스트가 주입한다. 이 라이브러리는 process.env를 읽지 않으며,
+// 호스트가 자체 설정/시크릿 매니저에서 읽어 값으로 넘긴다.
 const storage = createS3StorageAdapter({
   bucket: 'my-bucket',
   region: 'auto',
-  endpoint: process.env.R2_ENDPOINT,
-  accessKeyId: process.env.R2_ACCESS_KEY,
-  secretAccessKey: process.env.R2_SECRET_KEY,
+  endpoint: hostR2Endpoint,
+  accessKeyId: hostR2AccessKey,
+  secretAccessKey: hostR2SecretKey,
   publicUrlPrefix: 'https://cdn.example.com',
 });
 
@@ -505,8 +533,34 @@ const blog = createBlog({
 | `zod` >= 3 | peerDependency | 선택 (validators 사용 시) |
 | `@aws-sdk/client-s3` | peerDependency | 선택 (S3 어댑터 사용 시) |
 | `@withwiz/block-editor` | peerDependency | 선택 (Block Editor 사용 시) |
+| `isomorphic-dompurify` >= 2 | peerDependency | 선택 (강력 새니타이저; 없으면 정규식 폴백 + 1회 경고) |
 
 `@withwiz/blog-system` 또는 `@withwiz/pms`에 대한 의존성은 없습니다.
+
+## 주입 계약 & 서버/클라이언트 경계
+
+이 패키지는 **`process.env` 등 시스템 환경변수를 절대 읽지 않습니다.** 모든
+시크릿/자격증명/전략은 호스트가 **주입**합니다. 환경에서 설정을 읽는 책임은
+호스트에 있으며, 호스트가 자체 설정/시크릿 매니저에서 읽어 값으로 넘깁니다.
+
+- **`commentHmacSecret`는 댓글 활성 시 필수.** 클라이언트 IP HMAC(프라이버시)에
+  사용합니다. 미주입이면 `createBlog()`가 **생성 시점에 throw**합니다
+  (fail-closed, env 폴백 없음, 하드코딩 기본값 없음).
+- **Cron 인증(`scheduler.cronSecret`)** 은 주입되며 상수시간 비교합니다.
+- **IP 헤더 신뢰 범위**는 `features.comments.ipHeader`로 제어:
+  `'auto'`(기본: `cf-connecting-ip` → `x-real-ip` → `x-forwarded-for[0]`),
+  `'none'`(프록시 헤더 미신뢰), 또는 특정 헤더명.
+- **서버/클라이언트 분리:** 서버 엔트리(`.`, `/services`, `/routes`,
+  `/storage`)는 서버 전용, UI는 `/components/*`(클라이언트). 경계는 엔트리
+  분리 + `'use client'` + 서버 모듈의 Node 전용 특성(`node:crypto`, Prisma)으로
+  강제됩니다. 클라이언트 배럴에는 `client-only` 가드가 추가로 붙어 있으며,
+  이는 클라이언트 컴포넌트가 RSC 서버 그래프로 끌려갈 때만 throw(의도된 보호)
+  하고 그 외(plain Node·SSR·테스트)에서는 무해한 no-op입니다. `server-only`
+  마커는 사용하지 않습니다 — 정당한 비-RSC 서버 환경(plain Node 스크립트,
+  비-Next SSR, 테스트 러너)에서도 throw하여 플랫폼 무관성을 해치기 때문입니다.
+- **듀얼 패키지:** ESM은 `*.mjs`, CommonJS는 `*.cjs`, 조건부 `exports`
+  (`import`/`require` 각자 types 보유). `package.json`이 `"type":"module"`
+  이므로 필수입니다.
 
 ## CSS 스코핑
 
