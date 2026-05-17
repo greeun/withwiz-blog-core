@@ -24,56 +24,56 @@ ${SCOPE} .tiptap {
   outline: none;
   min-height: 250px;
   padding: 12px;
-  color: var(--blog-text, #171717);
-  font-family: var(--blog-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: var(--blog-admin-text, #171717);
+  font-family: var(--blog-admin-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
   font-size: 14px;
   line-height: 1.8;
 }
 ${SCOPE} .tiptap p { margin: 0.4em 0; }
-${SCOPE} .tiptap h2 { font-size: 1.4em; font-weight: 700; margin: 1em 0 0.4em; color: var(--blog-text, #171717); }
-${SCOPE} .tiptap h3 { font-size: 1.2em; font-weight: 600; margin: 0.8em 0 0.3em; color: var(--blog-text, #171717); }
+${SCOPE} .tiptap h2 { font-size: 1.4em; font-weight: 700; margin: 1em 0 0.4em; color: var(--blog-admin-text, #171717); }
+${SCOPE} .tiptap h3 { font-size: 1.2em; font-weight: 600; margin: 0.8em 0 0.3em; color: var(--blog-admin-text, #171717); }
 ${SCOPE} .tiptap ul { list-style: disc; padding-left: 1.5em; margin: 0.4em 0; }
 ${SCOPE} .tiptap ol { list-style: decimal; padding-left: 1.5em; margin: 0.4em 0; }
 ${SCOPE} .tiptap li { margin: 0.2em 0; }
 ${SCOPE} .tiptap blockquote {
-  border-left: 3px solid var(--blog-border, #e5e5e5);
+  border-left: 3px solid var(--blog-admin-border, #e5e5e5);
   padding-left: 1em;
   margin: 0.6em 0;
-  color: var(--blog-text-muted, #737373);
+  color: var(--blog-admin-text-muted, #737373);
   font-style: italic;
 }
-${SCOPE} .tiptap a { color: var(--blog-accent, #4A90D9); text-decoration: underline; }
+${SCOPE} .tiptap a { color: var(--blog-admin-accent, #4A90D9); text-decoration: underline; }
 ${SCOPE} .tiptap code {
-  background: var(--blog-bg-input, #ffffff);
+  background: var(--blog-admin-bg-input, #ffffff);
   padding: 2px 6px;
   border-radius: 3px;
-  font-family: var(--blog-font-mono, monospace);
+  font-family: var(--blog-admin-font-mono, monospace);
   font-size: 0.9em;
 }
 ${SCOPE} .tiptap pre {
-  background: var(--blog-bg-input, #ffffff);
+  background: var(--blog-admin-bg-input, #ffffff);
   padding: 12px;
-  border-radius: var(--blog-radius-sm, 4px);
+  border-radius: var(--blog-admin-radius-sm, 4px);
   overflow-x: auto;
   margin: 0.6em 0;
 }
 ${SCOPE} .tiptap pre code { background: none; padding: 0; }
 ${SCOPE} .tiptap hr {
   border: none;
-  border-top: 1px solid var(--blog-border, #e5e5e5);
+  border-top: 1px solid var(--blog-admin-border, #e5e5e5);
   margin: 1em 0;
 }
-${SCOPE} .tiptap s { text-decoration: line-through; color: var(--blog-text-dim, #a3a3a3); }
+${SCOPE} .tiptap s { text-decoration: line-through; color: var(--blog-admin-text-dim, #a3a3a3); }
 `;
 
 // ── 스타일 ──
 
 const rs = {
   container: {
-    border: '1px solid var(--blog-border, #e5e5e5)',
-    borderRadius: 'var(--blog-radius-sm, 4px)',
+    border: '1px solid var(--blog-admin-border, #e5e5e5)',
+    borderRadius: 'var(--blog-admin-radius-sm, 4px)',
     overflow: 'hidden',
-    backgroundColor: 'var(--blog-bg-input, #ffffff)',
+    backgroundColor: 'var(--blog-admin-bg-input, #ffffff)',
   } as CSSProperties,
 
   toolbar: {
@@ -81,14 +81,14 @@ const rs = {
     flexWrap: 'wrap' as const,
     gap: 2,
     padding: '6px 8px',
-    borderBottom: '1px solid var(--blog-border, #e5e5e5)',
-    backgroundColor: 'var(--blog-bg-card, #ffffff)',
+    borderBottom: '1px solid var(--blog-admin-border, #e5e5e5)',
+    backgroundColor: 'var(--blog-admin-bg-card, #ffffff)',
   } as CSSProperties,
 
   sep: {
     width: 1,
     alignSelf: 'stretch' as const,
-    backgroundColor: 'var(--blog-border, #e5e5e5)',
+    backgroundColor: 'var(--blog-admin-border, #e5e5e5)',
     margin: '0 4px',
   } as CSSProperties,
 
@@ -96,11 +96,11 @@ const rs = {
     padding: '4px 8px',
     fontSize: 12,
     fontWeight: active ? 600 : 400,
-    fontFamily: 'var(--blog-font, sans-serif)',
+    fontFamily: 'var(--blog-admin-font, sans-serif)',
     borderRadius: 3,
     border: 'none',
     backgroundColor: active ? 'rgba(74,144,217,0.12)' : 'transparent',
-    color: active ? 'var(--blog-accent, #4A90D9)' : 'var(--blog-text-muted, #737373)',
+    color: active ? 'var(--blog-admin-accent, #4A90D9)' : 'var(--blog-admin-text-muted, #737373)',
     cursor: 'pointer',
     transition: 'background-color 0.12s, color 0.12s',
     whiteSpace: 'nowrap' as const,
@@ -110,11 +110,11 @@ const rs = {
   unlinkBtn: {
     padding: '4px 8px',
     fontSize: 12,
-    fontFamily: 'var(--blog-font, sans-serif)',
+    fontFamily: 'var(--blog-admin-font, sans-serif)',
     borderRadius: 3,
     border: 'none',
     backgroundColor: 'transparent',
-    color: 'var(--blog-danger, #ef4444)',
+    color: 'var(--blog-admin-danger, #ef4444)',
     cursor: 'pointer',
     lineHeight: '20px',
   } as CSSProperties,

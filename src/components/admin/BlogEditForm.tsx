@@ -398,7 +398,7 @@ export default function BlogEditForm({
 
   if (loading) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: 'var(--blog-text-muted)' }}>
+      <div style={{ padding: 40, textAlign: 'center', color: 'var(--blog-admin-text-muted)' }}>
         {t.adminLoading}
       </div>
     );
@@ -410,7 +410,7 @@ export default function BlogEditForm({
     <div style={ef.form}>
       {/* 헤더: 제목 + 토글 + 액션 */}
       <div style={ef.headerRow}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--blog-text)', margin: 0 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--blog-admin-text)', margin: 0 }}>
           {isNew ? t.adminCreateTitle : t.adminEditTitle}
         </h2>
         <div style={ef.headerActions}>
@@ -495,9 +495,9 @@ export default function BlogEditForm({
             onClick={() => coverInputRef.current?.click()}
           >
             {isUploading ? (
-              <span style={{ color: 'var(--blog-text-muted)' }}>{t.adminUploading}</span>
+              <span style={{ color: 'var(--blog-admin-text-muted)' }}>{t.adminUploading}</span>
             ) : (
-              <span style={{ color: 'var(--blog-text-dim)' }}>
+              <span style={{ color: 'var(--blog-admin-text-dim)' }}>
                 {t.adminDropHere}
                 <br />
                 <span style={{ fontSize: 11, marginTop: 4, display: 'inline-block' }}>
@@ -596,7 +596,7 @@ export default function BlogEditForm({
                 <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {a.name}
                 </span>
-                <span style={{ color: 'var(--blog-text-dim)', fontSize: 12 }}>
+                <span style={{ color: 'var(--blog-admin-text-dim)', fontSize: 12 }}>
                   {formatFileSize(a.size)}
                 </span>
                 <button

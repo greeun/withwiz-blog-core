@@ -45,13 +45,13 @@ const lv = {
 
   row: (isSelected: boolean): CSSProperties => ({
     cursor: 'pointer',
-    backgroundColor: isSelected ? 'var(--blog-bg-selected)' : 'transparent',
+    backgroundColor: isSelected ? 'var(--blog-admin-bg-selected)' : 'transparent',
     transition: 'background-color 0.1s',
   }),
 
   titleCell: {
     fontWeight: 500,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     maxWidth: 300,
     overflow: 'hidden' as const,
     textOverflow: 'ellipsis' as const,
@@ -64,16 +64,16 @@ const lv = {
     alignItems: 'center',
     padding: '8px 12px',
     marginBottom: 12,
-    backgroundColor: 'var(--blog-bg-card)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius-sm)',
+    backgroundColor: 'var(--blog-admin-bg-card)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
     flexWrap: 'wrap' as const,
   } as CSSProperties,
 
   empty: {
     padding: 40,
     textAlign: 'center' as const,
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
     fontSize: 13,
   } as CSSProperties,
 };
@@ -228,7 +228,7 @@ export default function BlogListView({
     <div>
       {/* 헤더 */}
       <div style={{ ...s.flexBetween, marginBottom: 16 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--blog-text)' }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--blog-admin-text)' }}>
           {t.adminListTitle}
         </h2>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -274,7 +274,7 @@ export default function BlogListView({
       {/* 일괄 작업 toolbar */}
       {selected.size > 0 && (
         <div style={lv.bulkBar}>
-          <span style={{ fontSize: 12, color: 'var(--blog-text-muted)' }}>
+          <span style={{ fontSize: 12, color: 'var(--blog-admin-text-muted)' }}>
             {selected.size}{t.adminBulkSelectedSuffix}
           </span>
           <Button size="small" onClick={() => bulkAction('publish')}>
@@ -327,14 +327,14 @@ export default function BlogListView({
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={hasViewCount ? 7 : 6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-text-muted)' }}>
+                <td colSpan={hasViewCount ? 7 : 6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-muted)' }}>
                   {t.adminLoading}
                 </td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={hasViewCount ? 7 : 6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-text-dim)' }}>
+                <td colSpan={hasViewCount ? 7 : 6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-dim)' }}>
                   {t.adminListEmpty}
                 </td>
               </tr>
@@ -362,7 +362,7 @@ export default function BlogListView({
                   )}
                 </td>
                 <td style={s.td}>
-                  <Badge style={{ backgroundColor: 'rgba(74,144,217,0.1)', color: 'var(--blog-accent)', fontSize: 11 }}>
+                  <Badge style={{ backgroundColor: 'rgba(74,144,217,0.1)', color: 'var(--blog-admin-accent)', fontSize: 11 }}>
                     {categories[item.category]?.label || item.category}
                   </Badge>
                 </td>
@@ -377,11 +377,11 @@ export default function BlogListView({
                   )}
                 </td>
                 {hasViewCount && (
-                  <td style={{ ...s.td, textAlign: 'right', fontSize: 12, color: 'var(--blog-text-dim)' }}>
+                  <td style={{ ...s.td, textAlign: 'right', fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
                     {item.viewCount !== undefined ? item.viewCount.toLocaleString() : '-'}
                   </td>
                 )}
-                <td style={{ ...s.td, fontSize: 12, color: 'var(--blog-text-dim)' }}>
+                <td style={{ ...s.td, fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
                   {fmtDate(item.createdAt)}
                 </td>
               </tr>
@@ -407,7 +407,7 @@ export default function BlogListView({
               // 생략 표시
               if (idx > 0 && p - arr[idx - 1] > 1) {
                 return (
-                  <span key={`gap-${p}`} style={{ color: 'var(--blog-text-dim)', padding: '0 4px' }}>...</span>
+                  <span key={`gap-${p}`} style={{ color: 'var(--blog-admin-text-dim)', padding: '0 4px' }}>...</span>
                 );
               }
               return (
@@ -435,7 +435,7 @@ export default function BlogListView({
 
       {/* 건수 */}
       {!loading && (
-        <div style={{ textAlign: 'center', marginTop: 8, fontSize: 12, color: 'var(--blog-text-dim)' }}>
+        <div style={{ textAlign: 'center', marginTop: 8, fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
           {total}{t.adminCountSuffix}
         </div>
       )}
