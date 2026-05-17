@@ -17,7 +17,7 @@ import { s } from './styles';
 
 const ls = {
   container: {
-    backgroundColor: 'var(--blog-bg)',
+    backgroundColor: 'var(--blog-admin-bg)',
     padding: 16,
   } as CSSProperties,
 
@@ -32,12 +32,12 @@ const ls = {
     padding: '6px 14px',
     fontSize: 12,
     fontWeight: active ? 600 : 400,
-    border: `1px solid ${active ? 'var(--blog-accent)' : 'var(--blog-border)'}`,
-    borderRadius: 'var(--blog-radius-sm)',
+    border: `1px solid ${active ? 'var(--blog-admin-accent)' : 'var(--blog-admin-border)'}`,
+    borderRadius: 'var(--blog-admin-radius-sm)',
     backgroundColor: active ? 'rgba(74,144,217,0.1)' : 'transparent',
-    color: active ? 'var(--blog-accent)' : 'var(--blog-text-muted)',
+    color: active ? 'var(--blog-admin-accent)' : 'var(--blog-admin-text-muted)',
     cursor: 'pointer',
-    fontFamily: 'var(--blog-font)',
+    fontFamily: 'var(--blog-admin-font)',
   }),
 
   grid: {
@@ -47,9 +47,9 @@ const ls = {
   } as CSSProperties,
 
   card: {
-    backgroundColor: 'var(--blog-bg-card)',
-    border: '1px solid var(--blog-border)',
-    borderRadius: 'var(--blog-radius)',
+    backgroundColor: 'var(--blog-admin-bg-card)',
+    border: '1px solid var(--blog-admin-border)',
+    borderRadius: 'var(--blog-admin-radius)',
     overflow: 'hidden',
     cursor: 'pointer',
     transition: 'border-color 0.15s',
@@ -60,7 +60,7 @@ const ls = {
     height: 160,
     objectFit: 'cover' as const,
     display: 'block',
-    borderBottom: '1px solid var(--blog-border)',
+    borderBottom: '1px solid var(--blog-admin-border)',
   } as CSSProperties,
 
   cardNoImage: {
@@ -69,10 +69,10 @@ const ls = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'var(--blog-bg-input)',
-    color: 'var(--blog-text-dim)',
+    backgroundColor: 'var(--blog-admin-bg-input)',
+    color: 'var(--blog-admin-text-dim)',
     fontSize: 24,
-    borderBottom: '1px solid var(--blog-border)',
+    borderBottom: '1px solid var(--blog-admin-border)',
   } as CSSProperties,
 
   cardBody: {
@@ -82,7 +82,7 @@ const ls = {
   cardCategory: {
     ...s.badge,
     backgroundColor: 'rgba(74,144,217,0.12)',
-    color: 'var(--blog-accent)',
+    color: 'var(--blog-admin-accent)',
     marginBottom: 8,
     display: 'inline-block',
   } as CSSProperties,
@@ -90,7 +90,7 @@ const ls = {
   cardTitle: {
     fontSize: 15,
     fontWeight: 600,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     marginBottom: 6,
     overflow: 'hidden' as const,
     textOverflow: 'ellipsis' as const,
@@ -99,7 +99,7 @@ const ls = {
 
   cardExcerpt: {
     fontSize: 12,
-    color: 'var(--blog-text-muted)',
+    color: 'var(--blog-admin-text-muted)',
     lineHeight: 1.4,
     display: '-webkit-box',
     WebkitLineClamp: 2,
@@ -109,14 +109,14 @@ const ls = {
 
   cardMeta: {
     fontSize: 11,
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
     marginTop: 8,
   } as CSSProperties,
 
   empty: {
     padding: 40,
     textAlign: 'center' as const,
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
     fontSize: 13,
   } as CSSProperties,
 };
@@ -250,7 +250,7 @@ export default function BlogListPreview({
           >
             {t.publicPrevPage}
           </button>
-          <span style={{ fontSize: 13, color: 'var(--blog-text-muted)', margin: '0 8px' }}>
+          <span style={{ fontSize: 13, color: 'var(--blog-admin-text-muted)', margin: '0 8px' }}>
             {page} / {totalPages}
           </span>
           <button

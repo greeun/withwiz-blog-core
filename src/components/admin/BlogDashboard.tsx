@@ -44,7 +44,7 @@ const ds = {
   sectionTitle: {
     fontSize: 14,
     fontWeight: 600,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     marginBottom: 12,
   } as CSSProperties,
 
@@ -53,16 +53,16 @@ const ds = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '8px 12px',
-    borderBottom: '1px solid var(--blog-border)',
+    borderBottom: '1px solid var(--blog-admin-border)',
     fontSize: 13,
   } as CSSProperties,
 
   catLabel: {
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
   } as CSSProperties,
 
   catCount: {
-    color: 'var(--blog-accent)',
+    color: 'var(--blog-admin-accent)',
     fontWeight: 600,
     fontSize: 14,
   } as CSSProperties,
@@ -72,13 +72,13 @@ const ds = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '10px 12px',
-    borderBottom: '1px solid var(--blog-border)',
+    borderBottom: '1px solid var(--blog-admin-border)',
     fontSize: 13,
     cursor: 'pointer',
   } as CSSProperties,
 
   recentTitle: {
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     flex: 1,
     overflow: 'hidden' as const,
     textOverflow: 'ellipsis' as const,
@@ -86,7 +86,7 @@ const ds = {
   } as CSSProperties,
 
   recentDate: {
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
     fontSize: 12,
     marginLeft: 12,
     flexShrink: 0,
@@ -95,12 +95,12 @@ const ds = {
   loading: {
     padding: 40,
     textAlign: 'center' as const,
-    color: 'var(--blog-text-muted)',
+    color: 'var(--blog-admin-text-muted)',
   } as CSSProperties,
 
   error: {
     padding: 16,
-    color: 'var(--blog-danger)',
+    color: 'var(--blog-admin-danger)',
     textAlign: 'center' as const,
   } as CSSProperties,
 };
@@ -187,7 +187,7 @@ export default function BlogDashboard({
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: 'var(--blog-text)' }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: 'var(--blog-admin-text)' }}>
         {t.dashboardTitle}
       </h2>
 
@@ -226,7 +226,7 @@ export default function BlogDashboard({
             </div>
           ))}
           {Object.keys(stats.byCategory).length === 0 && (
-            <div style={{ ...ds.catRow, color: 'var(--blog-text-dim)' }}>
+            <div style={{ ...ds.catRow, color: 'var(--blog-admin-text-dim)' }}>
               {t.dashboardNoData}
             </div>
           )}
@@ -246,7 +246,7 @@ export default function BlogDashboard({
             </div>
           ))}
           {stats.recentPosts.length === 0 && (
-            <div style={{ ...ds.catRow, color: 'var(--blog-text-dim)' }}>
+            <div style={{ ...ds.catRow, color: 'var(--blog-admin-text-dim)' }}>
               {t.dashboardNoData}
             </div>
           )}

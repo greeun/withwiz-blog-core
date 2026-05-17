@@ -66,8 +66,8 @@ export interface BlockEditorFormProps {
 
 const editorStyles = {
   wrapper: {
-    border: "1px solid var(--blog-border, #333)",
-    borderRadius: "var(--blog-radius, 6px)",
+    border: "1px solid var(--blog-admin-border, #333)",
+    borderRadius: "var(--blog-admin-radius, 6px)",
     overflow: "hidden",
     minHeight: 300,
   } as CSSProperties,
@@ -75,7 +75,7 @@ const editorStyles = {
   fallback: {
     padding: 32,
     textAlign: "center" as const,
-    color: "var(--blog-text-muted, #888)",
+    color: "var(--blog-admin-text-muted, #888)",
     fontSize: 14,
     lineHeight: 1.6,
   } as CSSProperties,
@@ -83,10 +83,10 @@ const editorStyles = {
   fallbackCode: {
     display: "inline-block",
     padding: "2px 8px",
-    backgroundColor: "var(--blog-bg-input, #ffffff)",
+    backgroundColor: "var(--blog-admin-bg-input, #ffffff)",
     borderRadius: 4,
     fontSize: 13,
-    fontFamily: "var(--blog-font-mono, monospace)",
+    fontFamily: "var(--blog-admin-font-mono, monospace)",
   } as CSSProperties,
 };
 
@@ -141,7 +141,7 @@ export default function BlockEditorForm({
           <p style={{ marginTop: 8 }}>
             <code style={editorStyles.fallbackCode}>npm install @withwiz/block-editor</code>
           </p>
-          <p style={{ marginTop: 12, fontSize: 12, color: "var(--blog-text-dim, #666)" }}>
+          <p style={{ marginTop: 12, fontSize: 12, color: "var(--blog-admin-text-dim, #666)" }}>
             설치 후 BlockEditorComponent와 BlockEditorProviderComponent를 props로 전달하세요.
           </p>
         </div>

@@ -17,8 +17,8 @@ import { s } from './styles';
 
 const ps = {
   container: {
-    backgroundColor: 'var(--blog-bg)',
-    borderRadius: 'var(--blog-radius)',
+    backgroundColor: 'var(--blog-admin-bg)',
+    borderRadius: 'var(--blog-admin-radius)',
     overflow: 'hidden',
   } as CSSProperties,
 
@@ -48,14 +48,14 @@ const ps = {
   title: {
     fontSize: 28,
     fontWeight: 700,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     marginBottom: 8,
     lineHeight: 1.5,
   } as CSSProperties,
 
   excerpt: {
     fontSize: 15,
-    color: 'var(--blog-text-muted)',
+    color: 'var(--blog-admin-text-muted)',
     marginBottom: 0,
     lineHeight: 1.6,
   } as CSSProperties,
@@ -70,16 +70,16 @@ const ps = {
   content: {
     fontSize: 14,
     lineHeight: 1.8,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     wordBreak: 'break-word' as const,
   } as CSSProperties,
 
   attachments: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: 'var(--blog-bg-card)',
-    borderRadius: 'var(--blog-radius-sm)',
-    border: '1px solid var(--blog-border)',
+    backgroundColor: 'var(--blog-admin-bg-card)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
+    border: '1px solid var(--blog-admin-border)',
   } as CSSProperties,
 
   attachItem: {
@@ -88,30 +88,30 @@ const ps = {
     gap: 8,
     padding: '6px 0',
     fontSize: 13,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
   } as CSSProperties,
 
   cta: {
     marginTop: 24,
     padding: 20,
     textAlign: 'center' as const,
-    borderRadius: 'var(--blog-radius)',
-    border: '1px solid var(--blog-accent)',
+    borderRadius: 'var(--blog-admin-radius)',
+    border: '1px solid var(--blog-admin-accent)',
     backgroundColor: 'rgba(74,144,217,0.05)',
   } as CSSProperties,
 
   ctaMsg: {
     fontSize: 14,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
     marginBottom: 12,
   } as CSSProperties,
 
   ctaBtn: {
     display: 'inline-block',
     padding: '10px 24px',
-    backgroundColor: 'var(--blog-accent)',
+    backgroundColor: 'var(--blog-admin-accent)',
     color: '#000',
-    borderRadius: 'var(--blog-radius-sm)',
+    borderRadius: 'var(--blog-admin-radius-sm)',
     fontWeight: 600,
     fontSize: 14,
     textDecoration: 'none',
@@ -120,7 +120,7 @@ const ps = {
   empty: {
     padding: 60,
     textAlign: 'center' as const,
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
     fontSize: 13,
   } as CSSProperties,
 };
@@ -148,7 +148,7 @@ export default function BlogDetailPreview({
 
       <div style={ps.body}>
         {/* 카테고리 */}
-        <span style={{ ...ps.category, backgroundColor: categories[form.category]?.main || 'var(--blog-accent)' }}>{categoryLabel}</span>
+        <span style={{ ...ps.category, backgroundColor: categories[form.category]?.main || 'var(--blog-admin-accent)' }}>{categoryLabel}</span>
 
         {/* 제목 */}
         <h1 style={ps.title}>{form.title || t.adminItemNoTitle}</h1>
@@ -157,7 +157,7 @@ export default function BlogDetailPreview({
         {form.excerpt && <p style={ps.excerpt}>{form.excerpt}</p>}
 
         {/* 구분선 */}
-        <div style={{ ...ps.divider, backgroundColor: categories[form.category]?.main || 'var(--blog-accent)' }} />
+        <div style={{ ...ps.divider, backgroundColor: categories[form.category]?.main || 'var(--blog-admin-accent)' }} />
 
         {/* 본문 */}
         <div
@@ -183,7 +183,7 @@ export default function BlogDetailPreview({
               <div key={i} style={ps.attachItem}>
                 <span>{getFileIcon(a.type)}</span>
                 <span style={{ flex: 1 }}>{a.name}</span>
-                <span style={{ color: 'var(--blog-text-dim)', fontSize: 12 }}>
+                <span style={{ color: 'var(--blog-admin-text-dim)', fontSize: 12 }}>
                   {formatFileSize(a.size)}
                 </span>
               </div>

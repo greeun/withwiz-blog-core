@@ -47,7 +47,7 @@ const cs = {
   title: {
     fontSize: 18,
     fontWeight: 600,
-    color: 'var(--blog-text)',
+    color: 'var(--blog-admin-text)',
   } as CSSProperties,
 
   pendingBadge: {
@@ -57,7 +57,7 @@ const cs = {
     padding: '4px 12px',
     borderRadius: 12,
     backgroundColor: 'rgba(245,158,11,0.15)',
-    color: 'var(--blog-warning)',
+    color: 'var(--blog-admin-warning)',
     fontSize: 13,
     fontWeight: 600,
   } as CSSProperties,
@@ -73,12 +73,12 @@ const cs = {
     padding: '6px 14px',
     fontSize: 12,
     fontWeight: active ? 600 : 400,
-    border: `1px solid ${active ? 'var(--blog-accent)' : 'var(--blog-border)'}`,
-    borderRadius: 'var(--blog-radius-sm)',
+    border: `1px solid ${active ? 'var(--blog-admin-accent)' : 'var(--blog-admin-border)'}`,
+    borderRadius: 'var(--blog-admin-radius-sm)',
     backgroundColor: active ? 'rgba(74,144,217,0.1)' : 'transparent',
-    color: active ? 'var(--blog-accent)' : 'var(--blog-text-muted)',
+    color: active ? 'var(--blog-admin-accent)' : 'var(--blog-admin-text-muted)',
     cursor: 'pointer',
-    fontFamily: 'var(--blog-font)',
+    fontFamily: 'var(--blog-admin-font)',
     transition: 'all 0.15s',
   }),
 
@@ -99,7 +99,7 @@ const cs = {
   empty: {
     padding: 40,
     textAlign: 'center' as const,
-    color: 'var(--blog-text-dim)',
+    color: 'var(--blog-admin-text-dim)',
   } as CSSProperties,
 };
 
@@ -281,7 +281,7 @@ export default function CommentModerationPanel({
       {/* 일괄 작업 */}
       {selected.size > 0 && (
         <div style={cs.bulkRow}>
-          <span style={{ fontSize: 12, color: 'var(--blog-text-muted)', alignSelf: 'center' }}>
+          <span style={{ fontSize: 12, color: 'var(--blog-admin-text-muted)', alignSelf: 'center' }}>
             {selected.size}{t.adminBulkSelectedSuffix}
           </span>
           <Button size="small" onClick={() => bulkUpdate('APPROVED')} disabled={loading}>
@@ -325,14 +325,14 @@ export default function CommentModerationPanel({
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-text-muted)' }}>
+                <td colSpan={6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-muted)' }}>
                   {t.adminLoading}
                 </td>
               </tr>
             )}
             {!loading && data && data.items.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-text-dim)' }}>
+                <td colSpan={6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-dim)' }}>
                   {t.moderationEmpty}
                 </td>
               </tr>
@@ -354,7 +354,7 @@ export default function CommentModerationPanel({
                 <td style={s.td}>
                   <Badge style={s.badgeStatus(c.status)}>{c.status}</Badge>
                 </td>
-                <td style={{ ...s.td, fontSize: 12, color: 'var(--blog-text-dim)' }}>
+                <td style={{ ...s.td, fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
                   {fmtDate(c.createdAt)}
                 </td>
                 <td style={{ ...s.td, whiteSpace: 'nowrap' }}>
@@ -394,7 +394,7 @@ export default function CommentModerationPanel({
           >
             {t.publicPrevPage}
           </button>
-          <span style={{ fontSize: 13, color: 'var(--blog-text-muted)', margin: '0 8px' }}>
+          <span style={{ fontSize: 13, color: 'var(--blog-admin-text-muted)', margin: '0 8px' }}>
             {page} / {data.totalPages}
           </span>
           <button
