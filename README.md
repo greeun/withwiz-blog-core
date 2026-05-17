@@ -95,11 +95,15 @@ export const blog = createBlog({
   adminBasePath: '/admin/blog',
   apiBasePath: '/api/blog',
   adminApiBasePath: '/api/admin/blog',
+  // Secrets are INJECTED by the host. This library never reads process.env.
+  // `commentHmacSecret` is REQUIRED when comments are enabled — createBlog()
+  // throws at construction if it is missing (fail-closed).
+  commentHmacSecret: hostCommentHmacSecret, // host-provided (e.g. from host config/secret manager)
   features: {
     tags: true,
     comments: { enabled: true, autoApprove: false, maxDepth: 3 },
     search: true,
-    scheduler: { enabled: true, cronSecret: process.env.CRON_SECRET },
+    scheduler: { enabled: true, cronSecret: hostCronSecret }, // host-provided
   },
 });
 ```
@@ -274,6 +278,29 @@ import {
 } from 'blog-core-v2/components/public';
 ```
 
+Public components do **not** depend on `next/link`. They render a plain `<a>`
+by default. To get client-side navigation/prefetch (e.g. Next.js), inject your
+own link adapter via `BlogThemeProvider` — the same design-system injection
+used for Button/Card/etc.:
+
+```tsx
+import NextLink from 'next/link';
+import { BlogThemeProvider } from 'blog-core-v2/components/admin';
+
+<BlogThemeProvider
+  components={{
+    Link: ({ href, children, ...rest }) => (
+      <NextLink href={href} {...rest}>{children}</NextLink>
+    ),
+  }}
+>
+  {/* BlogListPage / BlogDetailPage / TagBadge / TagCloud ... */}
+</BlogThemeProvider>;
+```
+
+Without a provider, `useBlogUI()` falls back to the built-in `DefaultLink`
+(plain `<a>`), so the package stays platform-agnostic.
+
 ### Block Editor (Extended UI)
 
 Requires `@withwiz/block-editor` as an optional peer dependency.
@@ -332,12 +359,14 @@ For S3-compatible storage (R2, MinIO, etc.):
 ```typescript
 import { createS3StorageAdapter } from 'blog-core-v2/storage';
 
+// Credentials are INJECTED by the host. This library never reads process.env;
+// the host reads its own config/secret manager and passes plain values.
 const storage = createS3StorageAdapter({
   bucket: 'my-bucket',
   region: 'auto',
-  endpoint: process.env.R2_ENDPOINT,
-  accessKeyId: process.env.R2_ACCESS_KEY,
-  secretAccessKey: process.env.R2_SECRET_KEY,
+  endpoint: hostR2Endpoint,
+  accessKeyId: hostR2AccessKey,
+  secretAccessKey: hostR2SecretKey,
   publicUrlPrefix: 'https://cdn.example.com',
 });
 
@@ -399,8 +428,39 @@ All subpaths support ESM, CJS, and TypeScript types.
 | `zod` >= 3 | Optional (for validators) |
 | `@aws-sdk/client-s3` | Optional (for S3 adapter) |
 | `@withwiz/block-editor` | Optional (for Block Editor) |
+| `isomorphic-dompurify` >= 2 | Optional (strong HTML sanitizer; without it a best-effort regex fallback is used and warns once) |
 
 Zero dependency on `@withwiz/blog-system` or `@withwiz/pms`.
+
+## Injection Contract & Server/Client Boundaries
+
+This package **never reads `process.env`** (or any system environment
+variable). All secrets/credentials/strategy are **injected** by the host.
+Reading config from the environment is the host's responsibility — the host
+reads its own config/secret manager and passes plain values in.
+
+- **`commentHmacSecret` is required when comments are enabled.** It is used to
+  HMAC client IPs (privacy). If missing, `createBlog()` **throws at
+  construction** (fail-closed) — there is no env fallback and no hardcoded
+  default.
+- **Cron auth (`scheduler.cronSecret`)** is injected and compared in constant
+  time.
+- **IP header trust is configurable** via `features.comments.ipHeader`:
+  `'auto'` (default: `cf-connecting-ip` → `x-real-ip` → `x-forwarded-for[0]`),
+  `'none'` (trust no proxy header), or an explicit header name.
+- **Server/client separation:** server entries (`.`, `/services`, `/routes`,
+  `/storage`) are server-only; UI lives under `/components/*` (client). The
+  boundary is enforced by separate entry points + `'use client'` directives +
+  the server modules' Node-only nature (`node:crypto`, Prisma). Client barrels
+  additionally carry a `client-only` guard, which throws **only** if a client
+  component is pulled into the React Server Components server graph (its intended
+  protection) and is a harmless no-op everywhere else (plain Node, SSR, tests).
+  No `server-only` marker is used: it would also throw in legitimate non-RSC
+  server environments (plain Node scripts, non-Next SSR, test runners), so the
+  package stays platform-agnostic and runs under any runtime.
+- **Dual package:** ESM is `*.mjs`, CommonJS is `*.cjs`, with conditional
+  `exports` (`import`/`require` each carrying their own types). Required
+  because `package.json` is `"type":"module"`.
 
 ## License
 
