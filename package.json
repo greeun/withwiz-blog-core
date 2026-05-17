@@ -117,6 +117,16 @@
         "default": "./dist/storage/index.cjs"
       }
     },
+    "./themes": {
+      "import": {
+        "types": "./dist/themes/index.d.ts",
+        "default": "./dist/themes/index.mjs"
+      },
+      "require": {
+        "types": "./dist/themes/index.d.cts",
+        "default": "./dist/themes/index.cjs"
+      }
+    },
     "./components/admin": {
       "import": {
         "types": "./dist/components/admin/index.d.ts",
@@ -153,16 +163,16 @@
     "prisma"
   ],
   "dependencies": {
-    "@tiptap/extension-link": "3.23.1",
-    "@tiptap/pm": "3.23.1",
-    "@tiptap/react": "3.23.1",
-    "@tiptap/starter-kit": "3.23.1",
     "client-only": "0.0.1",
     "slugify": "^1.6.6"
   },
   "peerDependencies": {
     "@aws-sdk/client-s3": ">=3.0.0",
     "@prisma/client": ">=5.0.0",
+    "@tiptap/extension-link": ">=3.0.0",
+    "@tiptap/pm": ">=3.0.0",
+    "@tiptap/react": ">=3.0.0",
+    "@tiptap/starter-kit": ">=3.0.0",
     "@withwiz/block-editor": ">=0.1.0",
     "isomorphic-dompurify": ">=2.0.0",
     "next": ">=14.0.0",
@@ -188,6 +198,18 @@
     "isomorphic-dompurify": {
       "optional": true
     },
+    "@tiptap/extension-link": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
     "@withwiz/block-editor": {
       "optional": false
     }
@@ -199,6 +221,6 @@
     "react": "^19.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.5.0",
-    "zod": "^3.23.0"
+    "zod": "^4.0.0"
   }
 }

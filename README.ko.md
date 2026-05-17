@@ -465,6 +465,141 @@ const themeVars = createCategoryThemeVars(categories[post.category]);
 | `--blog-cat-border` | 테두리 색상 |
 | `--blog-cat-divider` | 구분선 색상 |
 
+## 기본 테마
+
+### 개요
+
+테마 시스템은 두 레이어로 구성됩니다.
+
+| 레이어 | 변수 형태 | 역할 |
+|--------|----------|------|
+| **테마 레이어** | `--blog-theme-default-admin-*` / `--blog-theme-default-public-*` | 실제 색상·크기 값 보유 |
+| **컴포넌트 레이어** | `--blog-admin-*` / `--blog-public-*` | 컴포넌트가 참조하는 변수 (테마 변수를 가리킴) |
+
+컴포넌트는 항상 `var(--blog-admin-accent)` 형태로만 참조하고, `--blog-admin-accent`의 실제 값은 `var(--blog-theme-default-admin-accent)`를 통해 테마 레이어에서 공급됩니다.
+
+### 기본 사용 (변경 없이 그대로 사용)
+
+`rootVars()` / `publicRootVars()`는 두 레이어를 합쳐 반환하므로, 루트 엘리먼트에 한 번만 주입하면 됩니다.
+
+```tsx
+// 관리자 UI — BlogManagerClient가 내부적으로 rootVars()를 적용하므로 별도 작업 불필요
+import { BlogManagerClient } from 'blog-core-v2/components/admin';
+
+// 공개 UI — BlogListPage / BlogDetailPage가 내부적으로 publicRootVars()를 적용
+import { BlogListPage } from 'blog-core-v2/components/public';
+```
+
+### 테마 변수 직접 주입 (커스텀 래퍼)
+
+```tsx
+import { adminThemeVars, publicThemeVars } from 'blog-core-v2/themes';
+
+// 관리자 래퍼에 직접 주입
+<div style={adminThemeVars()}>
+  <BlogManagerClient ... />
+</div>
+
+// 공개 래퍼에 직접 주입
+<div style={publicThemeVars()}>
+  <BlogListPage ... />
+</div>
+```
+
+### 테마 커스터마이징 — 테마 변수 덮어쓰기 (권장)
+
+테마 레이어 변수(`--blog-theme-default-*`)를 덮어쓰면 컴포넌트 레이어 전체에 반영됩니다.
+
+```css
+/* globals.css 또는 루트 :root에 추가 */
+:root {
+  /* 관리자 UI 색상 변경 */
+  --blog-theme-default-admin-accent: #7c3aed;       /* 보라색 계열 */
+  --blog-theme-default-admin-accent-hover: #6d28d9;
+  --blog-theme-default-admin-bg: #f5f3ff;
+
+  /* 공개 UI 색상 변경 */
+  --blog-theme-default-public-accent: #059669;      /* 그린 계열 */
+  --blog-theme-default-public-accent-hover: #047857;
+}
+```
+
+### 컴포넌트 변수 직접 덮어쓰기 (세밀한 제어)
+
+특정 컴포넌트 영역만 바꾸려면 컴포넌트 레이어를 직접 오버라이드합니다.
+
+```tsx
+// 특정 래퍼 범위에서만 적용
+<div style={{ '--blog-admin-accent': '#e11d48' } as React.CSSProperties}>
+  <TagPicker ... />
+</div>
+```
+
+### 테마 변수 전체 목록
+
+#### 관리자 UI (`--blog-theme-default-admin-*`)
+
+| 변수 | 기본값 | 용도 |
+|------|--------|------|
+| `--blog-theme-default-admin-bg` | `#fafafa` | 배경 |
+| `--blog-theme-default-admin-bg-card` | `#ffffff` | 카드 배경 |
+| `--blog-theme-default-admin-bg-input` | `#ffffff` | 입력 필드 배경 |
+| `--blog-theme-default-admin-bg-hover` | `#f0f0f0` | 호버 배경 |
+| `--blog-theme-default-admin-bg-selected` | `#e8f0fe` | 선택 배경 |
+| `--blog-theme-default-admin-text` | `#171717` | 본문 텍스트 |
+| `--blog-theme-default-admin-text-muted` | `#737373` | 보조 텍스트 |
+| `--blog-theme-default-admin-text-dim` | `#a3a3a3` | 흐린 텍스트 |
+| `--blog-theme-default-admin-border` | `#e5e5e5` | 테두리 |
+| `--blog-theme-default-admin-border-focus` | `#bbb` | 포커스 테두리 |
+| `--blog-theme-default-admin-accent` | `#4A90D9` | 강조색 |
+| `--blog-theme-default-admin-accent-hover` | `#3a7bc8` | 강조색 호버 |
+| `--blog-theme-default-admin-danger` | `#ef4444` | 위험 |
+| `--blog-theme-default-admin-danger-hover` | `#dc2626` | 위험 호버 |
+| `--blog-theme-default-admin-success` | `#22c55e` | 성공 |
+| `--blog-theme-default-admin-warning` | `#f59e0b` | 경고 |
+| `--blog-theme-default-admin-info` | `#3b82f6` | 정보 |
+| `--blog-theme-default-admin-radius` | `6px` | 기본 둥근 모서리 |
+| `--blog-theme-default-admin-radius-sm` | `4px` | 작은 둥근 모서리 |
+| `--blog-theme-default-admin-font` | system-ui | 기본 폰트 |
+| `--blog-theme-default-admin-font-mono` | SF Mono / Fira Code | 모노스페이스 폰트 |
+
+#### 공개 UI (`--blog-theme-default-public-*`)
+
+| 변수 | 기본값 | 용도 |
+|------|--------|------|
+| `--blog-theme-default-public-bg` | `#ffffff` | 배경 |
+| `--blog-theme-default-public-bg-card` | `#f9f9f9` | 카드 배경 |
+| `--blog-theme-default-public-bg-hover` | `#f0f0f0` | 호버 배경 |
+| `--blog-theme-default-public-text` | `#1a1a1a` | 본문 텍스트 |
+| `--blog-theme-default-public-text-muted` | `#6b7280` | 보조 텍스트 |
+| `--blog-theme-default-public-text-dim` | `#9ca3af` | 흐린 텍스트 |
+| `--blog-theme-default-public-border` | `#e5e7eb` | 테두리 |
+| `--blog-theme-default-public-accent` | `#2563eb` | 강조색 |
+| `--blog-theme-default-public-accent-hover` | `#1d4ed8` | 강조색 호버 |
+| `--blog-theme-default-public-danger` | `#ef4444` | 위험 |
+| `--blog-theme-default-public-success` | `#22c55e` | 성공 |
+| `--blog-theme-default-public-radius` | `8px` | 기본 둥근 모서리 |
+| `--blog-theme-default-public-radius-sm` | `4px` | 작은 둥근 모서리 |
+| `--blog-theme-default-public-font` | system-ui | 기본 폰트 |
+| `--blog-theme-default-public-font-size` | `15px` | 기본 폰트 크기 |
+| `--blog-theme-default-public-max-width` | `1200px` | 컨테이너 최대 너비 |
+
+### exports
+
+```typescript
+import {
+  // 관리자 테마
+  ADMIN_THEME_DEFAULTS,  // Record<string, string> — 기본값 객체
+  ADMIN_VAR_MAP,         // Record<string, string> — 컴포넌트 변수 매핑
+  adminThemeVars,        // () => CSSProperties — 두 레이어 합산
+
+  // 공개 테마
+  PUBLIC_THEME_DEFAULTS,
+  PUBLIC_VAR_MAP,
+  publicThemeVars,
+} from 'blog-core-v2/themes';
+```
+
 ## 에러 처리
 
 ```typescript
@@ -517,6 +652,7 @@ const blog = createBlog({
 | `blog-core-v2/i18n` | i18n 문자열 + resolveI18n |
 | `blog-core-v2/validators` | Zod 스키마 |
 | `blog-core-v2/storage` | 스토리지 어댑터 |
+| `blog-core-v2/themes` | 기본 테마 변수 + 주입 함수 |
 | `blog-core-v2/components/admin` | 관리자 UI 컴포넌트 |
 | `blog-core-v2/components/public` | 공개 UI 컴포넌트 |
 | `blog-core-v2/components/admin/editor` | Block Editor 통합 |
@@ -564,12 +700,14 @@ const blog = createBlog({
 
 ## CSS 스코핑
 
-모든 UI 컴포넌트는 인라인 스타일 + CSS 커스텀 프로퍼티(`--blog-*`)를 사용합니다.
+모든 UI 컴포넌트는 인라인 스타일 + CSS 커스텀 프로퍼티를 사용합니다.
 전역 CSS를 오염시키지 않으며, 호스트는 CSS 변수를 오버라이드하여 스타일을 커스터마이징할 수 있습니다.
 
-- 관리자 UI: `--blog-bg`, `--blog-text`, `--blog-accent`, `--blog-border`
+- 관리자 UI: `--blog-admin-bg`, `--blog-admin-text`, `--blog-admin-accent`, `--blog-admin-border`
 - 공개 UI: `--blog-public-bg`, `--blog-public-text`, `--blog-public-accent`
 - 카테고리: `--blog-cat-main`, `--blog-cat-bg-tint`
+
+커스터마이징 방법은 [기본 테마](#기본-테마) 섹션을 참고하세요.
 
 ## 라이선스
 

@@ -388,6 +388,131 @@ import {
 } from 'blog-core-v2/seo';
 ```
 
+## Default Theme
+
+### Overview
+
+The theme system has two layers:
+
+| Layer | Variable pattern | Role |
+|-------|-----------------|------|
+| **Theme layer** | `--blog-theme-default-admin-*` / `--blog-theme-default-public-*` | Holds actual color/size values |
+| **Component layer** | `--blog-admin-*` / `--blog-public-*` | What components reference (points to theme layer) |
+
+Components only ever reference `var(--blog-admin-accent)`. The value of `--blog-admin-accent` is supplied by `var(--blog-theme-default-admin-accent)` in the theme layer. Override the theme layer to change colors globally; override the component layer for fine-grained control.
+
+### Basic usage (no changes needed)
+
+`rootVars()` / `publicRootVars()` merge both layers and are applied internally by the built-in components. No extra setup required.
+
+```tsx
+import { BlogManagerClient } from 'blog-core-v2/components/admin';
+import { BlogListPage } from 'blog-core-v2/components/public';
+```
+
+### Inject theme vars directly (custom wrapper)
+
+```tsx
+import { adminThemeVars, publicThemeVars } from 'blog-core-v2/themes';
+
+<div style={adminThemeVars()}>
+  <BlogManagerClient ... />
+</div>
+
+<div style={publicThemeVars()}>
+  <BlogListPage ... />
+</div>
+```
+
+### Customization — override theme variables (recommended)
+
+Override `--blog-theme-default-*` variables to retheme all components at once:
+
+```css
+/* globals.css or :root */
+:root {
+  /* Admin UI */
+  --blog-theme-default-admin-accent: #7c3aed;
+  --blog-theme-default-admin-accent-hover: #6d28d9;
+  --blog-theme-default-admin-bg: #f5f3ff;
+
+  /* Public UI */
+  --blog-theme-default-public-accent: #059669;
+  --blog-theme-default-public-accent-hover: #047857;
+}
+```
+
+### Fine-grained override — component variables
+
+```tsx
+<div style={{ '--blog-admin-accent': '#e11d48' } as React.CSSProperties}>
+  <TagPicker ... />
+</div>
+```
+
+### Theme variable reference
+
+#### Admin UI (`--blog-theme-default-admin-*`)
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `--blog-theme-default-admin-bg` | `#fafafa` | Background |
+| `--blog-theme-default-admin-bg-card` | `#ffffff` | Card background |
+| `--blog-theme-default-admin-bg-input` | `#ffffff` | Input background |
+| `--blog-theme-default-admin-bg-hover` | `#f0f0f0` | Hover background |
+| `--blog-theme-default-admin-bg-selected` | `#e8f0fe` | Selected background |
+| `--blog-theme-default-admin-text` | `#171717` | Body text |
+| `--blog-theme-default-admin-text-muted` | `#737373` | Muted text |
+| `--blog-theme-default-admin-text-dim` | `#a3a3a3` | Dim text |
+| `--blog-theme-default-admin-border` | `#e5e5e5` | Border |
+| `--blog-theme-default-admin-border-focus` | `#bbb` | Focus border |
+| `--blog-theme-default-admin-accent` | `#4A90D9` | Accent color |
+| `--blog-theme-default-admin-accent-hover` | `#3a7bc8` | Accent hover |
+| `--blog-theme-default-admin-danger` | `#ef4444` | Danger |
+| `--blog-theme-default-admin-danger-hover` | `#dc2626` | Danger hover |
+| `--blog-theme-default-admin-success` | `#22c55e` | Success |
+| `--blog-theme-default-admin-warning` | `#f59e0b` | Warning |
+| `--blog-theme-default-admin-info` | `#3b82f6` | Info |
+| `--blog-theme-default-admin-radius` | `6px` | Border radius |
+| `--blog-theme-default-admin-radius-sm` | `4px` | Small border radius |
+| `--blog-theme-default-admin-font` | system-ui | Font family |
+| `--blog-theme-default-admin-font-mono` | SF Mono / Fira Code | Monospace font |
+
+#### Public UI (`--blog-theme-default-public-*`)
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `--blog-theme-default-public-bg` | `#ffffff` | Background |
+| `--blog-theme-default-public-bg-card` | `#f9f9f9` | Card background |
+| `--blog-theme-default-public-bg-hover` | `#f0f0f0` | Hover background |
+| `--blog-theme-default-public-text` | `#1a1a1a` | Body text |
+| `--blog-theme-default-public-text-muted` | `#6b7280` | Muted text |
+| `--blog-theme-default-public-text-dim` | `#9ca3af` | Dim text |
+| `--blog-theme-default-public-border` | `#e5e7eb` | Border |
+| `--blog-theme-default-public-accent` | `#2563eb` | Accent color |
+| `--blog-theme-default-public-accent-hover` | `#1d4ed8` | Accent hover |
+| `--blog-theme-default-public-danger` | `#ef4444` | Danger |
+| `--blog-theme-default-public-success` | `#22c55e` | Success |
+| `--blog-theme-default-public-radius` | `8px` | Border radius |
+| `--blog-theme-default-public-radius-sm` | `4px` | Small border radius |
+| `--blog-theme-default-public-font` | system-ui | Font family |
+| `--blog-theme-default-public-font-size` | `15px` | Base font size |
+| `--blog-theme-default-public-max-width` | `1200px` | Container max width |
+
+### Exports
+
+```typescript
+import {
+  ADMIN_THEME_DEFAULTS,  // Record<string, string> — raw default values
+  ADMIN_VAR_MAP,         // Record<string, string> — component var → theme var mapping
+  adminThemeVars,        // () => CSSProperties — both layers merged
+
+  PUBLIC_THEME_DEFAULTS,
+  PUBLIC_VAR_MAP,
+  publicThemeVars,
+} from 'blog-core-v2/themes';
+```
+
 ## Error Handling
 
 ```typescript
@@ -412,6 +537,7 @@ import { BlogError, BLOG_ERROR_CODES } from 'blog-core-v2/errors';
 | `blog-core-v2/i18n` | i18n strings + resolveI18n |
 | `blog-core-v2/validators` | Zod schemas |
 | `blog-core-v2/storage` | Storage adapter |
+| `blog-core-v2/themes` | Default theme variables + injection helpers |
 | `blog-core-v2/components/admin` | Admin UI components |
 | `blog-core-v2/components/public` | Public UI components |
 | `blog-core-v2/components/admin/editor` | Block Editor integration |
