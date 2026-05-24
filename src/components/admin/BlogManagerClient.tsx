@@ -62,7 +62,7 @@ const ms = {
 
   editSplit: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: '4fr 7fr',
     gap: 0,
     height: 'calc(100vh - 120px)',
   } as CSSProperties,
