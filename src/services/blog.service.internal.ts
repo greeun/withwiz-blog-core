@@ -58,6 +58,13 @@ export const listSelect = {
   publishedAt: true,
   createdAt: true,
   updatedAt: true,
+  author: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
 };
 
 export const tagInclude = {

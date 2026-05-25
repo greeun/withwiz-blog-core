@@ -28,6 +28,8 @@ export interface BlogI18nStrings {
   adminSelectAll: string;
   adminCategoryAll: string;
   adminCountSuffix: string;
+  adminPerPageSuffix: string;
+  adminAuthorLabel: string;
   adminBackButton: string;
 
   // ── 관리자 UI: 정렬 (3) ──

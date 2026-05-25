@@ -31,6 +31,8 @@ export const DEFAULT_I18N_KO: Required<BlogI18nStrings> = {
   adminSelectAll: '전체 선택',
   adminCategoryAll: '전체',
   adminCountSuffix: '건',
+  adminPerPageSuffix: '개씩 보기',
+  adminAuthorLabel: '작성자',
   adminBackButton: '돌아가기',
 
   // ── 관리자 UI: 정렬 ──

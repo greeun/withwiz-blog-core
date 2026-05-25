@@ -147,7 +147,7 @@ export const s = {
 
   th: {
     padding: '10px 12px',
-    textAlign: 'left' as const,
+    textAlign: 'center' as const,
     fontWeight: 600,
     color: 'var(--blog-admin-text-muted)',
     borderBottom: '1px solid var(--blog-admin-border)',

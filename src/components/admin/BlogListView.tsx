@@ -78,20 +78,23 @@ const lv = {
   } as CSSProperties,
 };
 
-/** 날짜 포맷 */
+/** 날짜 포맷 (`2026. 03. 21. 09:01:18`) */
 function fmtDate(v: string | Date | null | undefined): string {
   if (!v) return '-';
   const d = new Date(v as string);
   if (isNaN(d.getTime())) return '-';
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}. ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
 export default function BlogListView({
   adminApiBasePath,
   apiBasePath,
   authHeaders,
   categories,
-  pageSize = 12,
+  pageSize: initialPageSize = 20,
   i18n,
   onSelect,
   onCreate,
@@ -104,6 +107,7 @@ export default function BlogListView({
   const [items, setItems] = useState<BlogListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(initialPageSize);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState<SortField>('createdAt');
@@ -116,6 +120,7 @@ export default function BlogListView({
   const totalPages = Math.ceil(total / pageSize);
   const catKeys = Object.keys(categories);
   const hasViewCount = items.some((item) => item.viewCount !== undefined);
+  const colCount = hasViewCount ? 9 : 8;
 
   // 검색 디바운스
   useEffect(() => {
@@ -269,6 +274,11 @@ export default function BlogListView({
           onChange={(v) => { setSortBy(v as SortField); setPage(1); }}
           options={(Object.keys(sortLabels) as SortField[]).map((key) => ({ value: key, label: sortLabels[key] }))}
         />
+        <Select
+          value={String(pageSize)}
+          onChange={(v) => { setPageSize(Number(v)); setPage(1); }}
+          options={PAGE_SIZE_OPTIONS.map((n) => ({ value: String(n), label: `${n}${t.adminPerPageSuffix}` }))}
+        />
       </div>
 
       {/* 일괄 작업 toolbar */}
@@ -314,27 +324,29 @@ export default function BlogListView({
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
               </th>
-              <th style={s.th}>{t.adminTitleLabel}</th>
+              <th style={{ ...s.th, textAlign: 'left' }}>{t.adminTitleLabel}</th>
               <th style={{ ...s.th, width: 100 }}>{t.adminCategoryLabel}</th>
               <th style={{ ...s.th, width: 80 }}>{t.adminPublishedLabel}</th>
               <th style={{ ...s.th, width: 60 }}>{t.adminFeaturedShort}</th>
               {hasViewCount && (
-                <th style={{ ...s.th, width: 70, textAlign: 'right' }}>{t.adminViewCountLabel}</th>
+                <th style={{ ...s.th, width: 70 }}>{t.adminViewCountLabel}</th>
               )}
-              <th style={{ ...s.th, width: 100 }}>{t.adminMetaCreatedAt}</th>
+              <th style={{ ...s.th, width: 110 }}>{t.adminAuthorLabel}</th>
+              <th style={{ ...s.th, width: 160, whiteSpace: 'nowrap' }}>{t.adminMetaCreatedAt}</th>
+              <th style={{ ...s.th, width: 160, whiteSpace: 'nowrap' }}>{t.adminMetaUpdatedAt}</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={hasViewCount ? 7 : 6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-muted)' }}>
+                <td colSpan={colCount} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-muted)' }}>
                   {t.adminLoading}
                 </td>
               </tr>
             )}
             {!loading && items.length === 0 && (
               <tr>
-                <td colSpan={hasViewCount ? 7 : 6} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-dim)' }}>
+                <td colSpan={colCount} style={{ ...s.td, textAlign: 'center', color: 'var(--blog-admin-text-dim)' }}>
                   {t.adminListEmpty}
                 </td>
               </tr>
@@ -361,12 +373,12 @@ export default function BlogListView({
                     </span>
                   )}
                 </td>
-                <td style={s.td}>
+                <td style={{ ...s.td, textAlign: 'center' }}>
                   <Badge style={{ backgroundColor: 'rgba(74,144,217,0.1)', color: 'var(--blog-admin-accent)', fontSize: 11 }}>
                     {categories[item.category]?.label || item.category}
                   </Badge>
                 </td>
-                <td style={s.td}>
+                <td style={{ ...s.td, textAlign: 'center' }}>
                   <Badge variant={item.published ? 'published' : 'draft'}>
                     {item.published ? t.adminPublishedLabel : t.adminUnpublishedLabel}
                   </Badge>
@@ -377,12 +389,18 @@ export default function BlogListView({
                   )}
                 </td>
                 {hasViewCount && (
-                  <td style={{ ...s.td, textAlign: 'right', fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
+                  <td style={{ ...s.td, textAlign: 'center', fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
                     {item.viewCount !== undefined ? item.viewCount.toLocaleString() : '-'}
                   </td>
                 )}
-                <td style={{ ...s.td, fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
+                <td style={{ ...s.td, textAlign: 'center', fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
+                  {item.author?.name || item.author?.email || '-'}
+                </td>
+                <td style={{ ...s.td, textAlign: 'center', fontSize: 12, color: 'var(--blog-admin-text-dim)', whiteSpace: 'nowrap' }}>
                   {fmtDate(item.createdAt)}
+                </td>
+                <td style={{ ...s.td, textAlign: 'center', fontSize: 12, color: 'var(--blog-admin-text-dim)', whiteSpace: 'nowrap' }}>
+                  {fmtDate(item.updatedAt)}
                 </td>
               </tr>
             ))}
