@@ -16,6 +16,13 @@ export interface Attachment {
 
 // ── 블로그 데이터 타입 ──
 
+/** 블로그 글 작성자(목록 노출용 최소 정보) */
+export interface BlogAuthorSummary {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
 /** 블로그 목록 항목 */
 export interface BlogListItem {
   id: string;
@@ -32,6 +39,7 @@ export interface BlogListItem {
   updatedAt: Date | string;
   viewCount?: number;
   tags?: Tag[];
+  author?: BlogAuthorSummary | null;
 }
 
 /** 에디터 타입 */

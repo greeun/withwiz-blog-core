@@ -121,7 +121,7 @@ export default function BlogManagerClient({
   uploadEndpoint,
   categories,
   basePath,
-  pageSize = 12,
+  pageSize = 20,
   enableCta = true,
   enableAttachments = true,
   maxAttachments = 5,
