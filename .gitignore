@@ -2,3 +2,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 .DS_Store
+
+# Personal harness/agent state
+.claude/
+.axt-profile.json
+
+# Skill-generated working notes (not part of the package)
+docs/superpowers/

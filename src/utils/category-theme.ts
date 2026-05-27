@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { createCategoryThemeVars } from 'blog-core-v2/utils';
+ * import { createCategoryThemeVars } from '@withwiz/blog-core/utils';
  *
  * const theme = categories[post.category];
  * <div style={createCategoryThemeVars(theme)}>

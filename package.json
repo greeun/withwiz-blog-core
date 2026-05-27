@@ -1,6 +1,23 @@
 {
-  "name": "@withwiz/blog-core-v2",
-  "version": "0.2.0",
+  "name": "@withwiz/blog-core",
+  "version": "2.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/greeun/withwiz-blog-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/greeun/withwiz-blog-core/issues"
+  },
+  "homepage": "https://github.com/greeun/withwiz-blog-core#readme",
+  "keywords": [
+    "blog",
+    "nextjs",
+    "next-app-router",
+    "prisma",
+    "react",
+    "cms",
+    "headless"
+  ],
   "description": "Next.js App Router blog package with CRUD, tags, comments, search, scheduling, and SEO",
   "type": "module",
   "main": "./dist/index.cjs",

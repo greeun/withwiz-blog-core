@@ -1,11 +1,11 @@
 /**
- * blog-core-v2 메인 진입점
+ * @withwiz/blog-core 메인 진입점
  *
  * createBlog() 팩토리 함수와 핵심 타입/유틸리티를 export한다.
  *
  * 이 엔트리는 서버 전용이다(createBlog/services/routes/Prisma/node:crypto).
  * 경계는 엔트리포인트 분리 + 서버 전용 Node API 특성으로 강제된다.
- * 클라이언트 UI는 `blog-core-v2/components/*`에서 import한다.
+ * 클라이언트 UI는 `@withwiz/blog-core/components/*`에서 import한다.
  */
 import type { BlogConfig, CommentFeatureConfig, SchedulerFeatureConfig } from './types/config';
 import type { BlogService } from './services/blog.service';
@@ -65,7 +65,7 @@ export interface BlogInstance {
  *
  * @example
  * ```typescript
- * import { createBlog } from 'blog-core-v2';
+ * import { createBlog } from '@withwiz/blog-core';
  * import { prisma } from '@/lib/prisma';
  *
  * const blog = createBlog({

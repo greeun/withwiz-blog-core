@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 서비스 re-export (서버 전용 — 엔트리 분리로 경계 강제)
+ * @withwiz/blog-core 서비스 re-export (서버 전용 — 엔트리 분리로 경계 강제)
  */
 export { createBlogService } from './blog.service';
 export type { BlogService, BlogServiceConfig } from './blog.service';

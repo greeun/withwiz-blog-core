@@ -12,7 +12,7 @@ import {
   type RouteHandler,
 } from './_shared';
 
-const { withPublic } = makeRouteKit('[blog-core-v2] Search error:');
+const { withPublic } = makeRouteKit('[@withwiz/blog-core] Search error:');
 
 // ── 라우트 타입 ──
 

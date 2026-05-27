@@ -22,7 +22,7 @@ import {
   type RouteHandler,
 } from './_shared';
 
-const { withAuth, withPublic } = makeRouteKit('[blog-core-v2] Unhandled error:');
+const { withAuth, withPublic } = makeRouteKit('[@withwiz/blog-core] Unhandled error:');
 
 // ── IP 추출 ──
 
@@ -111,7 +111,7 @@ export function createCommentRoutes(
   const hmacSecret = config?.hmacSecret;
   if (!hmacSecret || hmacSecret.length === 0) {
     throw new Error(
-      '[blog-core-v2] 댓글 기능에는 IP 해시 시크릿 주입이 필수입니다. ' +
+      '[@withwiz/blog-core] 댓글 기능에는 IP 해시 시크릿 주입이 필수입니다. ' +
         'createBlog({ features: { comments: { ... } }, commentHmacSecret: <32바이트+ 시크릿> })를 ' +
         '설정하세요. 이 라이브러리는 환경 변수를 직접 읽지 않습니다(무조건 주입).',
     );

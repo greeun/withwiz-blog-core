@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 유효성 검사 스키마 re-export
+ * @withwiz/blog-core 유효성 검사 스키마 re-export
  */
 export {
   slugSchema,
