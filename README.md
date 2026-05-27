@@ -1,3 +1,27 @@
+> [!WARNING]
+> ### 🗄️ Archived branch — historical reference only
+>
+> This branch (`v1-archive`) preserves the original **`@withwiz/blog-core@0.1.0`** source for reference.
+> It is **not maintained** and receives no fixes, security patches, or feature updates.
+>
+> - **Current release:** [`@withwiz/blog-core@2.0.0`](https://www.npmjs.com/package/@withwiz/blog-core) — `main` / `develop` branches
+> - **Active source:** see the [`main` branch](https://github.com/greeun/withwiz-blog-core/tree/main)
+> - **Migration guide:** [`CHANGELOG.md` on `main`](https://github.com/greeun/withwiz-blog-core/blob/main/CHANGELOG.md)
+> - `npm install @withwiz/blog-core` now installs **2.0.0** (BREAKING). To stay on 0.1.0, pin it explicitly: `npm install @withwiz/blog-core@0.1.0`.
+>
+> ---
+>
+> ### 🗄️ 보존용 아카이브 브랜치 — 참고용
+>
+> 이 브랜치(`v1-archive`)는 **`@withwiz/blog-core@0.1.0`** 의 원본 소스를 보존하기 위한 것으로 **유지보수되지 않습니다**. 버그 수정·보안 패치·기능 추가가 이루어지지 않습니다.
+>
+> - **최신 릴리즈:** [`@withwiz/blog-core@2.0.0`](https://www.npmjs.com/package/@withwiz/blog-core) — `main` / `develop` 브랜치
+> - **활성 소스:** [`main` 브랜치](https://github.com/greeun/withwiz-blog-core/tree/main) 참조
+> - **마이그레이션 가이드:** [`main`의 `CHANGELOG.md`](https://github.com/greeun/withwiz-blog-core/blob/main/CHANGELOG.md)
+> - 이제 `npm install @withwiz/blog-core`는 **2.0.0**을 설치합니다(BREAKING). 0.1.0을 유지하려면 `npm install @withwiz/blog-core@0.1.0`처럼 버전을 고정하세요.
+
+---
+
 # @withwiz/blog-core
 
 > Reusable Blog/News Core Package for Next.js 15 + Prisma + PostgreSQL
