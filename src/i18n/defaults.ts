@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 한국어 기본 i18n 문자열
+ * @withwiz/blog-core 한국어 기본 i18n 문자열
  *
  * 모든 BlogI18nStrings 키에 대한 기본값을 제공한다.
  * 컴포넌트는 resolveI18n(override)로 fallback이 채워진 완전한 객체를 받는다.

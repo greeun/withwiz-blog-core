@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 i18n 유틸리티 진입점
+ * @withwiz/blog-core i18n 유틸리티 진입점
  *
  * resolveI18n()으로 호스트의 Partial 오버라이드를 한국어 기본값과 병합한다.
  */

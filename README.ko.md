@@ -1,6 +1,6 @@
-# blog-core-v2
+# @withwiz/blog-core
 
-> `npm install blog-core-v2` 한 줄로 Next.js App Router 프로젝트에 포스트 CRUD, 태그, 댓글, 전문 검색, 예약 발행, SEO를 모두 갖춘 완결된 블로그를 즉시 추가할 수 있는 독립 패키지.
+> `npm install @withwiz/blog-core` 한 줄로 Next.js App Router 프로젝트에 포스트 CRUD, 태그, 댓글, 전문 검색, 예약 발행, SEO를 모두 갖춘 완결된 블로그를 즉시 추가할 수 있는 독립 패키지.
 
 [English](./README.md)
 
@@ -26,7 +26,7 @@
 ### 1. 설치
 
 ```bash
-npm install blog-core-v2
+npm install @withwiz/blog-core
 ```
 
 ### 2. Prisma 스키마 복사
@@ -73,7 +73,7 @@ npx prisma migrate dev --name add-blog
 
 ```typescript
 // lib/blog.ts
-import { createBlog } from 'blog-core-v2';
+import { createBlog } from '@withwiz/blog-core';
 import { prisma } from '@/lib/prisma';
 
 export const blog = createBlog({
@@ -158,7 +158,7 @@ export const GET = blog.routes.admin.posts.dashboard.GET;
 
 ```tsx
 'use client';
-import { BlogManagerClient } from 'blog-core-v2/components/admin';
+import { BlogManagerClient } from '@withwiz/blog-core/components/admin';
 
 export default function AdminBlogPage() {
   return (
@@ -277,7 +277,7 @@ const blog = createBlog({
 
 ```tsx
 // 올인원 관리 컴포넌트
-import { BlogManagerClient } from 'blog-core-v2/components/admin';
+import { BlogManagerClient } from '@withwiz/blog-core/components/admin';
 
 // 또는 개별 컴포넌트
 import {
@@ -286,7 +286,7 @@ import {
   BlogDashboard,
   TagPicker,
   CommentModerationPanel,
-} from 'blog-core-v2/components/admin';
+} from '@withwiz/blog-core/components/admin';
 ```
 
 ### 공개 UI
@@ -299,7 +299,7 @@ import {
   CommentForm,
   TagBadge,
   TagCloud,
-} from 'blog-core-v2/components/public';
+} from '@withwiz/blog-core/components/public';
 ```
 
 공개 컴포넌트는 `next/link`에 의존하지 않습니다. 기본은 평문 `<a>`이며,
@@ -308,7 +308,7 @@ import {
 
 ```tsx
 import NextLink from 'next/link';
-import { BlogThemeProvider } from 'blog-core-v2/components/admin';
+import { BlogThemeProvider } from '@withwiz/blog-core/components/admin';
 
 <BlogThemeProvider
   components={{
@@ -329,7 +329,7 @@ Provider가 없으면 `useBlogUI()`가 내장 `DefaultLink`(평문 `<a>`)로
 `@withwiz/block-editor`를 별도 설치 후 사용합니다.
 
 ```tsx
-import { BlockEditorForm, createBlockPreset } from 'blog-core-v2/components/admin/editor';
+import { BlockEditorForm, createBlockPreset } from '@withwiz/blog-core/components/admin/editor';
 
 const preset = createBlockPreset({
   news: ['paragraph', 'img-full', 'quote', 'divider'],
@@ -342,8 +342,8 @@ const preset = createBlockPreset({
 UI 컴포넌트 없이 services와 routes만 사용할 수 있습니다.
 
 ```typescript
-import { createBlog } from 'blog-core-v2';
-import type { BlogListItem, PaginatedResult } from 'blog-core-v2/types';
+import { createBlog } from '@withwiz/blog-core';
+import type { BlogListItem, PaginatedResult } from '@withwiz/blog-core/types';
 
 const blog = createBlog({ /* config */ });
 
@@ -357,13 +357,13 @@ export const GET = blog.routes.public.posts.list.GET;
 모든 타입, 유틸리티, 에러 코드, i18n 문자열을 별도 서브패스에서 import할 수 있습니다:
 
 ```typescript
-import type { BlogListItem, CategoryTheme } from 'blog-core-v2/types';
-import { generateSlug, buildPaginatedResult } from 'blog-core-v2/utils';
-import { BlogError, BLOG_ERROR_CODES } from 'blog-core-v2/errors';
-import { resolveI18n, DEFAULT_I18N_KO } from 'blog-core-v2/i18n';
-import { CreateBlogPostSchema } from 'blog-core-v2/validators';
-import { generateMetadata, createRSSFeed } from 'blog-core-v2/seo';
-import { createS3StorageAdapter } from 'blog-core-v2/storage';
+import type { BlogListItem, CategoryTheme } from '@withwiz/blog-core/types';
+import { generateSlug, buildPaginatedResult } from '@withwiz/blog-core/utils';
+import { BlogError, BLOG_ERROR_CODES } from '@withwiz/blog-core/errors';
+import { resolveI18n, DEFAULT_I18N_KO } from '@withwiz/blog-core/i18n';
+import { CreateBlogPostSchema } from '@withwiz/blog-core/validators';
+import { generateMetadata, createRSSFeed } from '@withwiz/blog-core/seo';
+import { createS3StorageAdapter } from '@withwiz/blog-core/storage';
 ```
 
 ## i18n 커스터마이징
@@ -387,7 +387,7 @@ const blog = createBlog({
 S3 호환 스토리지(R2, MinIO 등)를 사용하는 경우:
 
 ```typescript
-import { createS3StorageAdapter } from 'blog-core-v2/storage';
+import { createS3StorageAdapter } from '@withwiz/blog-core/storage';
 
 // 자격증명은 호스트가 주입한다. 이 라이브러리는 process.env를 읽지 않으며,
 // 호스트가 자체 설정/시크릿 매니저에서 읽어 값으로 넘긴다.
@@ -417,7 +417,7 @@ import {
   createRSSFeed,
   createSitemap,
   prepareOGImageData,
-} from 'blog-core-v2/seo';
+} from '@withwiz/blog-core/seo';
 
 // Next.js generateMetadata에서 사용
 export async function generateMetadata({ params }) {
@@ -450,7 +450,7 @@ const rss = createRSSFeed({
 CSS 변수 기반으로 카테고리별 색상 테마를 적용합니다.
 
 ```typescript
-import { createCategoryThemeVars } from 'blog-core-v2/utils';
+import { createCategoryThemeVars } from '@withwiz/blog-core/utils';
 
 const themeVars = createCategoryThemeVars(categories[post.category]);
 // { '--blog-cat-main': '#2563eb', '--blog-cat-bg-tint': '#eff6ff', ... }
@@ -484,16 +484,16 @@ const themeVars = createCategoryThemeVars(categories[post.category]);
 
 ```tsx
 // 관리자 UI — BlogManagerClient가 내부적으로 rootVars()를 적용하므로 별도 작업 불필요
-import { BlogManagerClient } from 'blog-core-v2/components/admin';
+import { BlogManagerClient } from '@withwiz/blog-core/components/admin';
 
 // 공개 UI — BlogListPage / BlogDetailPage가 내부적으로 publicRootVars()를 적용
-import { BlogListPage } from 'blog-core-v2/components/public';
+import { BlogListPage } from '@withwiz/blog-core/components/public';
 ```
 
 ### 테마 변수 직접 주입 (커스텀 래퍼)
 
 ```tsx
-import { adminThemeVars, publicThemeVars } from 'blog-core-v2/themes';
+import { adminThemeVars, publicThemeVars } from '@withwiz/blog-core/themes';
 
 // 관리자 래퍼에 직접 주입
 <div style={adminThemeVars()}>
@@ -597,13 +597,13 @@ import {
   PUBLIC_THEME_DEFAULTS,
   PUBLIC_VAR_MAP,
   publicThemeVars,
-} from 'blog-core-v2/themes';
+} from '@withwiz/blog-core/themes';
 ```
 
 ## 에러 처리
 
 ```typescript
-import { BlogError, BLOG_ERROR_CODES } from 'blog-core-v2/errors';
+import { BlogError, BLOG_ERROR_CODES } from '@withwiz/blog-core/errors';
 
 try {
   await blog.services.posts.remove(id);
@@ -642,20 +642,20 @@ const blog = createBlog({
 
 | 서브패스 | 설명 |
 |---------|------|
-| `blog-core-v2` | 메인 (createBlog + 모든 re-export) |
-| `blog-core-v2/types` | 타입 정의 |
-| `blog-core-v2/services` | 서비스 팩토리 함수 |
-| `blog-core-v2/routes` | 라우트 핸들러 팩토리 |
-| `blog-core-v2/utils` | 유틸리티 함수 |
-| `blog-core-v2/errors` | BlogError + 에러 코드 |
-| `blog-core-v2/seo` | SEO 유틸리티 |
-| `blog-core-v2/i18n` | i18n 문자열 + resolveI18n |
-| `blog-core-v2/validators` | Zod 스키마 |
-| `blog-core-v2/storage` | 스토리지 어댑터 |
-| `blog-core-v2/themes` | 기본 테마 변수 + 주입 함수 |
-| `blog-core-v2/components/admin` | 관리자 UI 컴포넌트 |
-| `blog-core-v2/components/public` | 공개 UI 컴포넌트 |
-| `blog-core-v2/components/admin/editor` | Block Editor 통합 |
+| `@withwiz/blog-core` | 메인 (createBlog + 모든 re-export) |
+| `@withwiz/blog-core/types` | 타입 정의 |
+| `@withwiz/blog-core/services` | 서비스 팩토리 함수 |
+| `@withwiz/blog-core/routes` | 라우트 핸들러 팩토리 |
+| `@withwiz/blog-core/utils` | 유틸리티 함수 |
+| `@withwiz/blog-core/errors` | BlogError + 에러 코드 |
+| `@withwiz/blog-core/seo` | SEO 유틸리티 |
+| `@withwiz/blog-core/i18n` | i18n 문자열 + resolveI18n |
+| `@withwiz/blog-core/validators` | Zod 스키마 |
+| `@withwiz/blog-core/storage` | 스토리지 어댑터 |
+| `@withwiz/blog-core/themes` | 기본 테마 변수 + 주입 함수 |
+| `@withwiz/blog-core/components/admin` | 관리자 UI 컴포넌트 |
+| `@withwiz/blog-core/components/public` | 공개 UI 컴포넌트 |
+| `@withwiz/blog-core/components/admin/editor` | Block Editor 통합 |
 
 모든 서브패스는 ESM, CJS, TypeScript 타입을 지원합니다.
 

@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 유틸리티 re-export
+ * @withwiz/blog-core 유틸리티 re-export
  */
 export { buildPaginatedResult } from './pagination';
 export { toLocalDatetime, formatDateTime, formatDate, formatDateISO, formatDateRelative } from './date';

@@ -62,7 +62,7 @@ const ATTR_URL_RE = /(?:src|href)=["']([^"']+)["']/gi;
  *
  * @example
  * ```typescript
- * import { createS3StorageAdapter } from 'blog-core-v2/storage';
+ * import { createS3StorageAdapter } from '@withwiz/blog-core/storage';
  *
  * // 자격증명은 호스트가 주입한다. 이 라이브러리는 환경 변수를 읽지 않으므로
  * // 호스트가 자체 설정/시크릿 매니저에서 읽어 값으로 넘긴다.
@@ -100,7 +100,7 @@ export function createS3StorageAdapter(config: S3StorageConfig): StorageAdapter 
         s3Module = await (Function('return import("@aws-sdk/client-s3")')() as Promise<any>);
       } catch {
         // eslint-disable-next-line no-console
-        console.error('[blog-core-v2] @aws-sdk/client-s3 is not installed. Storage cleanup skipped.');
+        console.error('[@withwiz/blog-core] @aws-sdk/client-s3 is not installed. Storage cleanup skipped.');
         return;
       }
 
@@ -129,7 +129,7 @@ export function createS3StorageAdapter(config: S3StorageConfig): StorageAdapter 
         } catch (err) {
           // 삭제 실패 시 에러 로깅만 하고 계속 진행 (글 삭제 자체는 성공해야 함)
           // eslint-disable-next-line no-console
-          console.error('[blog-core-v2] S3 deleteKeys failed for batch:', err);
+          console.error('[@withwiz/blog-core] S3 deleteKeys failed for batch:', err);
         }
       }
     },

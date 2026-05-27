@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 설정 타입 정의
+ * @withwiz/blog-core 설정 타입 정의
  */
 import type { CategoryTheme } from './blog';
 import type { BlogI18nStrings } from '../i18n/types';

@@ -19,7 +19,7 @@ import {
   type RouteHandler,
 } from './_shared';
 
-const { withAuth, withPublic } = makeRouteKit('[blog-core-v2] Unhandled error:');
+const { withAuth, withPublic } = makeRouteKit('[@withwiz/blog-core] Unhandled error:');
 
 // ── 라우트 타입 ──
 

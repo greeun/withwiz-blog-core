@@ -19,7 +19,7 @@ import {
   type RouteHandler,
 } from './_shared';
 
-const { handleError, withAuth } = makeRouteKit('[blog-core-v2] Scheduler error:');
+const { handleError, withAuth } = makeRouteKit('[@withwiz/blog-core] Scheduler error:');
 
 /**
  * 길이 노출 없는 상수시간 문자열 비교.

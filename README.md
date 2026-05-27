@@ -1,4 +1,4 @@
-# blog-core-v2
+# @withwiz/blog-core
 
 > A complete, self-contained blog package for Next.js App Router. Install, migrate, call `createBlog()` — your blog is live.
 
@@ -26,7 +26,7 @@
 ### 1. Install
 
 ```bash
-npm install blog-core-v2
+npm install @withwiz/blog-core
 ```
 
 ### 2. Copy Prisma Schema
@@ -73,7 +73,7 @@ npx prisma migrate dev --name add-blog
 
 ```typescript
 // lib/blog.ts
-import { createBlog } from 'blog-core-v2';
+import { createBlog } from '@withwiz/blog-core';
 import { prisma } from '@/lib/prisma';
 
 export const blog = createBlog({
@@ -136,7 +136,7 @@ export const DELETE = blog.routes.admin.posts.detail.DELETE;
 
 ```tsx
 'use client';
-import { BlogManagerClient } from 'blog-core-v2/components/admin';
+import { BlogManagerClient } from '@withwiz/blog-core/components/admin';
 
 export default function AdminBlogPage() {
   return (
@@ -253,7 +253,7 @@ const blog = createBlog({
 ### Admin UI
 
 ```tsx
-import { BlogManagerClient } from 'blog-core-v2/components/admin';
+import { BlogManagerClient } from '@withwiz/blog-core/components/admin';
 
 // Or import individual components:
 import {
@@ -262,7 +262,7 @@ import {
   BlogDashboard,
   TagPicker,
   CommentModerationPanel,
-} from 'blog-core-v2/components/admin';
+} from '@withwiz/blog-core/components/admin';
 ```
 
 ### Public UI
@@ -275,7 +275,7 @@ import {
   CommentForm,
   TagBadge,
   TagCloud,
-} from 'blog-core-v2/components/public';
+} from '@withwiz/blog-core/components/public';
 ```
 
 Public components do **not** depend on `next/link`. They render a plain `<a>`
@@ -285,7 +285,7 @@ used for Button/Card/etc.:
 
 ```tsx
 import NextLink from 'next/link';
-import { BlogThemeProvider } from 'blog-core-v2/components/admin';
+import { BlogThemeProvider } from '@withwiz/blog-core/components/admin';
 
 <BlogThemeProvider
   components={{
@@ -306,7 +306,7 @@ Without a provider, `useBlogUI()` falls back to the built-in `DefaultLink`
 Requires `@withwiz/block-editor` as an optional peer dependency.
 
 ```tsx
-import { BlockEditorForm, createBlockPreset } from 'blog-core-v2/components/admin/editor';
+import { BlockEditorForm, createBlockPreset } from '@withwiz/blog-core/components/admin/editor';
 ```
 
 ## Headless Mode
@@ -314,8 +314,8 @@ import { BlockEditorForm, createBlockPreset } from 'blog-core-v2/components/admi
 Use only services and routes — no UI components needed.
 
 ```typescript
-import { createBlog } from 'blog-core-v2';
-import type { BlogService, BlogListItem, PaginatedResult } from 'blog-core-v2/types';
+import { createBlog } from '@withwiz/blog-core';
+import type { BlogService, BlogListItem, PaginatedResult } from '@withwiz/blog-core/types';
 
 const blog = createBlog({ /* config */ });
 
@@ -329,13 +329,13 @@ export const GET = blog.routes.public.posts.list.GET;
 All types, utilities, error codes, and i18n strings are importable from separate subpaths:
 
 ```typescript
-import type { BlogListItem, CategoryTheme } from 'blog-core-v2/types';
-import { generateSlug, buildPaginatedResult } from 'blog-core-v2/utils';
-import { BlogError, BLOG_ERROR_CODES } from 'blog-core-v2/errors';
-import { resolveI18n, DEFAULT_I18N_KO } from 'blog-core-v2/i18n';
-import { CreateBlogPostSchema } from 'blog-core-v2/validators';
-import { generateMetadata, createRSSFeed } from 'blog-core-v2/seo';
-import { createS3StorageAdapter } from 'blog-core-v2/storage';
+import type { BlogListItem, CategoryTheme } from '@withwiz/blog-core/types';
+import { generateSlug, buildPaginatedResult } from '@withwiz/blog-core/utils';
+import { BlogError, BLOG_ERROR_CODES } from '@withwiz/blog-core/errors';
+import { resolveI18n, DEFAULT_I18N_KO } from '@withwiz/blog-core/i18n';
+import { CreateBlogPostSchema } from '@withwiz/blog-core/validators';
+import { generateMetadata, createRSSFeed } from '@withwiz/blog-core/seo';
+import { createS3StorageAdapter } from '@withwiz/blog-core/storage';
 ```
 
 ## i18n
@@ -357,7 +357,7 @@ const blog = createBlog({
 For S3-compatible storage (R2, MinIO, etc.):
 
 ```typescript
-import { createS3StorageAdapter } from 'blog-core-v2/storage';
+import { createS3StorageAdapter } from '@withwiz/blog-core/storage';
 
 // Credentials are INJECTED by the host. This library never reads process.env;
 // the host reads its own config/secret manager and passes plain values.
@@ -385,7 +385,7 @@ import {
   createRSSFeed,
   createSitemap,
   prepareOGImageData,
-} from 'blog-core-v2/seo';
+} from '@withwiz/blog-core/seo';
 ```
 
 ## Default Theme
@@ -406,14 +406,14 @@ Components only ever reference `var(--blog-admin-accent)`. The value of `--blog-
 `rootVars()` / `publicRootVars()` merge both layers and are applied internally by the built-in components. No extra setup required.
 
 ```tsx
-import { BlogManagerClient } from 'blog-core-v2/components/admin';
-import { BlogListPage } from 'blog-core-v2/components/public';
+import { BlogManagerClient } from '@withwiz/blog-core/components/admin';
+import { BlogListPage } from '@withwiz/blog-core/components/public';
 ```
 
 ### Inject theme vars directly (custom wrapper)
 
 ```tsx
-import { adminThemeVars, publicThemeVars } from 'blog-core-v2/themes';
+import { adminThemeVars, publicThemeVars } from '@withwiz/blog-core/themes';
 
 <div style={adminThemeVars()}>
   <BlogManagerClient ... />
@@ -510,13 +510,13 @@ import {
   PUBLIC_THEME_DEFAULTS,
   PUBLIC_VAR_MAP,
   publicThemeVars,
-} from 'blog-core-v2/themes';
+} from '@withwiz/blog-core/themes';
 ```
 
 ## Error Handling
 
 ```typescript
-import { BlogError, BLOG_ERROR_CODES } from 'blog-core-v2/errors';
+import { BlogError, BLOG_ERROR_CODES } from '@withwiz/blog-core/errors';
 
 // API responses follow a consistent format:
 // Success: { success: true, data: { ... } }
@@ -527,20 +527,20 @@ import { BlogError, BLOG_ERROR_CODES } from 'blog-core-v2/errors';
 
 | Subpath | Description |
 |---------|-------------|
-| `blog-core-v2` | Main entry (createBlog + re-exports) |
-| `blog-core-v2/types` | TypeScript type definitions |
-| `blog-core-v2/services` | Service factory functions |
-| `blog-core-v2/routes` | Route handler factories |
-| `blog-core-v2/utils` | Utility functions |
-| `blog-core-v2/errors` | BlogError + error codes |
-| `blog-core-v2/seo` | SEO utilities |
-| `blog-core-v2/i18n` | i18n strings + resolveI18n |
-| `blog-core-v2/validators` | Zod schemas |
-| `blog-core-v2/storage` | Storage adapter |
-| `blog-core-v2/themes` | Default theme variables + injection helpers |
-| `blog-core-v2/components/admin` | Admin UI components |
-| `blog-core-v2/components/public` | Public UI components |
-| `blog-core-v2/components/admin/editor` | Block Editor integration |
+| `@withwiz/blog-core` | Main entry (createBlog + re-exports) |
+| `@withwiz/blog-core/types` | TypeScript type definitions |
+| `@withwiz/blog-core/services` | Service factory functions |
+| `@withwiz/blog-core/routes` | Route handler factories |
+| `@withwiz/blog-core/utils` | Utility functions |
+| `@withwiz/blog-core/errors` | BlogError + error codes |
+| `@withwiz/blog-core/seo` | SEO utilities |
+| `@withwiz/blog-core/i18n` | i18n strings + resolveI18n |
+| `@withwiz/blog-core/validators` | Zod schemas |
+| `@withwiz/blog-core/storage` | Storage adapter |
+| `@withwiz/blog-core/themes` | Default theme variables + injection helpers |
+| `@withwiz/blog-core/components/admin` | Admin UI components |
+| `@withwiz/blog-core/components/public` | Public UI components |
+| `@withwiz/blog-core/components/admin/editor` | Block Editor integration |
 
 All subpaths support ESM, CJS, and TypeScript types.
 

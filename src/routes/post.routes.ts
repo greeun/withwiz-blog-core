@@ -22,7 +22,7 @@ import {
   type RouteHandler,
 } from './_shared';
 
-const { withAuth, withPublic } = makeRouteKit('[blog-core-v2] Unhandled error:');
+const { withAuth, withPublic } = makeRouteKit('[@withwiz/blog-core] Unhandled error:');
 
 const VALID_SORT_KEYS = ['createdAt', 'publishedAt', 'updatedAt'] as const;
 

@@ -77,7 +77,7 @@ function warnWeakSanitizerOnce(): void {
   weakSanitizerWarned = true;
   // eslint-disable-next-line no-console
   console.warn(
-    '[blog-core-v2/html-sanitizer] isomorphic-dompurify가 설치되지 않아 ' +
+    '[@withwiz/blog-core/html-sanitizer] isomorphic-dompurify가 설치되지 않아 ' +
       '정규식 기반 폴백 새니타이저를 사용합니다. 정규식 새니타이저는 우회 ' +
       '가능성이 있으므로, 신뢰할 수 없는 HTML을 처리한다면 ' +
       'isomorphic-dompurify 설치를 권장합니다.',

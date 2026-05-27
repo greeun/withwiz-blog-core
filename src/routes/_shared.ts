@@ -114,7 +114,7 @@ export function validateWithSchema(
     | {
         safeParse: (data: unknown) => {
           success: boolean;
-          error?: { errors: Array<{ path: (string | number)[]; message: string }> };
+          error?: { issues: Array<{ path: PropertyKey[]; message: string }> };
           data?: unknown;
         };
       }
@@ -126,9 +126,9 @@ export function validateWithSchema(
   }
   const result = schema.safeParse(data);
   if (!result.success) {
-    const firstError = result.error?.errors[0];
+    const firstError = result.error?.issues[0];
     const message = firstError
-      ? `${firstError.path.join('.')}: ${firstError.message}`
+      ? `${firstError.path.map(String).join('.')}: ${firstError.message}`
       : 'Validation failed';
     return {
       valid: false,
@@ -160,7 +160,7 @@ export interface RouteKit {
 
 /**
  * 라우트 그룹별 로그 라벨을 주입해 에러 핸들러/인증 래퍼를 생성한다.
- * @param errorLogLabel 예: '[blog-core-v2] Unhandled error:'
+ * @param errorLogLabel 예: '[@withwiz/blog-core] Unhandled error:'
  */
 export function makeRouteKit(errorLogLabel: string): RouteKit {
   function handleError(err: unknown): Response {

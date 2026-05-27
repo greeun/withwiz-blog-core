@@ -1,5 +1,5 @@
 /**
- * blog-core-v2 타입 re-export
+ * @withwiz/blog-core 타입 re-export
  */
 export type {
   Attachment,
