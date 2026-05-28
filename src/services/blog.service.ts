@@ -313,6 +313,13 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
       void _tagSlugs;
       const updateData: any = { ...rest };
 
+      if ('coverImageUrl' in updateData) {
+        updateData.coverImageUrl = updateData.coverImageUrl || null;
+      }
+      if ('coverImageKey' in updateData) {
+        updateData.coverImageKey = updateData.coverImageKey || null;
+      }
+
       const hasTagSync =
         tagsEnabled &&
         tagIds !== undefined &&
