@@ -24,14 +24,30 @@ import {
 
 const { withAuth, withPublic } = makeRouteKit('[@withwiz/blog-core] Unhandled error:');
 
-const VALID_SORT_KEYS = ['createdAt', 'publishedAt', 'updatedAt'] as const;
+const VALID_SORT_KEYS = [
+  'title',
+  'category',
+  'published',
+  'featured',
+  'author',
+  'createdAt',
+  'publishedAt',
+  'updatedAt',
+] as const;
 
-function parseSortKey(params: URLSearchParams): 'createdAt' | 'publishedAt' | 'updatedAt' {
+type SortKey = (typeof VALID_SORT_KEYS)[number];
+
+function parseSortKey(params: URLSearchParams): SortKey {
   const raw = params.get('sortBy');
   if (raw && (VALID_SORT_KEYS as readonly string[]).includes(raw)) {
-    return raw as 'createdAt' | 'publishedAt' | 'updatedAt';
+    return raw as SortKey;
   }
   return 'updatedAt';
+}
+
+function parseSortDir(params: URLSearchParams): 'asc' | 'desc' {
+  const raw = params.get('sortDir');
+  return raw === 'asc' ? 'asc' : 'desc';
 }
 
 // 응답/인증/검증/페이지네이션 헬퍼는 ./_shared로 단일화되었다.
@@ -152,6 +168,7 @@ export function createPostRoutes(
           const published = getSearchParam(req, 'published');
           const search = getSearchParam(req, 'search');
           const sortBy = parseSortKey(params);
+          const sortDir = parseSortDir(params);
 
           const result = await blogService.listAll({
             page,
@@ -160,6 +177,7 @@ export function createPostRoutes(
             published,
             search,
             sortBy,
+            sortDir,
           });
 
           return successResponse(result);

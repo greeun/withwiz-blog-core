@@ -74,7 +74,16 @@ export interface BlogService {
     category?: string;
     published?: string;
     search?: string;
-    sortBy?: 'createdAt' | 'publishedAt' | 'updatedAt';
+    sortBy?:
+      | 'title'
+      | 'category'
+      | 'published'
+      | 'featured'
+      | 'author'
+      | 'createdAt'
+      | 'publishedAt'
+      | 'updatedAt';
+    sortDir?: 'asc' | 'desc';
   }): Promise<PaginatedResult<BlogListItem>>;
 
   getById(id: string): Promise<BlogDetail | null>;
@@ -214,7 +223,7 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
     // ── Admin ──
 
     async listAll(options) {
-      const { page, limit, category, published, search, sortBy = 'updatedAt' } = options;
+      const { page, limit, category, published, search, sortBy = 'updatedAt', sortDir = 'desc' } = options;
       const skip = (page - 1) * limit;
 
       const where: any = {
@@ -227,11 +236,16 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
         }),
       };
 
+      const orderBy: any =
+        sortBy === 'author'
+          ? { author: { name: sortDir } }
+          : { [sortBy]: sortDir };
+
       const [items, total] = await Promise.all([
         delegate.findMany({
           where,
           select: listSelect,
-          orderBy: { [sortBy]: 'desc' },
+          orderBy,
           skip,
           take: limit,
         }),

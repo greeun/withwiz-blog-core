@@ -71,7 +71,17 @@ export interface BlogManagerClientProps extends BlogAdminApiProps, BlockEditorIn
 
 // ── BlogListView Props ──
 
-export type SortField = 'createdAt' | 'publishedAt' | 'updatedAt';
+export type SortField =
+  | 'title'
+  | 'category'
+  | 'published'
+  | 'featured'
+  | 'author'
+  | 'createdAt'
+  | 'publishedAt'
+  | 'updatedAt';
+
+export type SortDir = 'asc' | 'desc';
 
 export interface BlogListViewProps extends BlogAdminApiProps {
   categories: CategoryMap;
