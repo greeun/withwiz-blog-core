@@ -48,6 +48,8 @@ export default function BlogEditForm({
   categories,
   editId,
   enableCta = true,
+  enableFeatured = true,
+  enableSlug = true,
   enableAttachments = true,
   maxAttachments = 5,
   enableTags = false,
@@ -414,7 +416,9 @@ export default function BlogEditForm({
           {isNew ? t.adminCreateTitle : t.adminEditTitle}
         </h2>
         <div style={ef.headerActions}>
-          <Toggle checked={form.featured} onChange={(v) => updateField('featured', v)} disabled={saving} label={t.adminFeaturedLabel} />
+          {enableFeatured && (
+            <Toggle checked={form.featured} onChange={(v) => updateField('featured', v)} disabled={saving} label={t.adminFeaturedLabel} />
+          )}
           <Toggle checked={form.published} onChange={(v) => updateField('published', v)} disabled={saving} label={t.adminPublishedLabel} />
           <Button onClick={onCancel} disabled={saving}>
             {t.adminCancelButton}
@@ -429,23 +433,25 @@ export default function BlogEditForm({
       {error && <p style={{ ...s.errorText, marginBottom: 16 }} role="alert">{error}</p>}
 
       {/* Slug URL */}
-      <div style={ef.slugBar}>
-        <span style={ef.slugPrefix}>{basePath ?? '/blog'}/</span>
-        <input
-          style={ef.slugInput}
-          value={form.slug}
-          onChange={(e) => handleSlugChange(e.target.value)}
-          placeholder={t.adminSlugPlaceholder}
-          disabled={saving}
-          spellCheck={false}
-        />
-        <span style={ef.slugStatus(slugStatus)}>
-          {slugStatus === 'checking' && '...'}
-          {slugStatus === 'available' && '✓'}
-          {slugStatus === 'duplicate' && '✗ ' + t.adminSlugDuplicate}
-          {slugStatus === 'invalid' && '✗ ' + t.adminSlugInvalid}
-        </span>
-      </div>
+      {enableSlug && (
+        <div style={ef.slugBar}>
+          <span style={ef.slugPrefix}>{basePath ?? '/blog'}/</span>
+          <input
+            style={ef.slugInput}
+            value={form.slug}
+            onChange={(e) => handleSlugChange(e.target.value)}
+            placeholder={t.adminSlugPlaceholder}
+            disabled={saving}
+            spellCheck={false}
+          />
+          <span style={ef.slugStatus(slugStatus)}>
+            {slugStatus === 'checking' && '...'}
+            {slugStatus === 'available' && '✓'}
+            {slugStatus === 'duplicate' && '✗ ' + t.adminSlugDuplicate}
+            {slugStatus === 'invalid' && '✗ ' + t.adminSlugInvalid}
+          </span>
+        </div>
+      )}
 
       {/* 카테고리 탭 */}
       <div style={ef.catTabs}>

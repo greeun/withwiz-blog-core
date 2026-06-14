@@ -191,6 +191,7 @@ export const ef = {
 
   catTabs: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: 4,
     marginBottom: 16,
   } as CSSProperties,
