@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { BlogListItem } from '../../types/blog';
 import type { PaginatedResult } from '../../types/common';
-import type { BlogListViewProps, SortField } from './types';
+import type { BlogListViewProps, SortField, SortDir } from './types';
 import { resolveI18n } from '../../i18n';
 import { s, rootVars } from './styles';
 import { useBlogUI } from '../../context/BlogUIContext';
@@ -87,6 +87,67 @@ function fmtDate(v: string | Date | null | undefined): string {
   return `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}. ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
+/** 인라인 토글 스위치 (목록 셀용 — 텍스트 없음, 줄바꿈 없음) */
+function ToggleSwitch({
+  on,
+  onToggle,
+  title,
+}: {
+  on: boolean;
+  onToggle: () => void;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      title={title}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: 'none',
+        background: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+        lineHeight: 0,
+      }}
+    >
+      <span
+        style={{
+          position: 'relative',
+          display: 'inline-block',
+          width: 34,
+          height: 18,
+          borderRadius: 999,
+          background: on ? '#10b981' : '#d1d5db',
+          transition: 'background 0.15s',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: 2,
+            left: on ? 18 : 2,
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            background: '#fff',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.25)',
+            transition: 'left 0.15s',
+          }}
+        />
+      </span>
+    </button>
+  );
+}
+
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
 export default function BlogListView({
@@ -111,6 +172,7 @@ export default function BlogListView({
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState<SortField>('createdAt');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,6 +207,7 @@ export default function BlogListView({
       if (category) params.set('category', category);
       if (searchQuery) params.set('search', searchQuery);
       params.set('sortBy', sortBy);
+      params.set('sortDir', sortDir);
 
       const res = await apiFetch(`${adminApiBasePath}/posts?${params}`, authHeaders);
       if (!res.ok) throw new Error(t.adminUnknownError);
@@ -159,7 +222,7 @@ export default function BlogListView({
     } finally {
       setLoading(false);
     }
-  }, [adminApiBasePath, authHeaders, page, pageSize, category, searchQuery, sortBy, t.adminUnknownError]);
+  }, [adminApiBasePath, authHeaders, page, pageSize, category, searchQuery, sortBy, sortDir, t.adminUnknownError]);
 
   useEffect(() => {
     void fetchList();
@@ -222,12 +285,47 @@ export default function BlogListView({
     }
   }, [selected, adminApiBasePath, authHeaders, fetchList, t]);
 
-  // 정렬 라벨
-  const sortLabels: Record<SortField, string> = {
+  // 행 단위 토글 (발행/추천) — bulk API 재사용, 화면 즉시 반영
+  const patchField = useCallback(async (
+    id: string,
+    field: 'published' | 'featured',
+    next: boolean,
+  ) => {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [field]: next } : it)));
+    try {
+      const res = await apiFetch(`${adminApiBasePath}/posts/bulk`, authHeaders, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [id], [field]: next }),
+      });
+      if (!res.ok) throw new Error(t.adminUnknownError);
+    } catch (err) {
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [field]: !next } : it)));
+      setError(err instanceof Error ? err.message : t.adminUnknownError);
+    }
+  }, [adminApiBasePath, authHeaders, t]);
+
+  // toolbar Select 용 정렬 라벨 (기존 호환)
+  const sortLabels: Record<'createdAt' | 'publishedAt' | 'updatedAt', string> = {
     createdAt: t.adminSortCreatedAt,
     publishedAt: t.adminSortPublishedAt,
     updatedAt: t.adminSortUpdatedAt,
   };
+
+  const handleSort = useCallback((field: SortField) => {
+    if (field === sortBy) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(field);
+      setSortDir('desc');
+    }
+    setPage(1);
+  }, [sortBy]);
+
+  const sortIndicator = (field: SortField): string =>
+    sortBy === field ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
+
+  const sortableHeaderStyle: CSSProperties = { cursor: 'pointer', userSelect: 'none' };
 
   return (
     <div>
@@ -270,9 +368,9 @@ export default function BlogListView({
           ]}
         />
         <Select
-          value={sortBy}
-          onChange={(v) => { setSortBy(v as SortField); setPage(1); }}
-          options={(Object.keys(sortLabels) as SortField[]).map((key) => ({ value: key, label: sortLabels[key] }))}
+          value={(['createdAt', 'publishedAt', 'updatedAt'] as const).includes(sortBy as never) ? sortBy : 'updatedAt'}
+          onChange={(v) => { setSortBy(v as SortField); setSortDir('desc'); setPage(1); }}
+          options={(Object.keys(sortLabels) as Array<keyof typeof sortLabels>).map((key) => ({ value: key, label: sortLabels[key] }))}
         />
         <Select
           value={String(pageSize)}
@@ -324,16 +422,58 @@ export default function BlogListView({
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
               </th>
-              <th style={{ ...s.th, textAlign: 'left' }}>{t.adminTitleLabel}</th>
-              <th style={{ ...s.th, width: 100 }}>{t.adminCategoryLabel}</th>
-              <th style={{ ...s.th, width: 80 }}>{t.adminPublishedLabel}</th>
-              <th style={{ ...s.th, width: 60 }}>{t.adminFeaturedShort}</th>
+              <th
+                style={{ ...s.th, ...sortableHeaderStyle }}
+                onClick={() => handleSort('title')}
+                aria-sort={sortBy === 'title' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminTitleLabel}{sortIndicator('title')}
+              </th>
+              <th
+                style={{ ...s.th, width: 100, ...sortableHeaderStyle }}
+                onClick={() => handleSort('category')}
+                aria-sort={sortBy === 'category' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminCategoryLabel}{sortIndicator('category')}
+              </th>
+              <th
+                style={{ ...s.th, width: 80, ...sortableHeaderStyle }}
+                onClick={() => handleSort('published')}
+                aria-sort={sortBy === 'published' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminPublishedLabel}{sortIndicator('published')}
+              </th>
+              <th
+                style={{ ...s.th, width: 60, ...sortableHeaderStyle }}
+                onClick={() => handleSort('featured')}
+                aria-sort={sortBy === 'featured' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminFeaturedShort}{sortIndicator('featured')}
+              </th>
               {hasViewCount && (
                 <th style={{ ...s.th, width: 70 }}>{t.adminViewCountLabel}</th>
               )}
-              <th style={{ ...s.th, width: 110 }}>{t.adminAuthorLabel}</th>
-              <th style={{ ...s.th, width: 160, whiteSpace: 'nowrap' }}>{t.adminMetaCreatedAt}</th>
-              <th style={{ ...s.th, width: 160, whiteSpace: 'nowrap' }}>{t.adminMetaUpdatedAt}</th>
+              <th
+                style={{ ...s.th, width: 110, ...sortableHeaderStyle }}
+                onClick={() => handleSort('author')}
+                aria-sort={sortBy === 'author' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminAuthorLabel}{sortIndicator('author')}
+              </th>
+              <th
+                style={{ ...s.th, width: 160, whiteSpace: 'nowrap', ...sortableHeaderStyle }}
+                onClick={() => handleSort('createdAt')}
+                aria-sort={sortBy === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminMetaCreatedAt}{sortIndicator('createdAt')}
+              </th>
+              <th
+                style={{ ...s.th, width: 160, whiteSpace: 'nowrap', ...sortableHeaderStyle }}
+                onClick={() => handleSort('updatedAt')}
+                aria-sort={sortBy === 'updatedAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+              >
+                {t.adminMetaUpdatedAt}{sortIndicator('updatedAt')}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -378,15 +518,25 @@ export default function BlogListView({
                     {categories[item.category]?.label || item.category}
                   </Badge>
                 </td>
-                <td style={{ ...s.td, textAlign: 'center' }}>
-                  <Badge variant={item.published ? 'published' : 'draft'}>
-                    {item.published ? t.adminPublishedLabel : t.adminUnpublishedLabel}
-                  </Badge>
+                <td
+                  style={{ ...s.td, textAlign: 'center', whiteSpace: 'nowrap' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ToggleSwitch
+                    on={item.published}
+                    onToggle={() => patchField(item.id, 'published', !item.published)}
+                    title={item.published ? t.adminPublishedLabel : t.adminUnpublishedLabel}
+                  />
                 </td>
-                <td style={{ ...s.td, textAlign: 'center' }}>
-                  {item.featured && (
-                    <Badge variant="featured">{t.adminFeaturedShort}</Badge>
-                  )}
+                <td
+                  style={{ ...s.td, textAlign: 'center', whiteSpace: 'nowrap' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ToggleSwitch
+                    on={item.featured}
+                    onToggle={() => patchField(item.id, 'featured', !item.featured)}
+                    title={t.adminFeaturedShort}
+                  />
                 </td>
                 {hasViewCount && (
                   <td style={{ ...s.td, textAlign: 'center', fontSize: 12, color: 'var(--blog-admin-text-dim)' }}>
