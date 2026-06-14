@@ -123,6 +123,8 @@ export default function BlogManagerClient({
   basePath,
   pageSize = 20,
   enableCta = true,
+  enableFeatured = true,
+  enableSlug = true,
   enableAttachments = true,
   maxAttachments = 5,
   enableTags = false,
@@ -246,6 +248,8 @@ export default function BlogManagerClient({
                 categories={categories}
                 editId={editId}
                 enableCta={enableCta}
+                enableFeatured={enableFeatured}
+                enableSlug={enableSlug}
                 enableAttachments={enableAttachments}
                 maxAttachments={maxAttachments}
                 enableTags={enableTags}

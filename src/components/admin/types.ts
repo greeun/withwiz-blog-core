@@ -39,6 +39,10 @@ export interface BlogManagerClientProps extends BlogAdminApiProps, BlockEditorIn
   pageSize?: number;
   /** CTA 기능 활성화 (default: true) */
   enableCta?: boolean;
+  /** 홈/추천(featured) 토글 노출 (default: true). false면 작성폼에서 featured 토글 숨김 */
+  enableFeatured?: boolean;
+  /** 고유주소(slug) 입력란 노출 (default: true). false면 제목 기반 자동 slug만 사용하고 입력란 숨김 */
+  enableSlug?: boolean;
   /** 첨부파일 기능 활성화 (default: true) */
   enableAttachments?: boolean;
   /** 최대 첨부파일 수 (default: 5) */
@@ -172,6 +176,10 @@ export interface BlogEditFormProps extends BlogAdminApiProps, BlockEditorInjecti
   editId: string | null;
   /** CTA 기능 활성화 */
   enableCta?: boolean;
+  /** 홈/추천(featured) 토글 노출 (default: true) */
+  enableFeatured?: boolean;
+  /** 고유주소(slug) 입력란 노출 (default: true) */
+  enableSlug?: boolean;
   /** 첨부파일 기능 활성화 */
   enableAttachments?: boolean;
   /** 최대 첨부파일 수 */
