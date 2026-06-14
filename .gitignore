@@ -5,7 +5,7 @@ dist/
 
 # Personal harness/agent state
 .claude/
-.axt-profile.json
+.axt-profile*
 
 # Skill-generated working notes (not part of the package)
 docs/superpowers/
