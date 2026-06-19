@@ -9,3 +9,7 @@ dist/
 
 # Skill-generated working notes (not part of the package)
 docs/superpowers/
+
+# superpowers (auto-installed; do not track)
+.superpowers/
+docs/superpowers/
