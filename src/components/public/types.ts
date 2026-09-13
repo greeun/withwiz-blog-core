@@ -33,7 +33,13 @@ export interface BlogListPageProps {
   onPageChange?: (page: number) => void;
   /** 이미지 URL 변환기 (예: R2 variant 적용) */
   imageUrlTransformer?: (url: string, size: string) => string;
-  /** 히어로 영역 영문 타이틀 (default: "Blog") */
+  /**
+   * 목록 페이지 최상위 제목으로 렌더링되는 h1 텍스트 (default: "Blog")
+   *
+   * h1 에는 클래스 `blog-public-list__title` 이 설정되므로 호스트가 스타일을 덮어쓸 수 있다
+   * (기본 스타일이 인라인으로 적용되므로 선언에 `!important` 가 필요하다).
+   * 빈 문자열을 지정하면 h1 을 렌더링하지 않는다. 호스트가 페이지 제목을 직접 렌더링할 때 사용한다.
+   */
   heroTitle?: string;
   /** 태그 클라우드 데이터 */
   tags?: TagCloudItem[];

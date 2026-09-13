@@ -53,6 +53,13 @@ export default function BlogListPage({
 
   return (
     <div className={rootClass} style={{ ...publicRootVars(), ...ps.container }}>
+      {/* 페이지 제목 (빈 문자열이면 호스트가 직접 렌더링) */}
+      {heroTitle && (
+        <h1 className="blog-public-list__title" style={ps.heroTitle}>
+          {heroTitle}
+        </h1>
+      )}
+
       {/* 카테고리 탭 */}
       <div style={ps.categoryTabs}>
         {onCategoryChange ? (
@@ -143,7 +150,7 @@ export default function BlogListPage({
                 </div>
                 <div style={ps.cardBody}>
                   <div style={ps.cardMeta}>{formatDate(post.publishedAt)}</div>
-                  <h3 style={ps.cardTitle}>{post.title}</h3>
+                  <h2 style={ps.cardTitle}>{post.title}</h2>
                   {post.excerpt && <p style={ps.cardExcerpt}>{post.excerpt}</p>}
                   {post.tags && post.tags.length > 0 && (
                     <div style={ps.cardTags}>
