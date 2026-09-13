@@ -115,13 +115,43 @@ export function createSchedulerService(
         return { processed: 0, postIds: [] };
       }
 
-      // 2. 일괄 발행 전환
-      const result = await delegate.updateMany({
-        where: { id: { in: postIds } },
-        data: { published: true },
-      });
+      // 2. 건별 조건부 전환(compare-and-set)
+      //
+      // ── 왜 일괄 updateMany 를 쓰지 않는가 ──
+      // 기존 구현은 `updateMany({ where: { id: { in: postIds } } })` 였다.
+      // where 에 `published: false` 가 없어 이미 다른 호출이 전환한 글까지 다시
+      // 갱신했고, `updateMany` 는 변경된 행의 id 를 돌려주지 않으므로 조회 시점의
+      // postIds 를 그대로 반환했다. 결과적으로 크론이 동시에 3회 트리거되면 세
+      // 응답 모두 같은 postIds 를 받아, DB 최종 상태는 멱등해도 후처리(알림 발송,
+      // 캐시 무효화)가 3번 중복 실행됐다.
+      //
+      // ── 선택한 방식 ──
+      // id 단건 + `published: false` 조건으로 updateMany 를 호출한다. 단일 UPDATE
+      // 문이므로 DB 행 잠금으로 원자적이고, 동시 호출 중 먼저 잠금을 얻은 쪽만
+      // count=1 을 받는다. 나중 호출은 잠금 해제 후 조건을 재평가해 count=0 을
+      // 받는다. 따라서 실제로 전환에 성공한 호출만 해당 id 를 반환한다.
+      // `publishedAt` 조건도 함께 검사해, 조회와 갱신 사이에 예약이 미래로
+      // 변경되거나 취소(null)된 글은 전환하지 않는다.
+      //
+      // ── 한계 ──
+      // - 건당 UPDATE 1회라 조회 건수에 비례해 왕복이 늘어난다. 예약 발행은 보통
+      //   소량이므로 순차 처리로 충분하며, 커넥션 풀 부담을 피하려 병렬화하지 않는다.
+      // - 전체가 하나의 트랜잭션은 아니므로 중간 실패 시 일부만 전환된 상태로
+      //   남는다. 다음 크론 실행이 나머지를 이어서 처리한다(재시도 안전).
+      const transitioned: string[] = [];
+      for (const id of postIds) {
+        const result = await delegate.updateMany({
+          where: {
+            id,
+            published: false,
+            publishedAt: { not: null, lte: now },
+          },
+          data: { published: true },
+        });
+        if ((result?.count ?? 0) > 0) transitioned.push(id);
+      }
 
-      return { processed: result.count ?? postIds.length, postIds };
+      return { processed: transitioned.length, postIds: transitioned };
     },
 
     async listScheduled(options = {}): Promise<BlogListItem[]> {
