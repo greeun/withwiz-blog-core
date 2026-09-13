@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * 관리자 UI 컴포넌트 barrel export (클라이언트 전용)
  */

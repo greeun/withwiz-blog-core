@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * 공개 블로그 컴포넌트 barrel export (클라이언트 전용)
  */
