@@ -13,17 +13,7 @@ import { formatFileSize, getFileIcon } from "../../utils/file-helpers";
 import { resolveI18n } from "../../i18n";
 import { ps, publicRootVars } from "./styles";
 import { useBlogUI } from "../../context/BlogUIContext";
-
-/** HTML 텍스트 노드 안의 URL을 클릭 가능한 링크로 변환 */
-function linkifyHtml(html: string): string {
-  return html.replace(
-    /(<a\s[^>]*>[\s\S]*?<\/a>)|(<[^>]+>)|(https?:\/\/[^\s<]+)/gi,
-    (match, aTag: string | undefined, tag: string | undefined, url: string | undefined) => {
-      if (aTag || tag) return match;
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-    },
-  );
-}
+import { linkifyHtml } from "./linkify-html";
 
 /** CTA 데이터를 content 내 base64 마커에서 추출 */
 function extractCtaFromContent(content: string): { msg: string; btn: string; url: string } | null {

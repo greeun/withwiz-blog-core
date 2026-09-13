@@ -286,7 +286,8 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
       const postCreateData = {
         ...rest,
         slug,
-        content: sanitize(data.content) || data.content,
+        // 새니타이즈 결과가 비어도 원본으로 되돌리지 않는다 (위험 요소만 있던 본문)
+        content: sanitize(data.content) ?? '',
         coverImageUrl: data.coverImageUrl || null,
         coverImageKey: data.coverImageKey || null,
         attachments: (attachments || []) as any,
@@ -356,7 +357,7 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
       }
 
       if (data.content !== undefined) {
-        updateData.content = sanitize(data.content) || data.content;
+        updateData.content = sanitize(data.content) ?? '';
       }
 
       const post = await prisma.$transaction(async (tx: any) => {
