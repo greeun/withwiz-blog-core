@@ -307,7 +307,7 @@ export {
   createIpHasher,
   createCategoryThemeVars,
 } from './utils';
-export type { SanitizerConfig } from './utils';
+export type { SanitizerConfig, DOMPurifyLike } from './utils';
 
 // SEO
 export {
