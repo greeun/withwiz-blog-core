@@ -6,7 +6,8 @@ export const PUBLIC_THEME_DEFAULTS: Record<string, string> = {
   '--blog-theme-default-public-bg-hover': '#f0f0f0',
   '--blog-theme-default-public-text': '#1a1a1a',
   '--blog-theme-default-public-text-muted': '#6b7280',
-  '--blog-theme-default-public-text-dim': '#9ca3af',
+  // 기존 #9ca3af 의 색조를 유지하고 명도만 낮춰 bg-card(#f9f9f9) 에서도 WCAG AA 4.5:1 을 충족한다
+  '--blog-theme-default-public-text-dim': '#6a7383',
   '--blog-theme-default-public-border': '#e5e7eb',
   '--blog-theme-default-public-accent': '#2563eb',
   '--blog-theme-default-public-accent-hover': '#1d4ed8',

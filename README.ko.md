@@ -572,7 +572,7 @@ import { adminThemeVars, publicThemeVars } from '@withwiz/blog-core/themes';
 | `--blog-theme-default-public-bg-hover` | `#f0f0f0` | 호버 배경 |
 | `--blog-theme-default-public-text` | `#1a1a1a` | 본문 텍스트 |
 | `--blog-theme-default-public-text-muted` | `#6b7280` | 보조 텍스트 |
-| `--blog-theme-default-public-text-dim` | `#9ca3af` | 흐린 텍스트 |
+| `--blog-theme-default-public-text-dim` | `#6a7383` | 흐린 텍스트 |
 | `--blog-theme-default-public-border` | `#e5e7eb` | 테두리 |
 | `--blog-theme-default-public-accent` | `#2563eb` | 강조색 |
 | `--blog-theme-default-public-accent-hover` | `#1d4ed8` | 강조색 호버 |
