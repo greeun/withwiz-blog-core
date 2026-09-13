@@ -1,3 +1,5 @@
+'use client';
+
 import 'client-only';
 import type { BlogUIComponents } from '../../types/ui-components';
 import { DefaultButton } from './DefaultButton';

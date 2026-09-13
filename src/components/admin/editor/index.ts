@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Block Editor 통합 컴포넌트 barrel export
  *
