@@ -487,7 +487,7 @@ Override `--blog-theme-default-*` variables to retheme all components at once:
 | `--blog-theme-default-public-bg-hover` | `#f0f0f0` | Hover background |
 | `--blog-theme-default-public-text` | `#1a1a1a` | Body text |
 | `--blog-theme-default-public-text-muted` | `#6b7280` | Muted text |
-| `--blog-theme-default-public-text-dim` | `#9ca3af` | Dim text |
+| `--blog-theme-default-public-text-dim` | `#6a7383` | Dim text |
 | `--blog-theme-default-public-border` | `#e5e7eb` | Border |
 | `--blog-theme-default-public-accent` | `#2563eb` | Accent color |
 | `--blog-theme-default-public-accent-hover` | `#1d4ed8` | Accent hover |
