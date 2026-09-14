@@ -185,11 +185,14 @@ export function createPostRoutes(
 
         POST: withAuth(authMiddleware, async (req, user) => {
           const body = (await req.json()) as Record<string, unknown>;
+          let input: Record<string, unknown> = body;
 
           // Zod 스키마 검증 (활성화 시)
           if (schemas) {
             const check = validateWithSchema(schemas.CreateBlogPostSchema, body);
             if (!check.valid) return check.response;
+            // 원본 body 대신 검증 결과를 넘겨 스키마 밖 필드(id·createdAt·중첩 쓰기 등)를 차단한다
+            input = check.data as Record<string, unknown>;
           } else {
             // 폴백: 기본 검증
             if (!body.title || !body.content || !body.category || !body.slug) {
@@ -201,7 +204,7 @@ export function createPostRoutes(
             }
           }
 
-          const post = await blogService.create(body as any, user.id);
+          const post = await blogService.create(input as any, user.id);
           return successResponse(post, 201);
         }),
 
@@ -236,13 +239,17 @@ export function createPostRoutes(
             return errorResponse(BLOG_ERROR_CODES.POST_NOT_FOUND, 'Post not found', 404);
           }
 
+          let input: Record<string, unknown> = body;
+
           // Zod 스키마 검증 (활성화 시)
           if (schemas) {
             const check = validateWithSchema(schemas.UpdateBlogPostSchema, body);
             if (!check.valid) return check.response;
+            // 원본 body 대신 검증 결과를 넘겨 스키마 밖 필드(id·authorId·중첩 쓰기 등)를 차단한다
+            input = check.data as Record<string, unknown>;
           }
 
-          const post = await blogService.update(id, body as any);
+          const post = await blogService.update(id, input as any);
           return successResponse(post);
         }),
 

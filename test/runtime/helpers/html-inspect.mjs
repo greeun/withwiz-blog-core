@@ -1,0 +1,351 @@
+/**
+ * 테스트 전용 HTML 태그·속성 판정 도구
+ *
+ * 저장소에 jsdom 이 없어 WHATWG HTML 토큰화 규칙 중 태그·속성·주석 부분을 그대로
+ * 옮겨 구현했다. 문자열 정규식이 아니라 "브라우저가 실제로 인식하는 속성 목록"을
+ * 기준으로 새니타이저 결과를 판정하기 위함이다.
+ *
+ * - 속성 구분(공백·`/`·따옴표 직후), 중복 속성(첫 번째만 유지), 속성 값의 문자 참조
+ *   디코딩(숫자·16진수·주요 이름)을 브라우저와 같게 처리한다.
+ * - 트리 구성 단계의 문맥(HTML 요소인지 svg·math 안인지)은 추적하지 않는다. 대신
+ *   findUnsafe 는 raw text 요소(title, noscript, iframe 등) 내용을 텍스트로 보는 해석과
+ *   마크업으로 보는 해석, CDATA 구간을 인정하는 해석을 모두 수행해 하나라도 위험하면
+ *   위험으로 판정한다(보수적 판정).
+ * - 이 파일은 `*.test.mjs` 가 아니므로 테스트 러너가 직접 실행하지 않는다.
+ */
+
+const RAW_TEXT_ELEMENTS = new Set([
+  'script', 'style', 'xmp', 'iframe', 'noembed', 'noframes', 'noscript', 'textarea', 'title',
+]);
+
+const WHITESPACE = new Set(['\t', '\n', '\f', ' ']);
+const isAsciiAlpha = (ch) => ch !== undefined && /^[A-Za-z]$/.test(ch);
+const lower = (ch) => (ch >= 'A' && ch <= 'Z' ? ch.toLowerCase() : ch === '\u0000' ? '�' : ch);
+
+const NAMED_REFS = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  colon: ':', Tab: '\t', NewLine: '\n', sol: '/', bsol: '\\', lpar: '(', rpar: ')',
+  period: '.', comma: ',', excl: '!', num: '#', percnt: '%', semi: ';', equals: '=',
+  quest: '?', commat: '@', lowbar: '_', grave: '`', plus: '+', dollar: '$', ast: '*',
+  verbar: '|', lsqb: '[', rsqb: ']', lcub: '{', rcub: '}',
+};
+// 세미콜론 없이도 디코딩되는 레거시 이름(속성 값에서는 뒤에 `=`·영숫자가 오면 제외)
+const LEGACY_REFS = new Set(['amp', 'lt', 'gt', 'quot', 'nbsp']);
+
+/** 속성 값의 문자 참조를 브라우저 규칙대로 디코딩한다. */
+export function decodeAttributeValue(value) {
+  return value.replace(
+    /&(?:#[xX]([0-9a-fA-F]+);?|#([0-9]+);?|([A-Za-z][A-Za-z0-9]*)(;?))/g,
+    (match, hex, dec, name, semi, offset, whole) => {
+      if (hex !== undefined || dec !== undefined) {
+        const cp = hex !== undefined ? parseInt(hex, 16) : parseInt(dec, 10);
+        if (!Number.isFinite(cp) || cp === 0 || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff)) {
+          return '�';
+        }
+        return String.fromCodePoint(cp);
+      }
+      if (semi === ';' && Object.hasOwn(NAMED_REFS, name)) return NAMED_REFS[name];
+      const after = whole[offset + match.length];
+      if (semi === '' && LEGACY_REFS.has(name) && after !== '=') return NAMED_REFS[name];
+      return match;
+    },
+  );
+}
+
+/**
+ * HTML 문자열을 토큰(startTag / endTag / comment / text) 배열로 만든다.
+ * startTag: { type, name, attrs: [{ name, value }], selfClosing }
+ *
+ * options.rawText: raw text 요소 시작 태그 뒤 내용을 해당 종료 태그까지 텍스트로 본다.
+ * options.cdata: `<![CDATA[ ... ]]>` 를 텍스트로 본다 (svg·math 안의 해석).
+ */
+export function tokenize(input, options = {}) {
+  const { rawText = false, cdata = false } = options;
+  const html = String(input).replace(/\r\n?/g, '\n');
+  const n = html.length;
+  const tokens = [];
+  let text = '';
+
+  const flushText = () => {
+    if (text) tokens.push({ type: 'text', data: text });
+    text = '';
+  };
+
+  function readBogusComment(start) {
+    const end = html.indexOf('>', start);
+    tokens.push({ type: 'comment', data: html.slice(start, end === -1 ? n : end), bogus: true });
+    return end === -1 ? n : end + 1;
+  }
+
+  function readComment(start) {
+    let j = start;
+    let data = '';
+    let state = 'start';
+    const emit = (next) => {
+      tokens.push({ type: 'comment', data });
+      return next;
+    };
+    for (;;) {
+      const ch = html[j];
+      switch (state) {
+        case 'start':
+          if (ch === '-') { state = 'startDash'; j++; }
+          else if (ch === '>') return emit(j + 1);
+          else state = 'comment';
+          break;
+        case 'startDash':
+          if (ch === '-') { state = 'end'; j++; }
+          else if (ch === '>') return emit(j + 1);
+          else if (ch === undefined) return emit(n);
+          else { data += '-'; state = 'comment'; }
+          break;
+        case 'comment':
+          if (ch === undefined) return emit(n);
+          if (ch === '-') state = 'endDash';
+          else data += ch;
+          j++;
+          break;
+        case 'endDash':
+          if (ch === '-') { state = 'end'; j++; }
+          else if (ch === undefined) return emit(n);
+          else { data += '-'; state = 'comment'; }
+          break;
+        case 'end':
+          if (ch === '>') return emit(j + 1);
+          if (ch === undefined) return emit(n);
+          if (ch === '!') { state = 'endBang'; j++; }
+          else if (ch === '-') { data += '-'; j++; }
+          else { data += '--'; state = 'comment'; }
+          break;
+        case 'endBang':
+          if (ch === '>') return emit(j + 1);
+          if (ch === undefined) return emit(n);
+          data += '--!';
+          if (ch === '-') { state = 'endDash'; j++; }
+          else state = 'comment';
+          break;
+        default:
+          throw new Error(`unknown comment state ${state}`);
+      }
+    }
+  }
+
+  function readTag(start, isEnd) {
+    let j = start;
+    let name = '';
+    const attrs = [];
+    let selfClosing = false;
+    let state = 'tagName';
+    let current = null;
+
+    const commitAttr = () => {
+      if (current && !attrs.some((a) => a.name === current.name)) {
+        attrs.push({ name: current.name, value: decodeAttributeValue(current.value) });
+      }
+      current = null;
+    };
+    const startAttr = (initialName = '') => {
+      commitAttr();
+      current = { name: initialName, value: '' };
+    };
+    const emit = (next) => {
+      commitAttr();
+      tokens.push(
+        isEnd ? { type: 'endTag', name } : { type: 'startTag', name, attrs, selfClosing },
+      );
+      return next;
+    };
+
+    for (;;) {
+      const ch = html[j];
+      switch (state) {
+        case 'tagName':
+          if (ch === undefined) return n;
+          if (WHITESPACE.has(ch)) state = 'beforeAttrName';
+          else if (ch === '/') state = 'selfClosingStartTag';
+          else if (ch === '>') return emit(j + 1);
+          else name += lower(ch);
+          j++;
+          break;
+        case 'beforeAttrName':
+          if (WHITESPACE.has(ch)) { j++; }
+          else if (ch === '/' || ch === '>' || ch === undefined) state = 'afterAttrName';
+          else if (ch === '=') { startAttr('='); state = 'attrName'; j++; }
+          else { startAttr(); state = 'attrName'; }
+          break;
+        case 'attrName':
+          if (ch === undefined || WHITESPACE.has(ch) || ch === '/' || ch === '>') state = 'afterAttrName';
+          else if (ch === '=') { state = 'beforeAttrValue'; j++; }
+          else { current.name += lower(ch); j++; }
+          break;
+        case 'afterAttrName':
+          if (ch === undefined) return n;
+          if (WHITESPACE.has(ch)) { j++; }
+          else if (ch === '/') { state = 'selfClosingStartTag'; j++; }
+          else if (ch === '=') { state = 'beforeAttrValue'; j++; }
+          else if (ch === '>') return emit(j + 1);
+          else { startAttr(); state = 'attrName'; }
+          break;
+        case 'beforeAttrValue':
+          if (WHITESPACE.has(ch)) { j++; }
+          else if (ch === '"') { state = 'attrValueDouble'; j++; }
+          else if (ch === "'") { state = 'attrValueSingle'; j++; }
+          else if (ch === '>') return emit(j + 1);
+          else state = 'attrValueUnquoted';
+          break;
+        case 'attrValueDouble':
+        case 'attrValueSingle': {
+          const quote = state === 'attrValueDouble' ? '"' : "'";
+          if (ch === undefined) return n;
+          if (ch === quote) state = 'afterAttrValueQuoted';
+          else current.value += ch === '\u0000' ? '�' : ch;
+          j++;
+          break;
+        }
+        case 'attrValueUnquoted':
+          if (ch === undefined) return n;
+          if (WHITESPACE.has(ch)) state = 'beforeAttrName';
+          else if (ch === '>') return emit(j + 1);
+          else current.value += ch === '\u0000' ? '�' : ch;
+          j++;
+          break;
+        case 'afterAttrValueQuoted':
+          if (ch === undefined) return n;
+          if (WHITESPACE.has(ch)) { state = 'beforeAttrName'; j++; }
+          else if (ch === '/') { state = 'selfClosingStartTag'; j++; }
+          else if (ch === '>') return emit(j + 1);
+          else state = 'beforeAttrName';
+          break;
+        case 'selfClosingStartTag':
+          if (ch === undefined) return n;
+          if (ch === '>') { selfClosing = true; return emit(j + 1); }
+          state = 'beforeAttrName';
+          break;
+        default:
+          throw new Error(`unknown tag state ${state}`);
+      }
+    }
+  }
+
+  let i = 0;
+  while (i < n) {
+    const ch = html[i];
+    if (ch !== '<') {
+      text += ch;
+      i++;
+      continue;
+    }
+    const next = html[i + 1];
+    if (cdata && html.startsWith('<![CDATA[', i)) {
+      const close = html.indexOf(']]>', i + 9);
+      text += html.slice(i + 9, close === -1 ? n : close);
+      i = close === -1 ? n : close + 3;
+    } else if (next === '!') {
+      flushText();
+      i = html.startsWith('<!--', i) ? readComment(i + 4) : readBogusComment(i + 2);
+    } else if (next === '?') {
+      flushText();
+      i = readBogusComment(i + 1);
+    } else if (next === '/') {
+      const after = html[i + 2];
+      if (isAsciiAlpha(after)) {
+        flushText();
+        i = readTag(i + 2, true);
+      } else if (after === '>') {
+        i += 3;
+      } else if (after === undefined) {
+        text += '</';
+        i += 2;
+      } else {
+        flushText();
+        i = readBogusComment(i + 2);
+      }
+    } else if (isAsciiAlpha(next)) {
+      flushText();
+      const before = tokens.length;
+      i = readTag(i + 1, false);
+      const last = tokens.length > before ? tokens[tokens.length - 1] : null;
+      if (rawText && last?.type === 'startTag') {
+        if (last.name === 'plaintext') {
+          text += html.slice(i);
+          i = n;
+        } else if (RAW_TEXT_ELEMENTS.has(last.name)) {
+          const re = new RegExp(`</${last.name}(?=[\\t\\n\\f />])`, 'gi');
+          re.lastIndex = i;
+          const m = re.exec(html);
+          const end = m ? m.index : n;
+          text += html.slice(i, end);
+          i = end;
+          flushText();
+        }
+      }
+    } else {
+      text += '<';
+      i++;
+    }
+  }
+  flushText();
+  return tokens;
+}
+
+export const startTags = (html) => tokenize(html).filter((t) => t.type === 'startTag');
+export const commentsOf = (html) =>
+  tokenize(html)
+    .filter((t) => t.type === 'comment' && !t.bogus)
+    .map((t) => t.data);
+export const attrOf = (tag, name) => tag.attrs.find((a) => a.name === name)?.value;
+export const attrNames = (tag) => tag.attrs.map((a) => a.name);
+
+export const URL_ATTRS = ['href', 'src', 'action', 'formaction', 'xlink:href'];
+export const DEFAULT_TRUSTED_IFRAME_ORIGINS = [
+  'https://www.youtube.com/',
+  'https://youtube.com/',
+  'https://www.youtube-nocookie.com/',
+  'https://player.vimeo.com/',
+];
+const FORBIDDEN_TAGS = new Set([
+  'script', 'style', 'object', 'embed', 'applet', 'form', 'input', 'textarea', 'select', 'button',
+]);
+
+/** 디코딩된 URL 속성 값이 실행 가능한 위험 스킴인지 판정한다(공백·제어문자는 모두 제거). */
+export function isDangerousUrl(value) {
+  const v = value.replace(/[\u0000- \u007f-\u009f]/g, '').toLowerCase();
+  if (/^(?:javascript|vbscript):/.test(v)) return true;
+  return v.startsWith('data:') && !v.startsWith('data:image/');
+}
+
+/**
+ * 브라우저가 인식할 위험 요소를 사람이 읽을 수 있는 문자열 목록으로 돌려준다.
+ * 빈 배열이면 안전하다.
+ */
+export function findUnsafe(html, trustedOrigins = DEFAULT_TRUSTED_IFRAME_ORIGINS) {
+  const problems = new Set();
+  for (const rawText of [false, true]) {
+    for (const cdata of [false, true]) {
+      for (const p of findUnsafeIn(html, trustedOrigins, { rawText, cdata })) problems.add(p);
+    }
+  }
+  return [...problems];
+}
+
+function findUnsafeIn(html, trustedOrigins, options) {
+  const problems = [];
+  const tags = tokenize(html, options).filter((t) => t.type === 'startTag');
+  for (const tag of tags) {
+    if (FORBIDDEN_TAGS.has(tag.name)) problems.push(`<${tag.name}> 태그`);
+    for (const { name, value } of tag.attrs) {
+      if (name.startsWith('on')) problems.push(`<${tag.name}> 이벤트 속성 ${name}`);
+      if (name === 'srcdoc') problems.push(`<${tag.name}> srcdoc 속성`);
+      if (URL_ATTRS.includes(name) && isDangerousUrl(value)) {
+        problems.push(`<${tag.name}> ${name}=${JSON.stringify(value)}`);
+      }
+    }
+    if (tag.name === 'iframe') {
+      const src = (attrOf(tag, 'src') ?? '').trim();
+      if (!trustedOrigins.some((origin) => src.startsWith(origin))) {
+        problems.push(`비신뢰 iframe src=${JSON.stringify(src)}`);
+      }
+    }
+  }
+  return problems;
+}

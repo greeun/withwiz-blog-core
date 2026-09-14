@@ -26,6 +26,15 @@ export const ps = {
     lineHeight: 1.6,
   } as CSSProperties,
 
+  // -- 목록 페이지 제목 --
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: 700,
+    lineHeight: 1.3,
+    margin: '8px 0 16px',
+    color: 'var(--blog-public-text)',
+  } as CSSProperties,
+
   // -- 카테고리 탭 --
   categoryTabs: {
     display: 'flex',
