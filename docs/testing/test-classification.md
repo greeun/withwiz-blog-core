@@ -1136,25 +1136,26 @@ Request
 | **파일** | `test/runtime/sanitizer-purify.test.mjs` (76건 중 16건: `defineSharedCases` 의 `[정규식]` 7건·`[DOMPurify]` 7건, `[정규식]` 전용 2건) |
 | **대상** | `src/utils/html-sanitizer.ts` 폴백 경로의 `STRIP_TAG_ONLY`(2026-09-16 `bb7addc` 에서 `animate`, `animatemotion`, `animatetransform`, `animatecolor`, `set`, `meta`, `base`, `link` 추가), `fallbackSanitizePass()` 의 시작·종료 태그 제거 / `src/utils/html-scan.ts` `parseHtmlTag()` 의 태그 이름 경계 / DOMPurify 경로 `dompurifySanitize()`(옵션 변경 없음, 같은 입력 제거 확인) |
 | **우선순위** | High |
-| **전제조건** | TC-S-013 과 같음. 정규식 경로는 `purify: null`, DOMPurify 경로는 devDependencies 의 `isomorphic-dompurify`. 판정 헬퍼 `remainingAnimationMetaTags()` 는 `html-inspect.mjs` `tokenize()` 의 raw text·CDATA 해석 4가지에서 대상 이름의 시작·종료 태그를 찾고, 원문 문자열에서도 `<` 또는 `</` 뒤 대상 이름과 공백·`/`·`>` 경계를 찾는다 |
+| **전제조건** | TC-S-013 과 같음. 정규식 경로는 `purify: null`, DOMPurify 경로는 devDependencies 의 `isomorphic-dompurify`. 판정 헬퍼 `remainingTags(html, names)` 는 `html-inspect.mjs` `tokenize()` 의 raw text·CDATA 해석 4가지에서 대상 이름의 시작·종료 태그를 찾고, 원문 문자열에서도 `<` 또는 `</` 뒤 대상 이름과 공백·`/`·`>` 경계를 찾는다. 대상 이름은 정규식 경로가 8개 요소 전체(`ANIMATION_META_TAGS`), DOMPurify 경로가 `animate`·`set`·`meta`·`base`·`link` 5개(`DOMPURIFY_REMOVED_TAGS`)이다. `hrefTargetingAttributeNames()` 는 같은 4가지 해석에서 값이 `href`·`xlink:href`(대소문자·앞뒤 공백 무시)인 `attributeName` 속성을 찾는다 |
 | **테스트 데이터** | cms-kit 과 같은 정규식 대체 새니타이저 공통 명세 입력 7종(`ANIMATION_META_INPUTS` 6종, `ANIMATION_META_WORDS_HTML`), 대소문자·닫는 태그 변형 입력, 이름이 겹치는 다른 태그 입력 |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
-| 1 | `[정규식]`·`[DOMPurify] 애니메이션·메타 요소 제거: svg a 안 animate 자체 닫는 태그`: `<svg><a href="#"><animate attributeName="href" to="javascript:alert(1)"/><text>x</text></a></svg>` | 대상 태그 잔존 없음, `javascript:` 없음, `findUnsafe()` 빈 배열 |
+| 1 | `[정규식]`·`[DOMPurify] 애니메이션·메타 요소 제거: svg a 안 animate 자체 닫는 태그`: `<svg><a href="#"><animate attributeName="href" to="javascript:alert(1)"/><text>x</text></a></svg>` | 경로별 대상 태그 잔존 없음, `javascript:` 없음, href 대상 `attributeName` 없음, `findUnsafe()` 빈 배열 |
 | 2 | `... svg a 안 set 여는·닫는 태그`: `<svg><a><set attributeName="href" to="javascript:alert(1)"></set></a></svg>` | 1번과 같음 |
 | 3 | `... 대문자 SVG·A·ANIMATE 와 무따옴표 속성`: `<SVG><A><ANIMATE ATTRIBUTENAME=href TO=javascript:alert(1)></ANIMATE></A></SVG>` | 1번과 같음 |
 | 4 | `... meta refresh`: `<meta http-equiv="refresh" content="0;url=javascript:alert(1)">` | 1번과 같음 |
 | 5 | `... base href`: `<base href="https://evil.example/">` | 1번과 같음 |
 | 6 | `... link stylesheet`: `<link rel="stylesheet" href="https://evil.example/x.css">` | 1번과 같음 |
 | 7 | `[정규식]`·`[DOMPurify] 애니메이션·메타 요소 이름이 들어간 본문 단어는 보존`: `<p>settings, link, base, meta, animate 라는 단어</p>` | 출력이 입력과 같음 |
-| 8 | `[정규식] 애니메이션·메타 요소는 대소문자·자체 닫는 태그·닫는 태그 형태와 무관하게 제거`: `animateMotion`·`animateTransform`·`AnimateColor`·`SET` 자체 닫는 태그, `</set >`·`</META >`·`</Link>`·`</base>`, `Meta`·`LINK`·`BASE` 시작 태그 | 대상 태그·`javascript:` 없음, 출력이 정확히 `<p>a</p><svg></svg><p>b</p>` |
+| 8 | `[정규식] 애니메이션·메타 요소는 대소문자·자체 닫는 태그·닫는 태그 형태와 무관하게 제거`: `animateMotion`·`animateTransform`·`AnimateColor`·`SET` 자체 닫는 태그, `</set >`·`</META >`·`</Link>`·`</base>`, `Meta`·`LINK`·`BASE` 시작 태그 | 8개 대상 태그·`javascript:`·href 대상 `attributeName` 없음, 출력이 정확히 `<p>a</p><svg></svg><p>b</p>` |
 | 9 | `[정규식] 애니메이션·메타 요소와 이름이 겹치는 다른 태그는 건드리지 않는다`: `<settings>`, `<linkbox>`, `<metadata>`, `<baseline>`, `<animated>`, `<setter/>`, `<set-x>`, `class="set link"` | 출력이 입력과 같음 |
 
 - **자동화:** 가능 ✅ | **테스트 수:** 16개 (실측: 1~7번은 두 경로에서 각 1건씩 14건, 8·9번 2건)
 - **관련 요구사항:** OWASP A03:2021 Injection (CWE-79), CWE-601 Open Redirect(`meta refresh`·`base`)
 - **결함 이력:** 2.1.5 폴백 새니타이저는 `STRIP_TAG_ONLY` 에 이 8개 요소가 없어 1~6번 입력을 그대로 반환했다. 속성 정리 대상도 아니어서 `animate`·`set` 의 `to` 값, `meta` 의 `content` 값에 든 `javascript:` 가 남았다. 2026-09-16 `bb7addc` 에서 태그만 제거하는 목록에 추가했다. 수정 전 실행에서 정규식 경로 1~6번 6건과 8번 1건이 실패했고, 7·9번은 기존 동작 확인용이라 통과했다. DOMPurify 경로 7건은 수정 전에도 통과했다.
-- **한계:** DOMPurify 경로는 공통 명세 입력 1~6(`animate`·`set`·`meta`·`base`·`link`)만 확인하며, `animatemotion`·`animatetransform`·`animatecolor` 의 DOMPurify 처리는 단언하지 않는다. 내용이 있는 애니메이션 요소는 태그만 제거되고 내용 텍스트는 남는다(8번 입력에는 내용이 없음).
+- **경로별 요구 사항 (2026-09-16 공통 명세 조정):** 정규식 경로는 8개 요소를 모두 제거해야 한다. dompurify 3.4.15 기본 SVG 허용 목록에는 `animatemotion`·`animatetransform`·`animatecolor` 가 들어 있어, DOMPurify 는 이 세 요소를 지우지 않고 href 를 가리키는 `attributeName`, `to`·`from`, `javascript:` 로 시작하는 `values` 같은 속성을 지워 무력화한다. 그래서 DOMPurify 경로의 요소 제거 단언은 `animate`·`set`·`meta`·`base`·`link` 로 한정하고, `javascript:` 와 href 대상 `attributeName` 이 남지 않는지는 두 경로 모두 단언한다. DOMPurify 설정은 바꾸지 않았다(`5dca0c8`).
+- **한계:** DOMPurify 경로는 공통 명세 입력 1~7 만 확인하며, `animatemotion`·`animatetransform`·`animatecolor` 입력은 넣지 않는다. 2026-09-16 워크트리 밖 확인에서 DOMPurify 는 `<animateTransform attributeName="xlink:href" values="#;javascript:alert(1)">` 의 `attributeName` 만 지우고 `values` 는 남겼으며, `<animateColor attributeName=" HREF " by="javascript:alert(1)">` 는 `by` 를 지우고 `attributeName="HREF"` 를 남겼다. 두 경우 모두 href 를 바꾸는 속성 조합은 남지 않지만, 출력 문자열 기준 단언(`javascript:` 없음, 대소문자 무시 `attributeName`)은 통과하지 않는다. 내용이 있는 애니메이션 요소는 정규식 경로에서 태그만 제거되고 내용 텍스트는 남는다(8번 입력에는 내용이 없음).
 
 ---
 
