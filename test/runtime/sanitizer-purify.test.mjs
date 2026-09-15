@@ -65,9 +65,13 @@ const BYPASS_INPUTS = [
 
 // 정규식 대체 새니타이저 공통 명세(cms-kit 과 같은 입력): SVG 애니메이션 요소는 대상 속성을
 // javascript: 로 바꿀 수 있고, meta·base·link 는 새로고침 이동·상대 URL 기준·외부 스타일을 주입한다.
+// 정규식 경로는 8개 요소를 모두 제거해야 한다.
 const ANIMATION_META_TAGS = new Set([
   'animate', 'animatemotion', 'animatetransform', 'animatecolor', 'set', 'meta', 'base', 'link',
 ]);
+// DOMPurify 3.4.15 기본 SVG 허용 목록에는 animatemotion·animatetransform·animatecolor 가 있어 요소 대신
+// href 를 가리키는 attributeName 등 속성을 지워 무력화한다. DOMPurify 경로의 요소 제거 단언은 아래로 한정한다.
+const DOMPURIFY_REMOVED_TAGS = new Set(['animate', 'set', 'meta', 'base', 'link']);
 const ANIMATION_META_INPUTS = [
   ['svg a 안 animate 자체 닫는 태그', '<svg><a href="#"><animate attributeName="href" to="javascript:alert(1)"/><text>x</text></a></svg>'],
   ['svg a 안 set 여는·닫는 태그', '<svg><a><set attributeName="href" to="javascript:alert(1)"></set></a></svg>'],
@@ -78,20 +82,37 @@ const ANIMATION_META_INPUTS = [
 ];
 const ANIMATION_META_WORDS_HTML = '<p>settings, link, base, meta, animate 라는 단어</p>';
 
+const INTERPRETATIONS = [false, true].flatMap((rawText) => [false, true].map((cdata) => ({ rawText, cdata })));
+
 /** 브라우저 해석(raw text·CDATA 해석 포함)과 원문 문자열 양쪽에서 남은 대상 태그를 찾는다. */
-function remainingAnimationMetaTags(html) {
+function remainingTags(html, names) {
   const found = new Set();
-  for (const rawText of [false, true]) {
-    for (const cdata of [false, true]) {
-      for (const token of tokenize(html, { rawText, cdata })) {
-        if ((token.type === 'startTag' || token.type === 'endTag') && ANIMATION_META_TAGS.has(token.name)) {
-          found.add(`${token.type}:${token.name}`);
+  for (const options of INTERPRETATIONS) {
+    for (const token of tokenize(html, options)) {
+      if ((token.type === 'startTag' || token.type === 'endTag') && names.has(token.name)) {
+        found.add(`${token.type}:${token.name}`);
+      }
+    }
+  }
+  const raw = html.match(new RegExp(`</?(?:${[...names].join('|')})(?=[\\s/>]|$)`, 'gi'));
+  for (const m of raw ?? []) found.add(`raw:${m}`);
+  return [...found];
+}
+
+/** href·xlink:href 를 대상으로 하는 attributeName 속성을 찾는다 (대소문자·앞뒤 공백 무시). */
+function hrefTargetingAttributeNames(html) {
+  const found = new Set();
+  for (const options of INTERPRETATIONS) {
+    for (const token of tokenize(html, options)) {
+      if (token.type !== 'startTag') continue;
+      for (const { name, value } of token.attrs) {
+        const target = value.trim().toLowerCase();
+        if (name === 'attributename' && (target === 'href' || target === 'xlink:href')) {
+          found.add(`<${token.name} attributeName="${value}">`);
         }
       }
     }
   }
-  const raw = html.match(/<\/?(?:animate(?:motion|transform|color)?|set|meta|base|link)(?=[\s/>]|$)/gi);
-  for (const m of raw ?? []) found.add(`raw:${m}`);
   return [...found];
 }
 
@@ -110,7 +131,7 @@ const PRESERVE_HTML =
   '<a href="https://ok.example/post?a=1&amp;b=2" target="_blank" rel="noopener noreferrer">링크</a>' +
   '<iframe src="https://www.youtube.com/embed/abc" allowfullscreen frameborder="0" allow="autoplay"></iframe>';
 
-function defineSharedCases(label, makeSanitizer, skip) {
+function defineSharedCases(label, makeSanitizer, skip, { removedTags }) {
   for (const [name, input] of BYPASS_INPUTS) {
     test(`[${label}] 우회 차단: ${name}`, { skip }, () => {
       const out = makeSanitizer()(input);
@@ -121,8 +142,9 @@ function defineSharedCases(label, makeSanitizer, skip) {
   for (const [name, input] of ANIMATION_META_INPUTS) {
     test(`[${label}] 애니메이션·메타 요소 제거: ${name}`, { skip }, () => {
       const out = makeSanitizer()(input);
-      assert.deepEqual(remainingAnimationMetaTags(out), [], `대상 태그 잔존: ${out}`);
+      assert.deepEqual(remainingTags(out, removedTags), [], `대상 태그 잔존: ${out}`);
       assert.doesNotMatch(out, /javascript:/i, `javascript: 잔존: ${out}`);
+      assert.deepEqual(hrefTargetingAttributeNames(out), [], `href 대상 attributeName 잔존: ${out}`);
       assert.deepEqual(findUnsafe(out), [], `위험 요소 잔존: ${out}`);
     });
   }
@@ -193,7 +215,7 @@ function defineSharedCases(label, makeSanitizer, skip) {
 // ── 정규식 경로 (purify: null) ──
 
 const regexSanitizer = (config = {}) => createSanitizer({ ...config, purify: null });
-defineSharedCases('정규식', regexSanitizer, false);
+defineSharedCases('정규식', regexSanitizer, false, { removedTags: ANIMATION_META_TAGS });
 
 test('[정규식] 연속·중첩 이벤트 속성 반복 제거', () => {
   const s = regexSanitizer();
@@ -313,8 +335,9 @@ test('[정규식] 애니메이션·메타 요소는 대소문자·자체 닫는 
     '<AnimateColor attributeName="fill" to="red"/><SET attributeName="href" to="javascript:alert(1)"/></set >' +
     '</svg><Meta charset="utf-8"/><LINK href=x.css><BASE target=_blank></base></META ></Link><p>b</p>';
   const out = s(input);
-  assert.deepEqual(remainingAnimationMetaTags(out), [], out);
+  assert.deepEqual(remainingTags(out, ANIMATION_META_TAGS), [], out);
   assert.doesNotMatch(out, /javascript:/i, out);
+  assert.deepEqual(hrefTargetingAttributeNames(out), [], out);
   assert.equal(out, '<p>a</p><svg></svg><p>b</p>');
 });
 
@@ -429,7 +452,9 @@ test('[스텁] 훅은 신뢰하지 않는 iframe 노드만 제거한다', () => 
 
 // ── DOMPurify 주입 경로: 실제 인스턴스 (해석 가능할 때만) ──
 
-defineSharedCases('DOMPurify', (config = {}) => createSanitizer({ ...config, purify: realPurify }), SKIP_REAL);
+defineSharedCases('DOMPurify', (config = {}) => createSanitizer({ ...config, purify: realPurify }), SKIP_REAL, {
+  removedTags: DOMPURIFY_REMOVED_TAGS,
+});
 
 test('[CJS·DOMPurify] purify 미지정은 동적 로딩, purify: null 은 정규식 경로 강제', { skip: SKIP_REAL }, () => {
   const cjs = require('../../dist/utils/index.cjs');
