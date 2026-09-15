@@ -2,9 +2,9 @@
  * 새니타이저 보안 회귀 테스트 (DOMPurify 주입 경로 + 정규식 경로)
  *
  * - `purify: null` 은 정규식 경로를 강제한다.
- * - `purify: <인스턴스>` 는 그 인스턴스를 쓴다. 실제 DOMPurify 는 저장소 의존성에 없으므로
- *   `isomorphic-dompurify` 를 해석할 수 있을 때만(예: NODE_PATH 지정) 실행하고, 그 외에는
- *   건너뛴다. 옵션 전달·훅 등록 계약은 스텁 인스턴스로 항상 검증한다.
+ * - `purify: <인스턴스>` 는 그 인스턴스를 쓴다. 실제 DOMPurify 는 devDependencies 의
+ *   `isomorphic-dompurify` 로 기본 실행에서 검증한다. devDependencies 를 설치하지 않아
+ *   해석할 수 없는 환경에서만 건너뛴다. 옵션 전달·훅 등록 계약은 스텁 인스턴스로 항상 검증한다.
  * - 판정은 문자열 정규식이 아니라 helpers/html-inspect.mjs 의 토큰화 결과(브라우저가
  *   인식하는 속성 목록)로 한다.
  */
@@ -38,7 +38,7 @@ function loadRealPurify() {
 const realPurify = loadRealPurify();
 const SKIP_REAL = realPurify
   ? false
-  : 'isomorphic-dompurify 를 해석할 수 없음 (NODE_PATH 로 설치 위치를 지정하면 실행)';
+  : 'isomorphic-dompurify 를 해석할 수 없음 (devDependencies 를 설치하면 실행)';
 
 const BYPASS_INPUTS = [
   ['슬래시 뒤 이벤트 속성', '<p>ok</p><img src="x"/onerror="alert(1)">'],
