@@ -1,6 +1,7 @@
 {
   "name": "@withwiz/blog-core",
   "version": "2.1.5",
+  "packageManager": "npm@11.16.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/greeun/withwiz-blog-core.git"
