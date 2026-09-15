@@ -5,6 +5,7 @@
  * @withwiz/toolkit 미들웨어에 의존하지 않고 독립적으로 동작한다.
  */
 import type { BlogService } from '../services/blog.service';
+import type { CreateBlogPostInput } from '../types/blog';
 import type { AuthMiddleware } from '../types/config';
 import type { BlogI18nStrings } from '../i18n/types';
 import { BLOG_ERROR_CODES } from '../errors';
@@ -48,6 +49,37 @@ function parseSortKey(params: URLSearchParams): SortKey {
 function parseSortDir(params: URLSearchParams): 'asc' | 'desc' {
   const raw = params.get('sortDir');
   return raw === 'asc' ? 'asc' : 'desc';
+}
+
+/**
+ * 관리자 생성·수정 라우트가 서비스로 넘길 수 있는 입력 필드 (blog.validator 스키마 필드와 같은 목록).
+ * enableValidation: false 로 스키마가 없어도 id·authorId·중첩 쓰기 같은 스키마 밖 필드가
+ * Prisma 까지 전달되지 않도록 이 필드만 골라 넘긴다 (태그 라우트와 같은 방식).
+ */
+const POST_INPUT_FIELDS = [
+  'title',
+  'content',
+  'editorType',
+  'excerpt',
+  'category',
+  'coverImageUrl',
+  'coverImageKey',
+  'attachments',
+  'featured',
+  'published',
+  'publishedAt',
+  'slug',
+  'tagIds',
+  'tagSlugs',
+] as const satisfies ReadonlyArray<keyof CreateBlogPostInput>;
+
+/** 요청 본문에 있는 허용 필드만 복사한다. 값은 변환하지 않고, 없는 필드는 추가하지 않는다. */
+function pickPostInput(body: Record<string, unknown>): Record<string, unknown> {
+  const input: Record<string, unknown> = {};
+  for (const key of POST_INPUT_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(body, key)) input[key] = body[key];
+  }
+  return input;
 }
 
 // 응답/인증/검증/페이지네이션 헬퍼는 ./_shared로 단일화되었다.
@@ -185,7 +217,7 @@ export function createPostRoutes(
 
         POST: withAuth(authMiddleware, async (req, user) => {
           const body = (await req.json()) as Record<string, unknown>;
-          let input: Record<string, unknown> = body;
+          let input: Record<string, unknown>;
 
           // Zod 스키마 검증 (활성화 시)
           if (schemas) {
@@ -202,6 +234,8 @@ export function createPostRoutes(
                 400,
               );
             }
+            // 스키마가 없어도 허용 필드만 넘긴다
+            input = pickPostInput(body);
           }
 
           const post = await blogService.create(input as any, user.id);
@@ -239,7 +273,7 @@ export function createPostRoutes(
             return errorResponse(BLOG_ERROR_CODES.POST_NOT_FOUND, 'Post not found', 404);
           }
 
-          let input: Record<string, unknown> = body;
+          let input: Record<string, unknown>;
 
           // Zod 스키마 검증 (활성화 시)
           if (schemas) {
@@ -247,6 +281,9 @@ export function createPostRoutes(
             if (!check.valid) return check.response;
             // 원본 body 대신 검증 결과를 넘겨 스키마 밖 필드(id·authorId·중첩 쓰기 등)를 차단한다
             input = check.data as Record<string, unknown>;
+          } else {
+            // 스키마가 없어도 허용 필드만 넘긴다
+            input = pickPostInput(body);
           }
 
           const post = await blogService.update(id, input as any);
