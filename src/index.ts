@@ -148,8 +148,17 @@ export function createBlog(config: BlogConfig): BlogInstance {
       maxDepth: commentConfig.maxDepth,
       rateLimit: commentConfig.rateLimit,
     });
+    if (commentConfig.requireLogin && !config.commentAuthMiddleware) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[@withwiz/blog-core] features.comments.requireLogin 이 true 이지만 commentAuthMiddleware 가 ' +
+          '주입되지 않아 공개 댓글 작성 라우트는 모든 요청을 403 으로 거부합니다. 로그인 사용자를 ' +
+          '식별하려면 createBlog({ commentAuthMiddleware }) 를 설정하세요.',
+      );
+    }
     commentRoutes = createCommentRoutes(commentService, {
       authMiddleware: config.authMiddleware,
+      publicAuthMiddleware: config.commentAuthMiddleware,
       hmacSecret: config.commentHmacSecret,
       i18n: config.i18n,
       ipHeader: commentConfig.ipHeader,

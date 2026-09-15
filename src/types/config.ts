@@ -126,6 +126,14 @@ export interface BlogConfig {
   authMiddleware?: AuthMiddleware;
 
   /**
+   * 공개 댓글 작성 라우트의 로그인 사용자 식별 미들웨어 (optional).
+   * 사용자를 반환하면 그 id 를 댓글 작성자로 저장하고, null 이면 게스트로 처리한다.
+   * `features.comments.requireLogin: true` 이면 이 설정이 있어야 로그인 사용자가
+   * 공개 라우트로 댓글을 작성할 수 있다(없으면 모든 요청이 403).
+   */
+  commentAuthMiddleware?: AuthMiddleware;
+
+  /**
    * 댓글 IP 해시에 사용할 HMAC 시크릿.
    * 댓글 기능을 활성화하면 필수 주입이다. 라이브러리는 환경 변수를
    * 직접 읽지 않으므로 호스트가 반드시 주입해야 하며, 미주입 시

@@ -208,7 +208,8 @@ interface BlogConfig {
 
   // 어댑터
   storage?: StorageAdapter;                 // 스토리지 어댑터 (S3/R2)
-  authMiddleware?: AuthMiddleware;          // 인증 미들웨어
+  authMiddleware?: AuthMiddleware;          // 인증 미들웨어 (admin 라우트)
+  commentAuthMiddleware?: AuthMiddleware;   // 공개 댓글 작성 라우트의 로그인 사용자 식별
 
   // 콜백
   onViewCount?: (entityType: string, ids: string[]) => Promise<Map<string, number>>;
@@ -683,6 +684,11 @@ const blog = createBlog({
   사용합니다. 미주입이면 `createBlog()`가 **생성 시점에 throw**합니다
   (fail-closed, env 폴백 없음, 하드코딩 기본값 없음).
 - **Cron 인증(`scheduler.cronSecret`)** 은 주입되며 상수시간 비교합니다.
+- **댓글 작성자 식별(`commentAuthMiddleware`)** 은 공개 댓글 작성 라우트에서
+  로그인 사용자를 판별합니다. 사용자를 반환하면 그 id 를 작성자로 저장하고,
+  `null` 이면 게스트로 처리합니다. `features.comments.requireLogin: true` 이면
+  이 설정이 있어야 로그인 사용자가 작성할 수 있으며, 없으면 모든 요청이 403 이고
+  `createBlog()` 가 경고를 1회 출력합니다. 관리자 `authMiddleware` 는 공개 라우트에 쓰지 않습니다.
 - **IP 헤더 신뢰 범위**는 `features.comments.ipHeader`로 제어:
   `'auto'`(기본: `cf-connecting-ip` → `x-real-ip` → `x-forwarded-for[0]`),
   `'none'`(프록시 헤더 미신뢰), 또는 특정 헤더명.
