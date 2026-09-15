@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { createSanitizer } from '../../dist/utils/index.mjs';
-import { findUnsafe, startTags, commentsOf, attrOf } from './helpers/html-inspect.mjs';
+import { findUnsafe, startTags, commentsOf, attrOf, tokenize } from './helpers/html-inspect.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -63,9 +63,47 @@ const BYPASS_INPUTS = [
   ['svg CDATA 와 주석 경계', '<svg><![CDATA[ > <!-- ]]> <img src=x onerror=alert(1)> --></svg>'],
 ];
 
+// 정규식 대체 새니타이저 공통 명세(cms-kit 과 같은 입력): SVG 애니메이션 요소는 대상 속성을
+// javascript: 로 바꿀 수 있고, meta·base·link 는 새로고침 이동·상대 URL 기준·외부 스타일을 주입한다.
+const ANIMATION_META_TAGS = new Set([
+  'animate', 'animatemotion', 'animatetransform', 'animatecolor', 'set', 'meta', 'base', 'link',
+]);
+const ANIMATION_META_INPUTS = [
+  ['svg a 안 animate 자체 닫는 태그', '<svg><a href="#"><animate attributeName="href" to="javascript:alert(1)"/><text>x</text></a></svg>'],
+  ['svg a 안 set 여는·닫는 태그', '<svg><a><set attributeName="href" to="javascript:alert(1)"></set></a></svg>'],
+  ['대문자 SVG·A·ANIMATE 와 무따옴표 속성', '<SVG><A><ANIMATE ATTRIBUTENAME=href TO=javascript:alert(1)></ANIMATE></A></SVG>'],
+  ['meta refresh', '<meta http-equiv="refresh" content="0;url=javascript:alert(1)">'],
+  ['base href', '<base href="https://evil.example/">'],
+  ['link stylesheet', '<link rel="stylesheet" href="https://evil.example/x.css">'],
+];
+const ANIMATION_META_WORDS_HTML = '<p>settings, link, base, meta, animate 라는 단어</p>';
+
+/** 브라우저 해석(raw text·CDATA 해석 포함)과 원문 문자열 양쪽에서 남은 대상 태그를 찾는다. */
+function remainingAnimationMetaTags(html) {
+  const found = new Set();
+  for (const rawText of [false, true]) {
+    for (const cdata of [false, true]) {
+      for (const token of tokenize(html, { rawText, cdata })) {
+        if ((token.type === 'startTag' || token.type === 'endTag') && ANIMATION_META_TAGS.has(token.name)) {
+          found.add(`${token.type}:${token.name}`);
+        }
+      }
+    }
+  }
+  const raw = html.match(/<\/?(?:animate(?:motion|transform|color)?|set|meta|base|link)(?=[\s/>]|$)/gi);
+  for (const m of raw ?? []) found.add(`raw:${m}`);
+  return [...found];
+}
+
 const DATA_COMMENT_HTML =
   '<!-- nbe-blocks:eyJ0eXBlIjoicCIsInRleHQiOiLrs7jrrLgifQ== -->' +
   '<p>본문</p><!--nbe-cta-start--><div class="nbe-cta">CTA</div><!--nbe-cta-end-->';
+
+// 블록 에디터 직렬화 주석 <!-- {marker}{base64} --> (base64 에 +·/·= 포함)
+const MARKER_COMMENT_HTML =
+  '<!-- abe-blocks:eyJ0eXBlIjoiYmlvIiwidGV4dCI6ImE+YiB+PyJ9 --><div class="abe">약력</div>' +
+  '<!-- pme-data:eyJ0Ijoi6rO17JewIiwidSI6Imh0dHBzOi8veC8/YT0xJmI9MiJ9 --><p>공연</p>' +
+  '<!-- rme-data:eyJ0Ijoi66CI7Y287Yag66asPj4ifQ== -->';
 
 const PRESERVE_HTML =
   '<p class="lead" style="color:red">안녕</p>' +
@@ -80,6 +118,19 @@ function defineSharedCases(label, makeSanitizer, skip) {
     });
   }
 
+  for (const [name, input] of ANIMATION_META_INPUTS) {
+    test(`[${label}] 애니메이션·메타 요소 제거: ${name}`, { skip }, () => {
+      const out = makeSanitizer()(input);
+      assert.deepEqual(remainingAnimationMetaTags(out), [], `대상 태그 잔존: ${out}`);
+      assert.doesNotMatch(out, /javascript:/i, `javascript: 잔존: ${out}`);
+      assert.deepEqual(findUnsafe(out), [], `위험 요소 잔존: ${out}`);
+    });
+  }
+
+  test(`[${label}] 애니메이션·메타 요소 이름이 들어간 본문 단어는 보존`, { skip }, () => {
+    assert.equal(makeSanitizer()(ANIMATION_META_WORDS_HTML), ANIMATION_META_WORDS_HTML);
+  });
+
   test(`[${label}] 비신뢰 iframe 제거 후 앞 콘텐츠는 유지`, { skip }, () => {
     const out = makeSanitizer()('<p>a</p><iframe src="https://evil.example/x">');
     assert.ok(startTags(out).some((t) => t.name === 'p'), `p 유지: ${out}`);
@@ -91,6 +142,15 @@ function defineSharedCases(label, makeSanitizer, skip) {
       ' nbe-blocks:eyJ0eXBlIjoicCIsInRleHQiOiLrs7jrrLgifQ== ',
       'nbe-cta-start',
       'nbe-cta-end',
+    ]);
+  });
+
+  test(`[${label}] abe-blocks·pme-data·rme-data 데이터 주석 보존`, { skip }, () => {
+    const out = makeSanitizer()(MARKER_COMMENT_HTML);
+    assert.deepEqual(commentsOf(out), [
+      ' abe-blocks:eyJ0eXBlIjoiYmlvIiwidGV4dCI6ImE+YiB+PyJ9 ',
+      ' pme-data:eyJ0Ijoi6rO17JewIiwidSI6Imh0dHBzOi8veC8/YT0xJmI9MiJ9 ',
+      ' rme-data:eyJ0Ijoi66CI7Y287Yag66asPj4ifQ== ',
     ]);
   });
 
@@ -244,6 +304,26 @@ test('[정규식] 제거가 새 태그를 만드는 입력은 반복 정리, 16�
   const deep = s(nested(20));
   assert.ok(!deep.includes('<'), `수렴하지 않으면 꺾쇠 이스케이프: ${deep}`);
   assert.deepEqual(findUnsafe(deep), []);
+});
+
+test('[정규식] 애니메이션·메타 요소는 대소문자·자체 닫는 태그·닫는 태그 형태와 무관하게 제거', () => {
+  const s = regexSanitizer();
+  const input =
+    '<p>a</p><svg><animateMotion path="M0,0"/><animateTransform attributeName="transform" to="1"></animateTransform>' +
+    '<AnimateColor attributeName="fill" to="red"/><SET attributeName="href" to="javascript:alert(1)"/></set >' +
+    '</svg><Meta charset="utf-8"/><LINK href=x.css><BASE target=_blank></base></META ></Link><p>b</p>';
+  const out = s(input);
+  assert.deepEqual(remainingAnimationMetaTags(out), [], out);
+  assert.doesNotMatch(out, /javascript:/i, out);
+  assert.equal(out, '<p>a</p><svg></svg><p>b</p>');
+});
+
+test('[정규식] 애니메이션·메타 요소와 이름이 겹치는 다른 태그는 건드리지 않는다', () => {
+  const s = regexSanitizer();
+  const input =
+    '<settings>a</settings><linkbox>b</linkbox><metadata>c</metadata><baseline>d</baseline>' +
+    '<animated>e</animated><setter/><set-x>f</set-x><p class="set link">g</p>';
+  assert.equal(s(input), input);
 });
 
 test('[정규식] 블록 에디터 일반 출력은 변경 없음', () => {
