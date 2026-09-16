@@ -12,13 +12,13 @@
 | 범위 | `src/` 전체(services/, routes/, seo/, utils/, validators/, storage/, themes/, i18n/, errors/, components/, context/)와 `test/` 전체(런타임 테스트 17개 파일, 테스트 헬퍼 1개, 타입 검증 파일 1개) |
 | 환경 | Node.js v22.22.0 내장 러너 `node:test` + `node:assert/strict`. `npm test` 는 `npm run build`(tsup 8.5.1)로 `dist/` 를 생성한 뒤 `node --test test/runtime/*.test.mjs` 를 실행한다. 테스트는 `dist/*.mjs` 를 import 하고, 실제 DB 없이 인메모리 fake Prisma 또는 fake 서비스를 주입한다. jsdom 은 직접 쓰지 않으며, 실제 DOMPurify 경로에서 `isomorphic-dompurify` 가 내부적으로 사용한다. 컴포넌트는 `react-dom/server` 의 `renderToStaticMarkup` 으로 정적 마크업만 렌더링한다(2개 파일). HTML 판정이 필요한 2개 파일(`sanitizer-purify`, `detail-linkify`)은 WHATWG HTML 토큰화 규칙의 태그·속성·주석 부분을 옮긴 헬퍼 `test/runtime/helpers/html-inspect.mjs` 를 사용한다. `exports-smoke` 는 `dist` 경로 대신 패키지 이름 자기 참조(`@withwiz/blog-core/<서브패스>`)로 import·require 한다. `test/headless-mode.ts` 는 러너 대상이 아닌 타입 검증 전용 파일이다 |
 | 목표 커버리지 | 미설정: `package.json` 에 커버리지 도구와 임계값이 없고, `tsconfig.json`·`tsup.config.ts` 에도 관련 설정이 없다 |
-| 실측 실행 결과 | 2026-09-16, 브랜치 `fix/residual-defects`(커밋 `bb7addc`)에서 새로 `npm ci` 후 `npm test` 실행: 파일 17개, 테스트 210건, 통과 210 / 실패 0 / 스킵 0 / 취소 0 / todo 0, 러너 소요 613ms. 실제 DOMPurify 경로 테스트도 devDependencies 의 `isomorphic-dompurify` 로 기본 실행에서 실행된다. 같은 시점에 `npm run build` 성공, `npm run typecheck` 오류 0건 |
+| 실측 실행 결과 | 2026-09-17, 브랜치 `fix/residual-defects`(커밋 `faabcf9`)에서 새로 `npm ci` 후 `npm test` 실행: 파일 17개, 테스트 211건, 통과 211 / 실패 0 / 스킵 0 / 취소 0 / todo 0. `@withwiz/block-editor` 는 설치되지 않은 상태다(선택 peer). 실제 DOMPurify 경로 테스트도 devDependencies 의 `isomorphic-dompurify` 로 기본 실행에서 실행된다. 같은 시점에 `npm run build` 성공, `npm run typecheck` 오류 0건 |
 | 이전 실측 (2026-09-15) | 병합 커밋 `2c9fb47`(2.1.5): 파일 15개, 테스트 139건. 기본 `npm test` 는 통과 118 / 스킵 21 이었고, 스킵 21건은 `sanitizer-purify.test.mjs` 가 `isomorphic-dompurify` 를 해석하지 못해 건너뛴 DOMPurify 경로 테스트였다. 호스트 저장소의 isomorphic-dompurify 4.2.0 을 `NODE_PATH` 로 지정하면 139건이 모두 통과했다. `npm run typecheck` 는 `@tiptap/*` 미설치로 오류 4건이었다 |
 | 이전 실측 (2026-09-13) | 기준 커밋 `49b7778`(2.1.3): 파일 9개, 테스트 54건, 통과 54 / 스킵 0. 2.1.4 에서 11건(2개 파일), 2.1.5 에서 74건(4개 파일), 2026-09-16 `fix/residual-defects` 에서 71건(새 파일 2개 51건, 기존 파일 2개 20건)이 추가되었다 |
 | 타입 검증 실행 결과 | `test/headless-mode.ts` 주석에 기재된 `npx tsc --noEmit --strict test/headless-mode.ts` 는 tsconfig 옵션이 적용되지 않아 오류 57건(`node_modules/zod/v4/locales/index.d.cts` 52건, `src/` 5건)으로 실패한다(2026-09-16 재측정도 같음). tsconfig 와 같은 옵션(`--skipLibCheck --esModuleInterop --target es2020 --module esnext --moduleResolution bundler --jsx react-jsx`)을 지정하면 오류 0건으로 통과한다. 2026-09-13 실측(68건, `node_modules` 63건)과 `node_modules` 오류 수가 다른 것은 설치 방식과 해석 버전이 달라졌기 때문으로 보이며, `src/` 5건은 같다. 저장소 전체 `npm run typecheck`(`tsc --noEmit`)는 2026-09-16 에 `@tiptap/*` 를 devDependencies 에 추가한 뒤 오류 0건으로 통과한다 |
 | 의존성 설치 | 커밋 `3cb8973`(2.1.4)이 `package-lock.json` 을 `package.json` 과 동기화해 `npm ci` 가 성공한다(2026-09-16 재확인, Node v22.22.0·npm 11.16.0). 해석된 버전은 next 16.3.5, react 19.3.0, react-dom 19.3.0, typescript 5.9.3, zod 4.4.3, tsup 8.5.1, @withwiz/block-editor 0.3.0, @types/react 19.3.0 이다. 2026-09-16 에 선택적 peer 중 `isomorphic-dompurify`(3.19.0 고정, dompurify 3.4.15·jsdom 29.1.1 해석)와 `@tiptap/react`·`@tiptap/starter-kit`·`@tiptap/extension-link`·`@tiptap/pm`(3.31.3 고정, `@tiptap/core` 3.31.3 은 peer 로 설치)을 devDependencies 에도 추가했다. peer 선언과 선택 여부는 바뀌지 않았고, `@aws-sdk/client-s3` 는 여전히 설치되지 않는다. isomorphic-dompurify 는 호스트가 4.2.0 을 쓰지만, 4.x 와 3.20 이후는 jsdom 30 을 따라 Node `^22.22.2` 를 요구해 저장소 `.npmrc` 의 `engine-strict=true` 에서 Node 22.22.0 설치가 EBADENGINE 으로 실패한다. 3.19.0 은 4.2.0 과 같은 `dompurify ^3.4.12` 조건이라 호스트와 같은 dompurify 3.4.15 를 해석한다 |
 | 도메인별 실행 스크립트 | 없음. `package.json` 에는 `build`, `build:types`, `typecheck`, `test` 만 있다 |
-| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30) |
+| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건) |
 
 ### 관련 문서
 
@@ -30,9 +30,10 @@
 | `WITHWIZ_PACKAGES_TEST_AUDIT.md` (dts-ballet-homepage `tests/doc/`) | 사전 조사 | 테스트 43건 시점에 작성되었다. 이후 2.1.3~2.1.5 가 게시되었고, 2026-09-15 기준 `develop`, `main`, `origin/develop`, `origin/main`(마지막 fetch 기준)이 모두 2.1.5 릴리스 커밋 `b47b2f7` 을 가리키며 npm `latest` dist-tag 는 2.1.5 이다. 따라서 조사 문서에 기록된 "게시 전, 병합 전" 상태는 현재와 다르다 |
 | 커밋 `3572744` | 동시성 결함 수정 | 댓글 레이트 리밋 경쟁 조건과 예약 발행 이중 집계의 원인, 선택한 방식, 테스트 11건 추가 내역을 기록한다. 커밋 메시지에 따르면 수정 전 코드에서는 동시성 관련 4건이 실패했다 |
 | 커밋 `e0abe17`, `e6fd816`, `3cb8973` (2.1.4) | 접근성 결함 수정, 의존성 정리 | 공개 목록 페이지 h1 렌더링(테스트 6건, TC-AC-004)과 공개 테마 `text-dim` 색 대비 조정(테스트 5건, TC-AC-005)을 기록한다. 커밋 메시지에 따르면 수정 전 코드에서는 h1 테스트 5건과 대비 테스트 1건이 실패했다. `3cb8973` 은 테스트가 import 하는 `react-dom` 을 devDependencies 에 명시하고 lockfile 을 동기화했다 |
-| 커밋 `ba37e6e` | 의존성 갱신 | peer 로 설치되는 `@withwiz/block-editor` 를 lockfile 에서 0.3.0 으로 갱신했다. `src/` 에서 block-editor 는 `components/admin/editor` 에서만 import 된다. 이 서브패스는 2026-09-16 부터 `exports-smoke.test.mjs` 가 import 와 선언 파일을 확인하지만(TC-SM-002), 컴포넌트 동작은 테스트하지 않는다 |
+| 커밋 `ba37e6e` | 의존성 갱신 | peer 로 설치되는 `@withwiz/block-editor` 를 lockfile 에서 0.3.0 으로 갱신했다. `src/` 는 block-editor 를 import 하지 않는다. `components/admin/editor` 는 편집기 컴포넌트를 props 로 주입받는다(2026-09-17 `faabcf9` 부터 선택 peer 이며 개발 설치에서도 빠졌다). 이 서브패스는 2026-09-16 부터 `exports-smoke.test.mjs` 가 import 와 선언 파일을 확인하지만(TC-SM-002), 컴포넌트 동작은 테스트하지 않는다 |
 | 커밋 `5b3876e`, `c0ea2a9`, `d625f08`, `d22f6c6`, `e90268e` (2.1.5, 병합 `4fa864e`) | 저장형 XSS 경로 보안 결함 수정 | 새니타이저 `purify` 주입과 폴백 경로 스캐너 재작성(`sanitizer-purify.test.mjs` 58건, TC-S-013·014·015), 빈 새니타이즈 결과의 원본 복귀 차단(`blog-service-sanitize.test.mjs` 5건, TC-S-013), 상세 페이지 링크 변환 속성 주입 차단(`detail-linkify.test.mjs` 5건, TC-S-016), 관리자 포스트 라우트의 검증 결과 전달(`post-routes-validated.test.mjs` 6건, TC-S-011)과 헬퍼 `html-inspect.mjs` 추가를 기록한다. `e90268e` 는 정규식·문자열 리터럴의 제어 문자를 `\u` 이스케이프로 바꾼 표기 변경이며 커밋 메시지는 동작이 같다고 기록한다 |
 | 커밋 `b106c9f`, `56f004a`, `0cf4b3b`, `c499691`, `bb7addc` (브랜치 `fix/residual-defects`, 미병합·미게시) | 잔여 결함 수정과 테스트 보강 | `isomorphic-dompurify` devDependency 추가로 DOMPurify 경로 21건 기본 실행(TC-S-013·015), 공개 댓글 작성 라우트 사용자 식별 설정 추가(`comment-require-login.test.mjs` 8건, TC-A-004), editor 서브패스 선언 파일 생성과 exports 스모크(`exports-smoke.test.mjs` 43건, TC-SM-002), `enableValidation:false` 포스트 라우트 허용 필드 제한(`post-routes-validated.test.mjs` 특성 테스트 1건 교체·2건 추가, TC-S-011), 폴백 새니타이저 SVG 애니메이션·`meta`·`base`·`link` 제거(`sanitizer-purify.test.mjs` 18건, TC-S-013·017)를 기록한다. 각 커밋 메시지에 수정 전 실패 건수가 있다 |
+| 커밋 `faabcf9` (브랜치 `fix/residual-defects`, 미병합·미게시) | 의존 선언 정정 | `peerDependenciesMeta` 의 `@withwiz/block-editor` 를 `optional: false` 에서 `true` 로 바꾸고 lockfile 루트 항목을 동기화했다. block-editor 없이 새로 설치한 상태에서 typecheck·build·전체 테스트가 통과한다. TC-SM-002 에 선택 peer 확인 1건을 추가했다(`exports-smoke.test.mjs` 43건 → 44건) |
 
 ---
 
@@ -1458,7 +1459,7 @@ Request
 | **대상** | `package.json` `exports` 14개 서브패스의 `import`·`require` 조건 `types`·`default` 경로, `tsup.config.ts` 의 `dts.entry`(2026-09-16 `0cf4b3b` 에서 `components/admin/editor/index` 추가) |
 | **우선순위** | Medium |
 | **전제조건** | `npm test` 가 선행하는 `npm run build`. editor 서브패스가 import 하는 선택적 peer `@tiptap/react`·`@tiptap/starter-kit`·`@tiptap/extension-link`·`@tiptap/pm` 은 devDependencies 로 설치된다. 서브패스는 패키지 이름 자기 참조(`@withwiz/blog-core/<서브패스>`)로 import·require 해 `exports` 해석을 그대로 거친다 |
-| **테스트 데이터** | `package.json` `exports` 객체 |
+| **테스트 데이터** | `package.json` `exports`·`peerDependenciesMeta` 객체, `dist/` 의 `.mjs`·`.cjs`·`.js` 산출물 |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
@@ -1466,9 +1467,10 @@ Request
 | 2 | `[<서브패스>] import·require 조건의 types·default 파일이 dist 에 존재한다` (14건) | 서브패스마다 `import.types`·`import.default`·`require.types`·`require.default` 가 선언되어 있고 누락된 dist 파일 0개 |
 | 3 | `[<서브패스>] ESM import 와 CJS require 가 성공하고 export 이름이 같다` (14건) | ESM 네임스페이스와 CJS exports 의 이름 목록(`default`·`__esModule` 제외)이 같음. `./types` 는 타입 전용이라 두 목록이 모두 비어 있음 |
 | 4 | `[<서브패스>] 선언 파일(.d.ts·.d.cts)이 런타임 export 이름을 모두 선언한다` (14건) | 두 선언 파일이 존재하고 `export` 를 포함하며, ESM 런타임 export 이름이 모두 단어로 등장하고, 상대 경로로 참조하는 청크 선언 파일(`.js`→`.d.ts`, `.cjs`→`.d.cts`)이 재귀적으로 모두 존재 |
+| 5 | `@withwiz/block-editor 는 선택 peer 이고 dist 런타임 코드가 import 하지 않는다` | `peerDependenciesMeta["@withwiz/block-editor"].optional === true`, 선언 파일을 제외한 `dist/` 산출물에서 `from`·`import()`·`require()`·부수 효과 `import` 형태의 block-editor 참조 0개(주석과 설치 안내 문자열은 해당하지 않음) |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 43개 (실측: 1건 + 14개 서브패스 × 3건)
-- **결함 이력:** 2026-09-13·09-15 판에서는 결함 확인용 🔲 계획 TC 였다. 당시 `tsup.config.ts` 는 `@tiptap/*` 미설치를 이유로 editor dts 생성을 제외했고, `package.json` 은 `./dist/components/admin/editor/index.d.ts`·`index.d.cts` 를 선언했지만 산출물에는 `index.mjs`·`index.cjs` 만 있었다. `@tiptap/*` 미설치 환경이라 editor 서브패스의 ESM import 는 `ERR_MODULE_NOT_FOUND`(`@tiptap/react`), CJS require 는 `MODULE_NOT_FOUND` 였고 나머지 13개는 성공했다(2026-09-13 임시 스크립트, 2026-09-15 산출물 확인). `npm run typecheck` 도 `RichTextEditor.tsx` 의 `@tiptap/*` 모듈 해석 실패 3건과 암시적 `any` 1건으로 실패했다. 2026-09-16 `0cf4b3b` 에서 `@tiptap/*` 를 devDependencies 에 추가하고 editor dts 엔트리를 추가했다. 수정 전 실행에서 editor 서브패스 3건(선언 파일 2개 누락, `@tiptap/react` 해석 실패로 import·선언 대조 실패)이 실패했다. 선언 파일 상대 참조 검사는 2026-09-16 에 청크 선언 파일 하나를 임시로 옮겨 `components/admin`·`components/admin/editor` 2건이 실패하는 것을 확인했다.
+- **자동화:** 가능 ✅ | **테스트 수:** 44개 (실측: 1건 + 14개 서브패스 × 3건 + 선택 peer 1건)
+- **결함 이력:** 2026-09-13·09-15 판에서는 결함 확인용 🔲 계획 TC 였다. 당시 `tsup.config.ts` 는 `@tiptap/*` 미설치를 이유로 editor dts 생성을 제외했고, `package.json` 은 `./dist/components/admin/editor/index.d.ts`·`index.d.cts` 를 선언했지만 산출물에는 `index.mjs`·`index.cjs` 만 있었다. `@tiptap/*` 미설치 환경이라 editor 서브패스의 ESM import 는 `ERR_MODULE_NOT_FOUND`(`@tiptap/react`), CJS require 는 `MODULE_NOT_FOUND` 였고 나머지 13개는 성공했다(2026-09-13 임시 스크립트, 2026-09-15 산출물 확인). `npm run typecheck` 도 `RichTextEditor.tsx` 의 `@tiptap/*` 모듈 해석 실패 3건과 암시적 `any` 1건으로 실패했다. 2026-09-16 `0cf4b3b` 에서 `@tiptap/*` 를 devDependencies 에 추가하고 editor dts 엔트리를 추가했다. 수정 전 실행에서 editor 서브패스 3건(선언 파일 2개 누락, `@tiptap/react` 해석 실패로 import·선언 대조 실패)이 실패했다. 선언 파일 상대 참조 검사는 2026-09-16 에 청크 선언 파일 하나를 임시로 옮겨 `components/admin`·`components/admin/editor` 2건이 실패하는 것을 확인했다. 2026-09-17 `faabcf9` 이전에는 코드가 block-editor 를 import 하지 않는데도 `peerDependenciesMeta` 가 `optional: false` 여서, block-editor 를 쓰지 않는 소비자도 설치해야 했다(README 두 종은 선택 의존으로 설명). 5단계는 선언을 `false` 로 되돌리거나 block-editor 를 import 하는 임시 산출물을 넣으면 실패함을 확인했다.
 - **검증 보강:** 2026-09-16 에 워크트리 밖 소비자 TypeScript 파일에서 `@withwiz/blog-core/components/admin/editor` 의 `RichTextEditor`·`BlockEditorForm`·`createBlockPreset` 과 `RichTextEditorProps`·`BlockPresetConfig` 타입을 import 해 `--moduleResolution nodenext`(ESM `.ts`·CJS `.cts`)와 `bundler` 로 컴파일했고 모두 오류 0건이었다.
 - **한계:** 선언 파일 대조는 문자열 수준이며 타입 컴파일은 하지 않는다. `@tiptap/*` 가 설치되지 않은 소비자 환경에서 editor 서브패스를 import 하면 여전히 모듈 해석에 실패한다(선택적 peer 설계와 같음). 공개 컴포넌트의 렌더링 동작은 TC-U-009 가 다룬다.
 
@@ -1560,21 +1562,21 @@ Request
 | **Performance** | 0개 | 0개 | 2 (0/2) | 2 (0/2) |
 | **Accessibility** | 2개 | 11개 | 5 (2/3) | 5 (2/3) |
 | **Load/Stress** | 1개 (주1) | 5개 | 3 (2/1) | 3 (2/1) |
-| **Smoke** | 2개 (주2) | 43개 | 2 (2/0) | 2 (2/0) |
+| **Smoke** | 2개 (주2) | 44개 | 2 (2/0) | 2 (2/0) |
 | **Chaos** | 0개 | 0개 | 3 (0/3) | 3 (0/3) |
-| **합계** | **18개** (중복 제외, 주4) | **210개** (주3) | **55 (25/30)** | **55 (25/30)** |
+| **합계** | **18개** (중복 제외, 주4) | **211개** (주3) | **55 (25/30)** | **55 (25/30)** |
 
 - 주1: `concurrency-guards.test.mjs` 는 11건을 Integration 6건과 Load/Stress 5건으로 나누어 두 도메인에 모두 계산했다. 합계 파일 수는 중복을 제외한 값이다.
-- 주2: Smoke 파일 2개는 `test/headless-mode.ts`(러너 대상이 아닌 타입 검증 파일, 테스트 0건)와 `exports-smoke.test.mjs`(43건)이다.
-- 주3: 2026-09-16 기본 `npm test` 에서 210건이 모두 실행되어 통과했고 스킵은 0건이다. Security 128건 중 실제 DOMPurify 경로 29건(TC-S-013 21건, TC-S-015 1건, TC-S-017 7건)은 `isomorphic-dompurify` 를 해석할 수 없는 환경에서만 건너뛴다. 2026-09-15 에는 139건 중 21건을 건너뛰었다.
+- 주2: Smoke 파일 2개는 `test/headless-mode.ts`(러너 대상이 아닌 타입 검증 파일, 테스트 0건)와 `exports-smoke.test.mjs`(44건)이다.
+- 주3: 2026-09-17 기본 `npm test` 에서 211건이 모두 실행되어 통과했고 스킵은 0건이다. Security 128건 중 실제 DOMPurify 경로 29건(TC-S-013 21건, TC-S-015 1건, TC-S-017 7건)은 `isomorphic-dompurify` 를 해석할 수 없는 환경에서만 건너뛴다. 2026-09-15 에는 139건 중 21건을 건너뛰었다.
 - 주4: 러너 대상 17개 파일과 `test/headless-mode.ts` 의 합이다. 테스트 헬퍼 `test/runtime/helpers/html-inspect.mjs` 는 `*.test.mjs` 가 아니어서 러너가 실행하지 않으므로 파일 수에서 제외했다.
 - 커버리지 수치는 측정 도구가 설정되어 있지 않아 기록하지 않는다.
 - 2026-09-13 대비 변화(2026-09-15 판): 파일 10개 → 16개, 테스트 54건 → 139건, SC·TC 49개(15/34) → 54개(22/32). 계획에서 완료로 바뀐 TC 는 TC-S-011, TC-S-013 이고, 새로 추가한 TC 는 TC-S-014, TC-S-015, TC-S-016, TC-AC-004, TC-AC-005 이다.
-- 2026-09-15 대비 변화(2026-09-16 판): 파일 16개 → 18개, 테스트 139건 → 210건(기본 실행 통과 118건 → 210건), SC·TC 54개(22/32) → 55개(25/30). 계획에서 완료로 바뀐 TC 는 TC-A-004, TC-SM-002 이고, 새로 추가한 TC 는 TC-S-017 이다. 기존 TC 의 테스트 수는 TC-S-011 6건 → 8건, TC-S-013 45건 → 47건으로 늘었다.
+- 2026-09-15 대비 변화(2026-09-16·17 판): 파일 16개 → 18개, 테스트 139건 → 211건(기본 실행 통과 118건 → 211건), SC·TC 54개(22/32) → 55개(25/30). 계획에서 완료로 바뀐 TC 는 TC-A-004, TC-SM-002 이고, 새로 추가한 TC 는 TC-S-017 이다. 기존 TC 의 테스트 수는 TC-S-011 6건 → 8건, TC-S-013 45건 → 47건으로 늘었다.
 
 ### 테스트 파일 대조
 
-`find test -type f` 결과 19개 파일 중 테스트 18개 파일을 모두 TC 에 매핑했으며, 누락 파일은 0개이다. 나머지 1개는 헬퍼(`helpers/html-inspect.mjs`)이다. 파일별 테스트 수 합계 210건은 2026-09-16 `npm test` 실측 결과(통과 210, 스킵 0)의 전체 건수와 일치한다. 파일별 건수는 빌드 후 파일마다 `node --test <파일>` 을 실행해 확인했다.
+`find test -type f` 결과 19개 파일 중 테스트 18개 파일을 모두 TC 에 매핑했으며, 누락 파일은 0개이다. 나머지 1개는 헬퍼(`helpers/html-inspect.mjs`)이다. 파일별 테스트 수 합계 211건은 2026-09-17 `npm test` 실측 결과(통과 211, 스킵 0)의 전체 건수와 일치한다. 파일별 건수는 빌드 후 파일마다 `node --test <파일>` 을 실행해 확인했다.
 
 | 파일 | 실측 테스트 수 (기본 통과/스킵) | 매핑 TC (건수) |
 |------|-------------|--------------|
@@ -1584,7 +1586,7 @@ Request
 | `test/runtime/concurrency-guards.test.mjs` | 11 (11/0) | TC-I-001 (4), TC-I-002 (2), TC-L-001 (3), TC-L-002 (2) |
 | `test/runtime/createblog-failfast.test.mjs` | 3 (3/0) | TC-S-004 (3) |
 | `test/runtime/detail-linkify.test.mjs` | 5 (5/0) | TC-S-016 (5) |
-| `test/runtime/exports-smoke.test.mjs` | 43 (43/0) | TC-SM-002 (43) |
+| `test/runtime/exports-smoke.test.mjs` | 44 (44/0) | TC-SM-002 (44) |
 | `test/runtime/ip-hash.test.mjs` | 5 (5/0) | TC-S-005 (5) |
 | `test/runtime/ip-header-strategy.test.mjs` | 4 (4/0) | TC-S-006 (4) |
 | `test/runtime/list-page-hero-title.test.mjs` | 6 (6/0) | TC-AC-004 (6) |
@@ -1597,7 +1599,7 @@ Request
 | `test/runtime/utils-basic.test.mjs` | 3 (3/0) | TC-U-002 (3) |
 | `test/headless-mode.ts` | 0 (타입 검증) | TC-SM-001 |
 | `test/runtime/helpers/html-inspect.mjs` | - (헬퍼) | TC-S-013, TC-S-014, TC-S-016, TC-S-017 이 판정에 사용 |
-| **합계** | **210 (210/0)** | |
+| **합계** | **211 (211/0)** | |
 
 `sanitizer-purify.test.mjs` 76건 배분은 다음과 같다. 2026-09-16 에 추가한 테스트는 이름 뒤에 (2026-09-16) 으로 표시했다.
 
@@ -1643,11 +1645,11 @@ Request
 | API | 부분 | 라우트 핸들러 팩토리가 공개 API 이다. 2026-09-16 에 댓글 공개 작성 라우트의 사용자 식별 연동 8건(TC-A-004)이 추가되었지만, 라우트를 실행하는 나머지 4개 파일은 인증·IP 처리·허용 필드 제한 목적이고 파싱·응답 헤더·오류 본문 계약은 검증하지 않는다 |
 | Integration | 적용(공백 큼) | 서비스 5종 중 댓글 생성과 예약 발행 처리만 fake Prisma 로 로직 전반을 실행한다. BlogService 는 `create()`·`update()` 의 본문 저장값과 라우트 입력 전달만 보안 회귀 목적으로 부분 검증하고, tag·search 서비스는 0건이다 |
 | E2E | 미적용 | DB·Next.js 런타임·인증을 호스트가 제공하는 라이브러리이므로 사용자 흐름 E2E 는 호스트 책임이다 |
-| Security | 적용(강함) | 210건 중 128건이 fail-closed, HMAC 시크릿, IP 스푸핑, XSS(저장 전 새니타이즈·렌더링 시 링크 변환), 허용 필드 제한 검증이다. 2.1.5 에서 폴백 우회 입력과 DOMPurify 주입 경로가 추가되었고, 2026-09-16 부터 실제 DOMPurify 경로 29건도 기본 실행에서 실행된다. 같은 날 폴백 경로의 SVG 애니메이션·문서 수준 요소 제거(TC-S-017)와 `enableValidation:false` 허용 필드 제한(TC-S-011)이 추가되었다. SQL 식별자 검증, 관리자 라우트 전수 인증, 500 메시지 노출은 여전히 0건이다 |
+| Security | 적용(강함) | 211건 중 128건이 fail-closed, HMAC 시크릿, IP 스푸핑, XSS(저장 전 새니타이즈·렌더링 시 링크 변환), 허용 필드 제한 검증이다. 2.1.5 에서 폴백 우회 입력과 DOMPurify 주입 경로가 추가되었고, 2026-09-16 부터 실제 DOMPurify 경로 29건도 기본 실행에서 실행된다. 같은 날 폴백 경로의 SVG 애니메이션·문서 수준 요소 제거(TC-S-017)와 `enableValidation:false` 허용 필드 제한(TC-S-011)이 추가되었다. SQL 식별자 검증, 관리자 라우트 전수 인증, 500 메시지 노출은 여전히 0건이다 |
 | Accessibility | 적용, 정적 검사만 | 2.1.4 에서 정적 마크업(제목 계층)과 테마 색 대비 검사 11건이 추가되었다. 3개 엔트리로 컴포넌트 25개를 공개하지만 상호작용·자동 검사 도구에 필요한 jsdom 과 testing-library 는 devDependencies 에 없다(jsdom 29.1.1 은 2026-09-16 부터 `isomorphic-dompurify` 의 의존성으로만 설치된다) |
 | Performance | 낮음 | 조회 대부분이 DB 에 위임되며, 측정할 지점은 폴백 새니타이저와 건별 예약 갱신 정도이다 |
 | Load/Stress | 적용(사건이 입증) | 2026-09-13 결함 2건이 동시 요청에서만 드러났고, 회귀 테스트 5건이 그 순서를 재현한다 |
-| Smoke | 적용 | `npm test` 가 빌드를 선행해 산출물 생성은 매번 확인된다. 2026-09-16 에 14개 서브패스의 import·require, 선언 파일 존재·export 이름·상대 참조 검사 43건(TC-SM-002)이 추가되었고, 이 과정에서 editor 서브패스 선언 파일 누락을 수정했다. headless 타입 검증(TC-SM-001)은 여전히 npm 스크립트에 연결되지 않았다 |
+| Smoke | 적용 | `npm test` 가 빌드를 선행해 산출물 생성은 매번 확인된다. 2026-09-16 에 14개 서브패스의 import·require, 선언 파일 존재·export 이름·상대 참조 검사 43건과 block-editor 선택 peer 확인 1건(TC-SM-002)이 추가되었고, 이 과정에서 editor 서브패스 선언 파일 누락을 수정했다. headless 타입 검증(TC-SM-001)은 여전히 npm 스크립트에 연결되지 않았다 |
 | Chaos | 낮음 | 외부 의존이 호스트가 주입하는 Prisma·StorageAdapter 뿐이며, 부분 실패 경로는 스토리지 정리, 보상 삭제, 예약 발행 중간 실패 3곳이다 |
 
 ---
@@ -1702,7 +1704,7 @@ Request
 
 - [x] 10개 도메인 적용성 판정 포함 (E2E 는 미적용으로 명시)
 - [x] 테스트 파일 18개를 모두 TC 에 매핑하고 누락 0개 확인 (헬퍼 1개 별도 표기)
-- [x] 파일별 테스트 수 합계(210)가 2026-09-16 `npm test` 실측 결과(통과 210, 실패 0, 스킵 0)에 일치
+- [x] 파일별 테스트 수 합계(211)가 2026-09-17 `npm test` 실측 결과(통과 211, 실패 0, 스킵 0)에 일치
 - [x] 완료 TC 의 단계는 실제 테스트 이름과 단언에서 발췌
 - [x] 계획 TC 의 단계는 소스 코드 동작에 근거하고, 주요 예상값은 `dist` 대상 임시 스크립트로 확인
 - [x] 동시성 테스트 11건을 Integration(순차 동작 6건)과 Load/Stress(경쟁 조건 5건)로 분리
