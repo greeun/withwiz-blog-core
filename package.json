@@ -229,7 +229,7 @@
       "optional": true
     },
     "@withwiz/block-editor": {
-      "optional": false
+      "optional": true
     }
   },
   "devDependencies": {

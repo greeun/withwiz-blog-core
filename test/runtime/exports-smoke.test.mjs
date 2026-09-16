@@ -91,3 +91,24 @@ for (const subpath of subpaths) {
     }
   });
 }
+
+test('@withwiz/block-editor 는 선택 peer 이고 dist 런타임 코드가 import 하지 않는다', async () => {
+  // 편집기 컴포넌트(BlockEditor·BlockEditorProvider)는 호스트가 props 로 주입하므로
+  // blog-core 는 block-editor 를 설치하지 않은 소비자에서도 동작해야 한다.
+  assert.equal(pkg.peerDependenciesMeta?.['@withwiz/block-editor']?.optional, true);
+
+  const { readdirSync } = await import('node:fs');
+  const runtimeImport = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|^\s*import\s+)['"]@withwiz\/block-editor(?:\/[^'"]*)?['"]/m;
+  const offenders = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = resolve(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (/\.(m|c)?js$/.test(entry.name) && runtimeImport.test(readFileSync(path, 'utf8'))) {
+        offenders.push(path.slice(path.indexOf('/dist/') + 1));
+      }
+    }
+  };
+  walk(fileOf('./dist/'));
+  assert.deepEqual(offenders, [], 'block-editor 를 런타임에 import 하는 산출물');
+});
