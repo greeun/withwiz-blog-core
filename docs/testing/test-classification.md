@@ -18,7 +18,7 @@
 | 타입 검증 실행 결과 | `test/headless-mode.ts` 주석에 기재된 `npx tsc --noEmit --strict test/headless-mode.ts` 는 tsconfig 옵션이 적용되지 않아 오류 57건(`node_modules/zod/v4/locales/index.d.cts` 52건, `src/` 5건)으로 실패한다(2026-09-16 재측정도 같음). tsconfig 와 같은 옵션(`--skipLibCheck --esModuleInterop --target es2020 --module esnext --moduleResolution bundler --jsx react-jsx`)을 지정하면 오류 0건으로 통과한다. 2026-09-13 실측(68건, `node_modules` 63건)과 `node_modules` 오류 수가 다른 것은 설치 방식과 해석 버전이 달라졌기 때문으로 보이며, `src/` 5건은 같다. 저장소 전체 `npm run typecheck`(`tsc --noEmit`)는 2026-09-16 에 `@tiptap/*` 를 devDependencies 에 추가한 뒤 오류 0건으로 통과한다 |
 | 의존성 설치 | 커밋 `3cb8973`(2.1.4)이 `package-lock.json` 을 `package.json` 과 동기화해 `npm ci` 가 성공한다(2026-09-16 재확인, Node v22.22.0·npm 11.16.0). 해석된 버전은 next 16.3.5, react 19.3.0, react-dom 19.3.0, typescript 5.9.3, zod 4.4.3, tsup 8.5.1, @withwiz/block-editor 0.3.0, @types/react 19.3.0 이다. 2026-09-16 에 선택적 peer 중 `isomorphic-dompurify`(3.19.0 고정, dompurify 3.4.15·jsdom 29.1.1 해석)와 `@tiptap/react`·`@tiptap/starter-kit`·`@tiptap/extension-link`·`@tiptap/pm`(3.31.3 고정, `@tiptap/core` 3.31.3 은 peer 로 설치)을 devDependencies 에도 추가했다. peer 선언과 선택 여부는 바뀌지 않았고, `@aws-sdk/client-s3` 는 여전히 설치되지 않는다. isomorphic-dompurify 는 호스트가 4.2.0 을 쓰지만, 4.x 와 3.20 이후는 jsdom 30 을 따라 Node `^22.22.2` 를 요구해 저장소 `.npmrc` 의 `engine-strict=true` 에서 Node 22.22.0 설치가 EBADENGINE 으로 실패한다. 3.19.0 은 4.2.0 과 같은 `dompurify ^3.4.12` 조건이라 호스트와 같은 dompurify 3.4.15 를 해석한다 |
 | 도메인별 실행 스크립트 | 없음. `package.json` 에는 `build`, `build:types`, `typecheck`, `test` 만 있다 |
-| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건) |
+| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건). 2026-09-18 `fix/residual-defects-a` 기준 갱신: `BlogService.create()`·`update()` 직접 호출 경로의 허용 필드 제한 결함을 고치고 TC-S-011 에 9~12단계를 추가 (215건, SC/TC 수는 변화 없음) |
 
 ### 관련 문서
 
@@ -336,7 +336,7 @@
 
 **실행 명령:** `npm test` (단일 파일: `npm run build && node --test test/runtime/concurrency-guards.test.mjs`)
 
-**현재 공백:** 서비스 5종 중 `CommentService.create()` 와 `SchedulerService.processScheduledPosts()` 만 fake Prisma 로 로직 전반이 실행된다. `BlogService` 는 2.1.5 에서 추가된 `blog-service-sanitize.test.mjs`(TC-S-013)와 `post-routes-validated.test.mjs`(TC-S-011)가 `create()`·`update()` 의 Prisma data 를 기록해 본문 새니타이즈 저장값, zod 기본값·`publishedAt` 변환, 스키마 밖 필드 제거를 단언하지만, 이는 보안 회귀 목적의 부분 검증이다. slug 중복, 태그 연결, 조회 조건, 삭제·대시보드는 검증하지 않는다. `TagService`, `SearchService` 를 실행하는 테스트는 `auth-failclosed.test.mjs` 뿐이며, 이 파일은 모든 델리게이트가 빈 결과를 반환하는 Proxy fake 를 사용하므로 질의 조건과 매핑 로직을 단언하지 않는다.
+**현재 공백:** 서비스 5종 중 `CommentService.create()` 와 `SchedulerService.processScheduledPosts()` 만 fake Prisma 로 로직 전반이 실행된다. `BlogService` 는 2.1.5 에서 추가된 `blog-service-sanitize.test.mjs`(TC-S-013), `post-routes-validated.test.mjs`(TC-S-011), 2026-09-18 에 추가된 `blog-service-input-fields.test.mjs`(TC-S-011)가 `create()`·`update()` 의 Prisma data 를 기록해 본문 새니타이즈 저장값, zod 기본값·`publishedAt` 변환, 스키마 밖 필드 제거를 단언하지만, 이는 보안 회귀 목적의 부분 검증이다. slug 중복, 태그 연결, 조회 조건, 삭제·대시보드는 검증하지 않는다. `TagService`, `SearchService` 를 실행하는 테스트는 `auth-failclosed.test.mjs` 뿐이며, 이 파일은 모든 델리게이트가 빈 결과를 반환하는 Proxy fake 를 사용하므로 질의 조건과 매핑 로직을 단언하지 않는다.
 
 ---
 
@@ -971,10 +971,10 @@ Request
 
 | 항목 | 내용 |
 |------|------|
-| **파일** | `test/runtime/post-routes-validated.test.mjs` |
-| **대상** | `src/routes/post.routes.ts` admin `list.POST`, `detail.PUT` (검증 통과 시 `check.data` 를 서비스로 전달, 2.1.5 `d22f6c6`. 검증 비활성 시 내부 `pickPostInput()` 으로 허용 필드 `POST_INPUT_FIELDS` 14개만 전달, 2026-09-16 `c499691`) / `src/services/blog.service.ts` `create()`, `update()` |
+| **파일** | `test/runtime/post-routes-validated.test.mjs`, `test/runtime/blog-service-input-fields.test.mjs` (9~12번) |
+| **대상** | `src/routes/post.routes.ts` admin `list.POST`, `detail.PUT` (검증 통과 시 `check.data` 를 서비스로 전달, 2.1.5 `d22f6c6`. 검증 비활성 시 `pickPostInput()` 으로 허용 필드 `POST_INPUT_FIELDS` 14개만 전달, 2026-09-16 `c499691`) / `src/services/blog.service.ts` `create()`, `update()` 와 거기서 export 하는 `POST_INPUT_FIELDS`·`pickPostInput()` (서비스 직접 호출 경로에도 같은 선별 적용, 2026-09-18 `ca448be`) |
 | **우선순위** | High |
-| **전제조건** | 1~6번: `create`·`update`·`getById` 인자를 기록하는 fake BlogService. 7·8번: 실제 `createBlogService(prisma, { modelName:'blogPost' })` 에 Prisma `create`·`update` data 를 기록하는 fake 델리게이트와 `$transaction: (fn) => fn(prisma)` 주입. 공통: `authMiddleware` 가 `{ id:'admin-1', role:'admin' }` 반환. 1~3·7·8번은 검증 활성(기본), 4~6번은 `enableValidation:false`. 5번은 `dist/validators/index.mjs` 의 `createBlogSchemas()` 스키마 `shape` 키를 기준으로 사용 |
+| **전제조건** | 1~6번: `create`·`update`·`getById` 인자를 기록하는 fake BlogService. 7·8번: 실제 `createBlogService(prisma, { modelName:'blogPost' })` 에 Prisma `create`·`update` data 를 기록하는 fake 델리게이트와 `$transaction: (fn) => fn(prisma)` 주입. 공통: `authMiddleware` 가 `{ id:'admin-1', role:'admin' }` 반환. 1~3·7·8번은 검증 활성(기본), 4~6번은 `enableValidation:false`. 5번은 `dist/validators/index.mjs` 의 `createBlogSchemas()` 스키마 `shape` 키를 기준으로 사용. 9~12번은 라우트를 거치지 않고 `createBlogService()` 를 직접 호출하며, Prisma `create`·`update` data 를 기록하는 fake 델리게이트와 `$transaction: (fn) => fn(prisma)` 를 주입한다 |
 | **테스트 데이터** | 스키마 밖 필드 `INJECTED_FIELDS = { id:'forged-id', createdAt, updatedAt, authorId:'someone-else', author:{ connect }, tags:{ create }, comments:{ create }, viewCount:999 }`, 유효 생성 본문 `{ title:'제목', content:'<p>본문</p>', category:'news', slug:'hello-world', publishedAt:'2026-09-01T00:00:00.000Z' }` |
 
 | # | 단계 | 예상 결과 |
@@ -987,12 +987,16 @@ Request
 | 6 | `enableValidation: false 의 기본 필수값 검사는 기존처럼 400 이고 서비스를 부르지 않는다`: `slug` 없는 본문 + `INJECTED_FIELDS` 로 POST | 400, `create` 0회 |
 | 7 | `서비스 호환: POST 는 zod 기본값을 적용하고 Prisma 에 스키마 밖 필드를 넘기지 않는다`: 본문에 `<img src="x" onerror="alert(1)">` 추가 | 201, Prisma `create` data 에 `authorId` 를 제외한 7개 주입 키가 없음, `authorId:'admin-1'`, `editorType:'rich'`, `attachments:[]`, `featured:false`, `published:false`, `publishedAt` 은 `Date`(`2026-09-01T00:00:00.000Z`), `coverImageUrl`·`coverImageKey` 는 `null`, `content === '<p>본문</p><img src="x">'` |
 | 8 | `서비스 호환: PUT 은 보낸 필드만 갱신하고 publishedAt 문자열·null 을 올바르게 저장한다` | 두 응답 모두 200, 첫 `update` data 키는 `['publishedAt','title']` 이고 `publishedAt` 은 `Date`(`2026-09-02T03:04:05.000Z`), 두 번째 data 는 `{ publishedAt:null }` |
+| 9 | `create` 를 직접 호출하며 `id`·`viewCount`·`comments` 중첩 쓰기를 넣는다 | Prisma `create` data 에 세 키가 모두 없다 |
+| 10 | `create` 를 직접 호출하며 입력에 `authorId:'forged-author'` 를 넣고 인자로 `'author-1'` 을 준다 | Prisma `create` data 의 `authorId` 가 `'author-1'` 이다 |
+| 11 | `update` 를 직접 호출하며 `title` 과 함께 `id`·`authorId`·`comments` 중첩 쓰기를 넣는다 | Prisma `update` data 에 `title` 만 있고 나머지 세 키가 없다 |
+| 12 | `create`·`update` 를 직접 호출하며 허용 필드(`excerpt`·`editorType`·`featured`·`published`)만 넣는다 | 네 값이 그대로 Prisma data 에 전달된다 |
 
-- **자동화:** 가능 ✅ | **테스트 수:** 8개 (실측)
+- **자동화:** 가능 ✅ | **테스트 수:** 12개 (실측. `post-routes-validated.test.mjs` 8건 + `blog-service-input-fields.test.mjs` 4건)
 - **관련 요구사항:** OWASP A08:2021 Software and Data Integrity Failures (CWE-915)
-- **결함 이력:** 2026-09-13 문서에서는 라우트가 `validateWithSchema()` 결과를 쓰지 않고 원본 `body` 를 전달해 `authorId`, `id` 등이 서비스로 전달되는 현재 동작을 기록했다. 2.1.5 수정 후 검증 활성 상태에서는 1·2·7번과 같이 차단되었다. 2026-09-15 판에서는 `enableValidation:false` 이면 원본 `body` 를 그대로 전달하는 한계를 특성 테스트 `한계(동작 불변): enableValidation: false 이면 스키마가 없어 원본 body 를 그대로 전달`(당시 4번, `create`·`update` data 에 `id:'forged-id'` 포함을 단언)이 고정했고, 태그 라우트(TC-A-003 2번)와 동작이 달랐다. 2026-09-16 `c499691` 에서 검증 비활성 시에도 허용 필드만 넘기도록 수정하고 이 특성 테스트를 4번으로 교체했으며 5·6번을 추가했다. 수정 전 실행에서 4·5번 2건이 실패했고, 6번은 기존 동작 확인용이라 통과했다. 테스트 번호는 5·6번이 7·8번으로 바뀌었다.
-- **남은 한계:** `BlogService.create()`·`update()` 는 여전히 `...rest` 를 Prisma data 로 전개하므로(`src/services/blog.service.ts` `create()`·`update()`) 호스트가 서비스를 직접 호출하면 허용 필드 제한이 없다. 검증 비활성 시에는 필드만 제한하고 값의 형식은 검사하지 않는다(설정 의도와 같음).
-- **확인 필요:** 서비스 직접 호출 경로의 허용 필드 제한을 호스트 책임으로 볼지 라이브러리 책임으로 볼지 결정이 필요하다. blog-system 의 블로그 라우트와 호스트 dts-ballet-homepage 의 뉴스 서비스 래퍼(`src/lib/services/news.service.ts`)가 `create()`·`update()` 를 직접 호출하므로, 서비스에서 필드를 제한하면 이들의 추가 필드 전달에 영향이 있는지 확인이 선행되어야 한다.
+- **결함 이력:** 2026-09-13 문서에서는 라우트가 `validateWithSchema()` 결과를 쓰지 않고 원본 `body` 를 전달해 `authorId`, `id` 등이 서비스로 전달되는 현재 동작을 기록했다. 2.1.5 수정 후 검증 활성 상태에서는 1·2·7번과 같이 차단되었다. 2026-09-15 판에서는 `enableValidation:false` 이면 원본 `body` 를 그대로 전달하는 한계를 특성 테스트 `한계(동작 불변): enableValidation: false 이면 스키마가 없어 원본 body 를 그대로 전달`(당시 4번, `create`·`update` data 에 `id:'forged-id'` 포함을 단언)이 고정했고, 태그 라우트(TC-A-003 2번)와 동작이 달랐다. 2026-09-16 `c499691` 에서 검증 비활성 시에도 허용 필드만 넘기도록 수정하고 이 특성 테스트를 4번으로 교체했으며 5·6번을 추가했다. 수정 전 실행에서 4·5번 2건이 실패했고, 6번은 기존 동작 확인용이라 통과했다. 테스트 번호는 5·6번이 7·8번으로 바뀌었다. 2026-09-18 `ca448be` 에서 서비스 직접 호출 경로의 같은 한계를 고쳤다. 허용 목록과 선별 함수를 `blog.service.ts` 로 옮겨 export 하고 `create()`·`update()` 가 구조 분해 전에 적용하게 했으며, 라우트는 같은 정의를 가져다 쓴다. 수정 전 실행에서 9·11번 2건이 실패했고 10·12번은 기존 동작 확인용이라 통과했다.
+- **남은 한계:** 검증 비활성 시에는 필드만 제한하고 값의 형식은 검사하지 않는다(설정 의도와 같음). 서비스 직접 호출 경로도 마찬가지로 필드만 제한한다.
+- **결정 (2026-09-18):** 서비스 직접 호출 경로의 허용 필드 제한을 라이브러리 책임으로 정했다. 목록 밖 필드는 라우트와 같게 조용히 버린다. 호출 경로 세 곳에 영향이 없음을 먼저 확인했다. 호스트 dts-ballet-homepage 의 `src/lib/services/news.service.ts` 는 `CreateBlogPostInput`·`UpdateBlogPostInput` 을 그대로 쓰고, blog-system `blog-routes.ts` 는 `validateAndParse()` 결과를, `onboarding-service.ts` 는 허용 필드 6개만 넘긴다. blog-system 의 테넌트 격리는 `createTenantProxy()` 가 Prisma 호출 인자에 `tenantId` 를 주입하는 방식이라 서비스 입력 선별보다 뒤 단계이므로 영향받지 않는다.
 
 ---
 
@@ -1582,6 +1586,7 @@ Request
 |------|-------------|--------------|
 | `test/runtime/auth-failclosed.test.mjs` | 6 (6/0) | TC-S-001 (3), TC-S-002 (3) |
 | `test/runtime/blog-service-sanitize.test.mjs` | 5 (5/0) | TC-S-013 (5) |
+| `test/runtime/blog-service-input-fields.test.mjs` | 4 (4/0) | TC-S-011 (4) |
 | `test/runtime/comment-require-login.test.mjs` | 8 (8/0) | TC-A-004 (8) |
 | `test/runtime/concurrency-guards.test.mjs` | 11 (11/0) | TC-I-001 (4), TC-I-002 (2), TC-L-001 (3), TC-L-002 (2) |
 | `test/runtime/createblog-failfast.test.mjs` | 3 (3/0) | TC-S-004 (3) |
