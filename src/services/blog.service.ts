@@ -105,6 +105,41 @@ export interface BlogService {
   getDashboardStats(): Promise<DashboardStats>;
 }
 
+// ── 입력 필드 허용 목록 ──
+
+/**
+ * 관리자 생성·수정 경로가 Prisma 로 넘길 수 있는 입력 필드 (blog.validator 스키마 필드와 같은 목록).
+ * 라우트는 스키마 검증으로 한 번 거르지만, 소비 프로젝트가 서비스를 직접 호출하는 경로는
+ * 라우트를 거치지 않는다. 그래서 서비스에서도 이 목록만 골라 넘겨 id·authorId·중첩 쓰기 같은
+ * 스키마 밖 필드가 Prisma 까지 전달되지 않게 한다.
+ */
+export const POST_INPUT_FIELDS = [
+  'title',
+  'content',
+  'editorType',
+  'excerpt',
+  'category',
+  'coverImageUrl',
+  'coverImageKey',
+  'attachments',
+  'featured',
+  'published',
+  'publishedAt',
+  'slug',
+  'tagIds',
+  'tagSlugs',
+] as const satisfies ReadonlyArray<keyof CreateBlogPostInput>;
+
+/** 입력에 있는 허용 필드만 복사한다. 값은 변환하지 않고, 없는 필드는 추가하지 않는다. */
+export function pickPostInput<T extends object>(input: T): T {
+  const source = input as Record<string, unknown>;
+  const picked: Record<string, unknown> = {};
+  for (const key of POST_INPUT_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) picked[key] = source[key];
+  }
+  return picked as T;
+}
+
 // ── 팩토리 함수 ──
 
 export function createBlogService(prisma: PrismaClientLike, config: BlogServiceConfig): BlogService {
@@ -280,7 +315,7 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
     async create(data, authorId) {
       const slug = await uniqueSlug(delegate, data.slug);
 
-      const { attachments, tagIds, tagSlugs: _tagSlugs, ...rest } = data;
+      const { attachments, tagIds, tagSlugs: _tagSlugs, ...rest } = pickPostInput(data);
       void _tagSlugs;
 
       const postCreateData = {
@@ -324,7 +359,7 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
     },
 
     async update(id, data) {
-      const { attachments, tagIds, tagSlugs: _tagSlugs, ...rest } = data;
+      const { attachments, tagIds, tagSlugs: _tagSlugs, ...rest } = pickPostInput(data);
       void _tagSlugs;
       const updateData: any = { ...rest };
 
