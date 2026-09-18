@@ -18,3 +18,8 @@ docs/superpowers/
 .env*
 !.env*.example
 !.env*.template
+
+# npm is the package manager for this repo (package-lock.json); do not track other lockfiles
+pnpm-lock.yaml
+pnpm-workspace.yaml
+yarn.lock

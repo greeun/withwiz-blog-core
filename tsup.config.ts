@@ -33,7 +33,8 @@ export default defineConfig({
       'themes/index': 'src/themes/index.ts',
       'components/admin/index': 'src/components/admin/index.ts',
       'components/public/index': 'src/components/public/index.ts',
-      // components/admin/editor: @tiptap/* peer-deps not installed; dts skipped
+      // @tiptap/* 는 선택적 peer 이므로 선언 파일 생성을 위해 devDependencies 에도 설치한다
+      'components/admin/editor/index': 'src/components/admin/editor/index.ts',
     },
     compilerOptions: {
       skipLibCheck: true,

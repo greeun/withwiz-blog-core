@@ -185,7 +185,8 @@ interface BlogConfig {
 
   // Adapters
   storage?: StorageAdapter;
-  authMiddleware?: AuthMiddleware;
+  authMiddleware?: AuthMiddleware;          // admin routes
+  commentAuthMiddleware?: AuthMiddleware;   // identifies signed-in users on the public comment create route
 
   // Callbacks
   onViewCount?: (entityType: string, ids: string[]) => Promise<Map<string, number>>;
@@ -571,6 +572,11 @@ reads its own config/secret manager and passes plain values in.
   default.
 - **Cron auth (`scheduler.cronSecret`)** is injected and compared in constant
   time.
+- **Comment author identification (`commentAuthMiddleware`)** runs on the public
+  comment create route. A returned user's id is stored as the author; `null`
+  means a guest. With `features.comments.requireLogin: true` this option is
+  required for signed-in users to post; without it every request gets 403 and
+  `createBlog()` warns once. The admin `authMiddleware` is never used for public routes.
 - **IP header trust is configurable** via `features.comments.ipHeader`:
   `'auto'` (default: `cf-connecting-ip` → `x-real-ip` → `x-forwarded-for[0]`),
   `'none'` (trust no proxy header), or an explicit header name.

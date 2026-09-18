@@ -40,6 +40,11 @@ const STRIP_TAG_ONLY = new Set([
   // 브라우저가 내용을 raw text 로 해석하는 요소. 남겨 두면 속성값처럼 보이던 문자열이
   // 브라우저에서는 태그가 되어(예: <title><a title="</title><img onerror=...>">) 정리를 우회한다.
   'title', 'noscript', 'xmp', 'noembed', 'noframes', 'plaintext',
+  // SVG 애니메이션 요소. 부모 속성을 바꿀 수 있어 <svg><a><set attributeName="href" to="javascript:...">
+  // 처럼 속성 정리를 통과한 링크를 실행 가능한 URL 로 만든다.
+  'animate', 'animatemotion', 'animatetransform', 'animatecolor', 'set',
+  // 문서 수준 요소. 새로고침 이동(meta refresh), 상대 URL 기준 변경(base), 외부 리소스 로드(link)를 일으킨다.
+  'meta', 'base', 'link',
 ]);
 
 const URL_ATTR_NAMES = new Set(['href', 'src', 'action', 'formaction', 'xlink:href']);

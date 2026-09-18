@@ -2,12 +2,14 @@
  * 관리자 포스트 라우트가 zod 검증 결과를 서비스에 전달하는지 검증하는 회귀 테스트
  *
  * 검증을 통과해도 원본 body 를 넘기면 id·createdAt·authorId·중첩 쓰기 같은 스키마 밖
- * 필드가 Prisma 까지 전달된다. 검증을 수행한 경우에는 검증 결과만 넘겨야 한다.
+ * 필드가 Prisma 까지 전달된다. 검증을 수행한 경우에는 검증 결과만 넘겨야 하고,
+ * enableValidation: false 로 스키마가 없어도 스키마에 정의된 입력 필드만 넘겨야 한다.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createPostRoutes } from '../../dist/routes/index.mjs';
 import { createBlogService } from '../../dist/services/index.mjs';
+import { createBlogSchemas } from '../../dist/validators/index.mjs';
 
 // 폴백 새니타이저 1회 경고가 테스트 출력에 섞이지 않게 한다
 console.warn = () => {};
@@ -105,13 +107,45 @@ test('POST·PUT: 검증 실패는 기존처럼 400 이고 서비스를 부르지
   assert.equal(calls.create.length + calls.update.length, 0);
 });
 
-test('한계(동작 불변): enableValidation: false 이면 스키마가 없어 원본 body 를 그대로 전달', async () => {
+test('enableValidation: false 여도 허용 필드만 서비스로 전달 (스키마 밖 필드 제거, 값은 변환하지 않음)', async () => {
   const { service, calls } = createFakeService();
   const routes = createPostRoutes(service, { authMiddleware, enableValidation: false });
-  await routes.admin.list.POST(jsonRequest('POST', { ...validCreateBody, id: 'forged-id' }));
-  await routes.admin.detail.PUT(jsonRequest('PUT', { title: '수정', id: 'forged-id' }), idContext('p1'));
-  assert.equal(calls.create[0].data.id, 'forged-id');
-  assert.equal(calls.update[0].data.id, 'forged-id');
+  const created = await routes.admin.list.POST(jsonRequest('POST', { ...validCreateBody, ...INJECTED_FIELDS }));
+  const updated = await routes.admin.detail.PUT(
+    jsonRequest('PUT', { title: '수정', ...INJECTED_FIELDS }),
+    idContext('p1'),
+  );
+  assert.equal(created.status, 201);
+  assert.equal(updated.status, 200);
+  const { data, authorId } = calls.create[0];
+  assertNoInjectedKeys(data);
+  assert.equal(authorId, ADMIN.id, '작성자는 인증 사용자');
+  // 스키마가 없으므로 zod 기본값·Date 변환 없이 보낸 값 그대로 전달한다
+  assert.deepEqual(data, validCreateBody);
+  assert.deepEqual(calls.update[0], { id: 'p1', data: { title: '수정' } });
+});
+
+test('enableValidation: false 의 허용 필드는 생성·수정 스키마 필드와 같다', async () => {
+  const { service, calls } = createFakeService();
+  const routes = createPostRoutes(service, { authMiddleware, enableValidation: false });
+  const { CreateBlogPostSchema, UpdateBlogPostSchema } = createBlogSchemas();
+  const fullBody = (keys) => Object.fromEntries(keys.map((key) => [key, `v-${key}`]));
+  const createKeys = Object.keys(CreateBlogPostSchema.shape).sort();
+  const updateKeys = Object.keys(UpdateBlogPostSchema.shape).sort();
+
+  await routes.admin.list.POST(jsonRequest('POST', { ...fullBody(createKeys), ...INJECTED_FIELDS }));
+  await routes.admin.detail.PUT(jsonRequest('PUT', { ...fullBody(updateKeys), ...INJECTED_FIELDS }), idContext('p1'));
+  assert.deepEqual(Object.keys(calls.create[0].data).sort(), createKeys);
+  assert.deepEqual(Object.keys(calls.update[0].data).sort(), updateKeys);
+});
+
+test('enableValidation: false 의 기본 필수값 검사는 기존처럼 400 이고 서비스를 부르지 않는다', async () => {
+  const { service, calls } = createFakeService();
+  const routes = createPostRoutes(service, { authMiddleware, enableValidation: false });
+  const { slug: _slug, ...withoutSlug } = validCreateBody;
+  const res = await routes.admin.list.POST(jsonRequest('POST', { ...withoutSlug, ...INJECTED_FIELDS }));
+  assert.equal(res.status, 400);
+  assert.equal(calls.create.length, 0);
 });
 
 // ── 실제 서비스와의 호환: zod 기본값·publishedAt(Date) 이 Prisma 입력으로 올바르게 이어지는지 ──
