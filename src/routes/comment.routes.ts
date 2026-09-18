@@ -82,7 +82,16 @@ export interface CommentAdminRoutes {
 }
 
 export interface CommentRoutesConfig {
+  /** 관리자 라우트 인증 미들웨어. 공개 라우트의 사용자 식별에는 쓰지 않는다 */
   authMiddleware?: AuthMiddleware;
+  /**
+   * 공개 댓글 작성 라우트에서 로그인 사용자를 식별하는 미들웨어 (선택).
+   * 사용자를 반환하면 그 id 를 작성자로 저장하고, null 이면 게스트로 처리한다.
+   * 관리자 authMiddleware 와 달리 null 이어도 401 로 막지 않으며, 로그인 필수 여부는
+   * 댓글 서비스의 requireLogin 이 판정한다(게스트는 403 COMMENT_LOGIN_REQUIRED).
+   * requireLogin: true 인 서비스를 쓰면 이 설정이 있어야 공개 라우트로 작성할 수 있다.
+   */
+  publicAuthMiddleware?: AuthMiddleware;
   /**
    * IP 해시에 사용할 HMAC 시크릿 (필수 주입).
    * 라이브러리는 환경 변수를 읽지 않으므로 호스트가 반드시 주입해야 한다.
@@ -105,6 +114,7 @@ export function createCommentRoutes(
   config?: CommentRoutesConfig,
 ): { public: CommentPublicRoutes; admin: CommentAdminRoutes } {
   const authMiddleware = config?.authMiddleware;
+  const publicAuthMiddleware = config?.publicAuthMiddleware;
   // 시크릿은 무조건 주입이다. 라이브러리는 환경 변수를 읽지 않으며,
   // 하드코딩 폴백/기본값도 제공하지 않는다. 미주입 시 여기서 즉시
   // throw 하여 createBlog() 초기화 단계에서 fail-fast 한다.
@@ -172,9 +182,12 @@ export function createCommentRoutes(
           const ip = extractClientIp(req, ipHeader);
           const ipHash = ip ? hashIp(ip, hmacSecret) : undefined;
 
+          // 작성자는 요청 본문이 아니라 주입된 사용자 식별 결과로만 정한다
+          const user = publicAuthMiddleware ? await publicAuthMiddleware(req) : null;
+
           // honeypot이 트리거된 경우 서비스에서 SPAM으로 저장하지만 클라이언트에는 성공으로 표시
           const created = await commentService.create(input, {
-            userId: undefined,
+            userId: user?.id || undefined,
             ipHash,
           });
 

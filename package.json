@@ -1,6 +1,7 @@
 {
   "name": "@withwiz/blog-core",
   "version": "2.1.5",
+  "packageManager": "npm@11.16.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/greeun/withwiz-blog-core.git"
@@ -228,12 +229,17 @@
       "optional": true
     },
     "@withwiz/block-editor": {
-      "optional": false
+      "optional": true
     }
   },
   "devDependencies": {
+    "@tiptap/extension-link": "3.31.3",
+    "@tiptap/pm": "3.31.3",
+    "@tiptap/react": "3.31.3",
+    "@tiptap/starter-kit": "3.31.3",
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
+    "isomorphic-dompurify": "3.19.0",
     "next": "^16.2.9",
     "react": "^19.2.7",
     "react-dom": "19.3.0",
