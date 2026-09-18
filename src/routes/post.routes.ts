@@ -5,6 +5,7 @@
  * @withwiz/toolkit 미들웨어에 의존하지 않고 독립적으로 동작한다.
  */
 import type { BlogService } from '../services/blog.service';
+import { pickPostInput } from '../services/blog.service';
 import type { CreateBlogPostInput } from '../types/blog';
 import type { AuthMiddleware } from '../types/config';
 import type { BlogI18nStrings } from '../i18n/types';
@@ -52,35 +53,11 @@ function parseSortDir(params: URLSearchParams): 'asc' | 'desc' {
 }
 
 /**
- * 관리자 생성·수정 라우트가 서비스로 넘길 수 있는 입력 필드 (blog.validator 스키마 필드와 같은 목록).
+ * 관리자 생성·수정 라우트가 서비스로 넘길 수 있는 입력 필드는 서비스와 같은 목록을 쓴다.
  * enableValidation: false 로 스키마가 없어도 id·authorId·중첩 쓰기 같은 스키마 밖 필드가
  * Prisma 까지 전달되지 않도록 이 필드만 골라 넘긴다 (태그 라우트와 같은 방식).
+ * 서비스도 같은 선별을 다시 하므로, 서비스를 직접 호출하는 경로에서도 목록이 같다.
  */
-const POST_INPUT_FIELDS = [
-  'title',
-  'content',
-  'editorType',
-  'excerpt',
-  'category',
-  'coverImageUrl',
-  'coverImageKey',
-  'attachments',
-  'featured',
-  'published',
-  'publishedAt',
-  'slug',
-  'tagIds',
-  'tagSlugs',
-] as const satisfies ReadonlyArray<keyof CreateBlogPostInput>;
-
-/** 요청 본문에 있는 허용 필드만 복사한다. 값은 변환하지 않고, 없는 필드는 추가하지 않는다. */
-function pickPostInput(body: Record<string, unknown>): Record<string, unknown> {
-  const input: Record<string, unknown> = {};
-  for (const key of POST_INPUT_FIELDS) {
-    if (Object.prototype.hasOwnProperty.call(body, key)) input[key] = body[key];
-  }
-  return input;
-}
 
 // 응답/인증/검증/페이지네이션 헬퍼는 ./_shared로 단일화되었다.
 
