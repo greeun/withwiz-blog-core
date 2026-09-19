@@ -5,6 +5,53 @@ All notable changes to `@withwiz/blog-core` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] — 2026-09-19
+
+### Changed
+- `@withwiz/block-editor` is now an optional peer (`peerDependenciesMeta.optional:
+  true`). blog-core never imports it — the host injects `BlockEditor` /
+  `BlockEditorProvider` as props — but the declaration forced every consumer to
+  install it anyway. A fresh `npm ci` without block-editor passes typecheck,
+  build and the full suite.
+
+### Fixed
+- `BlogService.create()` / `update()` passed whatever fields they received
+  straight to Prisma when called directly. Routes filtered input through schema
+  validation and `pickPostInput()`, but a consumer calling the service without
+  going through a route could forge `id` / `authorId` or reach nested relation
+  writes. The `POST_INPUT_FIELDS` allowlist and `pickPostInput()` moved into the
+  service and now apply before destructuring; routes reuse the same definition.
+- Admin post create/update routes passed unfiltered fields to the service when
+  `enableValidation: false`.
+- The fallback sanitizer left SVG animation elements and `meta` / `base` / `link`
+  in place.
+- With `requireLogin` comment settings, a signed-in user could not post through
+  the public comment route.
+- The `components/admin/editor` subpath shipped without its type declarations.
+
+### Tests
+- `isomorphic-dompurify` 3.19.0 is a devDependency, so the DOMPurify-path tests
+  run on a plain `npm test` instead of being skipped without `NODE_PATH`. The
+  version is pinned: 3.20+ and 4.x require Node ^22.22.2 through jsdom 30, which
+  fails `engine-strict` installs on Node 22.22.0.
+- The DOMPurify path now asserts element removal only for `animate`, `set`,
+  `meta`, `base` and `link` — dompurify 3.4.15 keeps `animatemotion`,
+  `animatetransform` and `animatecolor` but strips the attributes that arm them.
+  The regex path still asserts all eight. Both paths assert that no
+  `attributeName` targeting `href` / `xlink:href` survives.
+
+### CI
+- `.github/workflows/release.yml`: publishing moved to npm Trusted Publishing
+  (OIDC). npm classic tokens were revoked, so any `NPM_TOKEN` path is dead;
+  pushing a `v*` tag now publishes with no stored secret and no token to rotate.
+  The job refuses to publish when the tag and `package.json` version disagree,
+  runs the build and the suite first (this package has no `prepublishOnly`), and
+  does not use a dependency cache.
+
+### Chore
+- `packageManager` is pinned to npm and other package managers' lockfiles are
+  gitignored, so a stray `pnpm install` stops producing `pnpm-lock.yaml`.
+
 ## [2.0.0] — 2026-05-27
 
 Major rewrite of `@withwiz/blog-core`. Not API-compatible with `0.1.0`.
