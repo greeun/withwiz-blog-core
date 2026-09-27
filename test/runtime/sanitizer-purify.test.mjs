@@ -123,8 +123,8 @@ const DATA_COMMENT_HTML =
 // 블록 에디터 직렬화 주석 <!-- {marker}{base64} --> (base64 에 +·/·= 포함)
 const MARKER_COMMENT_HTML =
   '<!-- abe-blocks:eyJ0eXBlIjoiYmlvIiwidGV4dCI6ImE+YiB+PyJ9 --><div class="abe">약력</div>' +
-  '<!-- pme-data:eyJ0Ijoi6rO17JewIiwidSI6Imh0dHBzOi8veC8/YT0xJmI9MiJ9 --><p>공연</p>' +
-  '<!-- rme-data:eyJ0Ijoi66CI7Y287Yag66asPj4ifQ== -->';
+  '<!-- pme-data:eyJ0Ijoi7J287KCVIiwidSI6Imh0dHBzOi8veC8/YT0xJmI9MiJ9 --><p>일정</p>' +
+  '<!-- rme-data:eyJ0Ijoi7LC46rOg7J6Q66OMPj4ifQ== -->';
 
 const PRESERVE_HTML =
   '<p class="lead" style="color:red">안녕</p>' +
@@ -171,8 +171,8 @@ function defineSharedCases(label, makeSanitizer, skip, { removedTags }) {
     const out = makeSanitizer()(MARKER_COMMENT_HTML);
     assert.deepEqual(commentsOf(out), [
       ' abe-blocks:eyJ0eXBlIjoiYmlvIiwidGV4dCI6ImE+YiB+PyJ9 ',
-      ' pme-data:eyJ0Ijoi6rO17JewIiwidSI6Imh0dHBzOi8veC8/YT0xJmI9MiJ9 ',
-      ' rme-data:eyJ0Ijoi66CI7Y287Yag66asPj4ifQ== ',
+      ' pme-data:eyJ0Ijoi7J287KCVIiwidSI6Imh0dHBzOi8veC8/YT0xJmI9MiJ9 ',
+      ' rme-data:eyJ0Ijoi7LC46rOg7J6Q66OMPj4ifQ== ',
     ]);
   });
 
