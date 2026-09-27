@@ -16,7 +16,7 @@
 - 회사 홈페이지에 뉴스/공지 블로그 추가
 - 포트폴리오 사이트에 블로그 섹션 추가
 - 커뮤니티 사이트에 게시판 형태의 블로그 운영
-- 기존 withwiz 프로젝트(dts-ballet 등)에서 blog-core v1 + blog-system 조합을 단일 패키지로 교체
+- 기존 withwiz 프로젝트에서 blog-core v1 + blog-system 조합을 단일 패키지로 교체
 
 ---
 
