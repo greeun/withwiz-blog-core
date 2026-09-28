@@ -18,7 +18,7 @@
 | 타입 검증 실행 결과 | `test/headless-mode.ts` 주석에 기재된 `npx tsc --noEmit --strict test/headless-mode.ts` 는 tsconfig 옵션이 적용되지 않아 오류 57건(`node_modules/zod/v4/locales/index.d.cts` 52건, `src/` 5건)으로 실패한다(2026-09-16 재측정도 같음). tsconfig 와 같은 옵션(`--skipLibCheck --esModuleInterop --target es2020 --module esnext --moduleResolution bundler --jsx react-jsx`)을 지정하면 오류 0건으로 통과한다. 2026-09-13 실측(68건, `node_modules` 63건)과 `node_modules` 오류 수가 다른 것은 설치 방식과 해석 버전이 달라졌기 때문으로 보이며, `src/` 5건은 같다. 저장소 전체 `npm run typecheck`(`tsc --noEmit`)는 2026-09-16 에 `@tiptap/*` 를 devDependencies 에 추가한 뒤 오류 0건으로 통과한다 |
 | 의존성 설치 | 커밋 `3cb8973`(2.1.4)이 `package-lock.json` 을 `package.json` 과 동기화해 `npm ci` 가 성공한다(2026-09-16 재확인, Node v22.22.0·npm 11.16.0). 해석된 버전은 next 16.3.5, react 19.3.0, react-dom 19.3.0, typescript 5.9.3, zod 4.4.3, tsup 8.5.1, @withwiz/block-editor 0.3.0, @types/react 19.3.0 이다. 2026-09-16 에 선택적 peer 중 `isomorphic-dompurify`(3.19.0 고정, dompurify 3.4.15·jsdom 29.1.1 해석)와 `@tiptap/react`·`@tiptap/starter-kit`·`@tiptap/extension-link`·`@tiptap/pm`(3.31.3 고정, `@tiptap/core` 3.31.3 은 peer 로 설치)을 devDependencies 에도 추가했다. peer 선언과 선택 여부는 바뀌지 않았고, `@aws-sdk/client-s3` 는 여전히 설치되지 않는다. isomorphic-dompurify 는 호스트가 4.2.0 을 쓰지만, 4.x 와 3.20 이후는 jsdom 30 을 따라 Node `^22.22.2` 를 요구해 저장소 `.npmrc` 의 `engine-strict=true` 에서 Node 22.22.0 설치가 EBADENGINE 으로 실패한다. 3.19.0 은 4.2.0 과 같은 `dompurify ^3.4.12` 조건이라 호스트와 같은 dompurify 3.4.15 를 해석한다 |
 | 도메인별 실행 스크립트 | 없음. `package.json` 에는 `build`, `build:types`, `typecheck`, `test` 만 있다 |
-| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건). 2026-09-18 `fix/residual-defects-a` 기준 갱신: `BlogService.create()`·`update()` 직접 호출 경로의 허용 필드 제한 결함을 고치고 TC-S-011 에 9~12단계를 추가 (215건, SC/TC 수는 변화 없음). 2026-09-28 소비 프로젝트 언급 제거: 관련 문서의 출처와 TC-S-011 결정 설명의 호스트 이름·경로를 일반 표현으로 바꾸고, TC-S-013 `MARKER_COMMENT_HTML` 의 본문과 `pme-data`·`rme-data` base64 데이터를 중립 문구로 다시 만듦 (테스트 수 변화 없음) |
+| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건). 2026-09-18 `fix/residual-defects-a` 기준 갱신: `BlogService.create()`·`update()` 직접 호출 경로의 허용 필드 제한 결함을 고치고 TC-S-011 에 9~12단계를 추가 (215건, SC/TC 수는 변화 없음). 2026-09-28 소비 프로젝트 언급 제거: 관련 문서의 출처와 TC-S-011 결정 설명의 호스트 이름·경로를 일반 표현으로 바꾸고, TC-S-013 `MARKER_COMMENT_HTML` 의 본문과 `alpha-data`·`beta-data` base64 데이터를 중립 문구로 다시 만듦 (테스트 수 변화 없음) |
 
 ### 관련 문서
 
@@ -1031,7 +1031,7 @@ Request
 | **대상** | `src/utils/html-sanitizer.ts` `createSanitizer()` 의 두 경로(`fallbackSanitize()`, `dompurifySanitize()`) / `src/services/blog.service.ts` `create()`·`update()` 의 `sanitize(data.content) ?? ''` (2.1.5 `c0ea2a9`, 이전 `sanitize(data.content) \|\| data.content`) |
 | **우선순위** | High |
 | **전제조건** | 정규식 경로: `createSanitizer({ ...config, purify: null })`. DOMPurify 경로: `createSanitizer({ ...config, purify: <isomorphic-dompurify> })` 이며, 테스트 파일이 `require('isomorphic-dompurify')` 를 해석할 수 있을 때만 실행하고 아니면 건너뛴다(2026-09-16 부터 devDependencies 3.19.0 으로 기본 `npm test` 에서 실행, 2026-09-15 까지는 NODE_PATH 지정 시에만 실행). 판정은 `helpers/html-inspect.mjs` `findUnsafe()` 로 하며, raw text 요소 내용과 CDATA 를 텍스트·마크업으로 보는 4가지 해석 중 하나라도 금지 태그, `on*` 속성, `srcdoc`, 위험 스킴 URL 속성, 비신뢰 iframe 을 인식하면 위험으로 판정한다. 서비스 테스트: `createBlogService(prisma, { modelName:'blogPost' })` 에 Prisma data 를 기록하는 fake 델리게이트 주입(기본 새니타이저는 ESM 산출물이라 폴백 경로) |
-| **테스트 데이터** | `BYPASS_INPUTS` 15종, 블록 에디터 데이터 주석 HTML(`nbe-*`, `MARKER_COMMENT_HTML` 의 `abe-blocks`·`pme-data`·`rme-data`), 보존 대상 HTML(`class`·`style`·`target`·신뢰 iframe), 위험 요소만 있는 본문 `<script>alert(1)</script>` |
+| **테스트 데이터** | `BYPASS_INPUTS` 15종, 블록 에디터 데이터 주석 HTML(`nbe-*`, `MARKER_COMMENT_HTML` 의 `xbe-blocks`·`alpha-data`·`beta-data`), 보존 대상 HTML(`class`·`style`·`target`·신뢰 iframe), 위험 요소만 있는 본문 `<script>alert(1)</script>` |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
@@ -1046,7 +1046,7 @@ Request
 | 9 | `create·update: 사용자 새니타이저가 null 을 돌려주면 빈 문자열로 저장` (`sanitizeContent: () => null`) | `create`·`update` data 의 `content` 모두 `''` |
 | 10 | `create·update: 새니타이즈 결과를 그대로 저장`: `<p>ok</p><img src="x" onerror="alert(1)">` | `create`·`update` data 의 `content` 모두 `'<p>ok</p><img src="x">'` |
 | 11 | `update: content 를 보내지 않으면 content 는 변경 대상에 넣지 않는다`: `update('post-1', { title:'새 제목' })` | `update` data 에 `content` 키 없음 |
-| 12 | `[정규식]`·`[DOMPurify] abe-blocks·pme-data·rme-data 데이터 주석 보존`: `<!-- 표식:base64 -->` 주석 3개(base64 에 `+`·`/`·`=` 포함) | 두 경로 모두 주석 3개(` abe-blocks:eyJ0eXBl...PyJ9 `, ` pme-data:eyJ0Ijoi...MiJ9 `, ` rme-data:eyJ0Ijoi...ifQ== `)가 순서대로 남음 (2026-09-16 추가) |
+| 12 | `[정규식]`·`[DOMPurify] xbe-blocks·alpha-data·beta-data 데이터 주석 보존`: `<!-- 표식:base64 -->` 주석 3개(base64 에 `+`·`/`·`=` 포함) | 두 경로 모두 주석 3개(` xbe-blocks:eyJ0eXBl...PyJ9 `, ` alpha-data:eyJ0Ijoi...MiJ9 `, ` beta-data:eyJ0Ijoi...ifQ== `)가 순서대로 남음 (2026-09-16 추가) |
 
 - **자동화:** 가능 ✅ | **테스트 수:** 47개 (실측: 기본 실행 47건 통과. 2026-09-15 에는 45건 중 기본 실행 25건 통과·20건 건너뜀)
 - **관련 요구사항:** OWASP A03:2021 Injection (CWE-79)
@@ -1610,7 +1610,7 @@ Request
 
 | 테스트 이름 (묶음) | 건수 | 기본 실행 | TC |
 |------------|----|----|----|
-| `[정규식] 우회 차단: <이름>` 15종, `비신뢰 iframe 제거 후 앞 콘텐츠는 유지`, `블록 에디터 데이터 주석 보존`, `abe-blocks·pme-data·rme-data 데이터 주석 보존`(2026-09-16), `class·style·target·신뢰 iframe 유지`, `빈 값은 그대로 반환`, `trustedIframeOrigins 옵션 유지` | 21 | 통과 | TC-S-013 |
+| `[정규식] 우회 차단: <이름>` 15종, `비신뢰 iframe 제거 후 앞 콘텐츠는 유지`, `블록 에디터 데이터 주석 보존`, `xbe-blocks·alpha-data·beta-data 데이터 주석 보존`(2026-09-16), `class·style·target·신뢰 iframe 유지`, `빈 값은 그대로 반환`, `trustedIframeOrigins 옵션 유지` | 21 | 통과 | TC-S-013 |
 | 위와 같은 이름의 `[DOMPurify]` 테스트 | 21 | 통과 | TC-S-013 |
 | `[정규식] 애니메이션·메타 요소 제거: <이름>` 6종, `[정규식] 애니메이션·메타 요소 이름이 들어간 본문 단어는 보존` (2026-09-16) | 7 | 통과 | TC-S-017 |
 | 위와 같은 이름의 `[DOMPurify]` 테스트 (2026-09-16) | 7 | 통과 | TC-S-017 |
