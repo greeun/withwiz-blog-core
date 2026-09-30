@@ -1,31 +1,32 @@
 # @withwiz/blog-core 테스트 분류 체계
 
 작성일: 2026-09-13
-갱신일: 2026-09-16 (기준 버전 2.1.5 에 브랜치 `fix/residual-defects` 의 미게시 수정 5건 반영, develop `4454caf` 에서 분기, 코드 마지막 커밋 `bb7addc`)
+갱신일: 2026-09-30 (기준 버전 2.2.1 에 브랜치 `fix/unpublish-clears-past-published-at` 의 미게시 수정 반영, develop `f2eaa5b`(2.2.1 릴리스 커밋)에서 분기)
 기준 포맷: `withwiz-block-editor/docs/plans/2026-03-04-test-classification.md`
 
 ## 개요
 
 | 항목 | 내용 |
 |------|------|
-| 대상 | `@withwiz/blog-core` 2.1.5 + 브랜치 `fix/residual-defects`(버전 번호 미변경): Next.js App Router 블로그 패키지(서비스 팩토리, 라우트 핸들러 팩토리, SEO 유틸, React 컴포넌트) |
-| 범위 | `src/` 전체(services/, routes/, seo/, utils/, validators/, storage/, themes/, i18n/, errors/, components/, context/)와 `test/` 전체(런타임 테스트 17개 파일, 테스트 헬퍼 1개, 타입 검증 파일 1개) |
-| 환경 | Node.js v22.22.0 내장 러너 `node:test` + `node:assert/strict`. `npm test` 는 `npm run build`(tsup 8.5.1)로 `dist/` 를 생성한 뒤 `node --test test/runtime/*.test.mjs` 를 실행한다. 테스트는 `dist/*.mjs` 를 import 하고, 실제 DB 없이 인메모리 fake Prisma 또는 fake 서비스를 주입한다. jsdom 은 직접 쓰지 않으며, 실제 DOMPurify 경로에서 `isomorphic-dompurify` 가 내부적으로 사용한다. 컴포넌트는 `react-dom/server` 의 `renderToStaticMarkup` 으로 정적 마크업만 렌더링한다(2개 파일). HTML 판정이 필요한 2개 파일(`sanitizer-purify`, `detail-linkify`)은 WHATWG HTML 토큰화 규칙의 태그·속성·주석 부분을 옮긴 헬퍼 `test/runtime/helpers/html-inspect.mjs` 를 사용한다. `exports-smoke` 는 `dist` 경로 대신 패키지 이름 자기 참조(`@withwiz/blog-core/<서브패스>`)로 import·require 한다. `test/headless-mode.ts` 는 러너 대상이 아닌 타입 검증 전용 파일이다 |
+| 대상 | `@withwiz/blog-core` 2.2.1 + 브랜치 `fix/unpublish-clears-past-published-at`(버전 번호 미변경, CHANGELOG `[Unreleased]`): Next.js App Router 블로그 패키지(서비스 팩토리, 라우트 핸들러 팩토리, SEO 유틸, React 컴포넌트) |
+| 범위 | `src/` 전체(services/, routes/, seo/, utils/, validators/, storage/, themes/, i18n/, errors/, components/, context/)와 `test/` 전체(런타임 테스트 19개 파일, 테스트 헬퍼 1개, 타입 검증 파일 1개) |
+| 환경 | Node.js 내장 러너 `node:test` + `node:assert/strict`(2026-09-30 실측은 Node v24.21.0·npm 11.19.0, 이전 실측은 Node v22.22.0). `npm test` 는 `npm run build`(tsup 8.5.1)로 `dist/` 를 생성한 뒤 `node --test test/runtime/*.test.mjs` 를 실행한다. 테스트는 `dist/*.mjs` 를 import 하고, 실제 DB 없이 인메모리 fake Prisma 또는 fake 서비스를 주입한다. jsdom 은 직접 쓰지 않으며, 실제 DOMPurify 경로에서 `isomorphic-dompurify` 가 내부적으로 사용한다. 컴포넌트는 `react-dom/server` 의 `renderToStaticMarkup` 으로 정적 마크업만 렌더링한다(2개 파일). HTML 판정이 필요한 2개 파일(`sanitizer-purify`, `detail-linkify`)은 WHATWG HTML 토큰화 규칙의 태그·속성·주석 부분을 옮긴 헬퍼 `test/runtime/helpers/html-inspect.mjs` 를 사용한다. `exports-smoke` 는 `dist` 경로 대신 패키지 이름 자기 참조(`@withwiz/blog-core/<서브패스>`)로 import·require 한다. `test/headless-mode.ts` 는 러너 대상이 아닌 타입 검증 전용 파일이다 |
 | 목표 커버리지 | 미설정: `package.json` 에 커버리지 도구와 임계값이 없고, `tsconfig.json`·`tsup.config.ts` 에도 관련 설정이 없다 |
-| 실측 실행 결과 | 2026-09-17, 브랜치 `fix/residual-defects`(커밋 `faabcf9`)에서 새로 `npm ci` 후 `npm test` 실행: 파일 17개, 테스트 211건, 통과 211 / 실패 0 / 스킵 0 / 취소 0 / todo 0. `@withwiz/block-editor` 는 설치되지 않은 상태다(선택 peer). 실제 DOMPurify 경로 테스트도 devDependencies 의 `isomorphic-dompurify` 로 기본 실행에서 실행된다. 같은 시점에 `npm run build` 성공, `npm run typecheck` 오류 0건 |
+| 실측 실행 결과 | 2026-09-30, 브랜치 `fix/unpublish-clears-past-published-at` 에서 `npm ci` 로 설치한 상태로 `npm test` 실행: 파일 19개, 테스트 231건, 통과 231 / 실패 0 / 스킵 0 / 취소 0 / todo 0. `@withwiz/block-editor` 는 설치되지 않은 상태다(선택 peer). 실제 DOMPurify 경로 테스트도 devDependencies 의 `isomorphic-dompurify` 로 기본 실행에서 실행된다. 같은 시점에 `npm run build` 성공, `npm run typecheck` 오류 0건. 비교용으로 develop `f2eaa5b`(2.2.1)를 임시 워크트리에 빌드해 실행한 결과는 파일 18개, 테스트 215건, 통과 215 / 실패 0 / 스킵 0 이다 |
+| 이전 실측 (2026-09-17) | 브랜치 `fix/residual-defects`(커밋 `faabcf9`)에서 새로 `npm ci` 후 `npm test` 실행: 파일 17개, 테스트 211건, 통과 211 / 실패 0 / 스킵 0 / 취소 0 / todo 0. 같은 시점에 `npm run build` 성공, `npm run typecheck` 오류 0건 |
 | 이전 실측 (2026-09-15) | 병합 커밋 `2c9fb47`(2.1.5): 파일 15개, 테스트 139건. 기본 `npm test` 는 통과 118 / 스킵 21 이었고, 스킵 21건은 `sanitizer-purify.test.mjs` 가 `isomorphic-dompurify` 를 해석하지 못해 건너뛴 DOMPurify 경로 테스트였다. 호스트 저장소의 isomorphic-dompurify 4.2.0 을 `NODE_PATH` 로 지정하면 139건이 모두 통과했다. `npm run typecheck` 는 `@tiptap/*` 미설치로 오류 4건이었다 |
-| 이전 실측 (2026-09-13) | 기준 커밋 `49b7778`(2.1.3): 파일 9개, 테스트 54건, 통과 54 / 스킵 0. 2.1.4 에서 11건(2개 파일), 2.1.5 에서 74건(4개 파일), 2026-09-16 `fix/residual-defects` 에서 71건(새 파일 2개 51건, 기존 파일 2개 20건)이 추가되었다 |
+| 이전 실측 (2026-09-13) | 기준 커밋 `49b7778`(2.1.3): 파일 9개, 테스트 54건, 통과 54 / 스킵 0. 2.1.4 에서 11건(2개 파일), 2.1.5 에서 74건(4개 파일), 2026-09-16 `fix/residual-defects` 에서 71건(새 파일 2개 51건, 기존 파일 2개 20건), 2026-09-17 `faabcf9` 에서 1건, 2026-09-18 `ca448be`(2.2.0)에서 4건(새 파일 1개), 2026-09-30 브랜치 `fix/unpublish-clears-past-published-at` 에서 16건(새 파일 1개)이 추가되었다 |
 | 타입 검증 실행 결과 | `test/headless-mode.ts` 주석에 기재된 `npx tsc --noEmit --strict test/headless-mode.ts` 는 tsconfig 옵션이 적용되지 않아 오류 57건(`node_modules/zod/v4/locales/index.d.cts` 52건, `src/` 5건)으로 실패한다(2026-09-16 재측정도 같음). tsconfig 와 같은 옵션(`--skipLibCheck --esModuleInterop --target es2020 --module esnext --moduleResolution bundler --jsx react-jsx`)을 지정하면 오류 0건으로 통과한다. 2026-09-13 실측(68건, `node_modules` 63건)과 `node_modules` 오류 수가 다른 것은 설치 방식과 해석 버전이 달라졌기 때문으로 보이며, `src/` 5건은 같다. 저장소 전체 `npm run typecheck`(`tsc --noEmit`)는 2026-09-16 에 `@tiptap/*` 를 devDependencies 에 추가한 뒤 오류 0건으로 통과한다 |
 | 의존성 설치 | 커밋 `3cb8973`(2.1.4)이 `package-lock.json` 을 `package.json` 과 동기화해 `npm ci` 가 성공한다(2026-09-16 재확인, Node v22.22.0·npm 11.16.0). 해석된 버전은 next 16.3.5, react 19.3.0, react-dom 19.3.0, typescript 5.9.3, zod 4.4.3, tsup 8.5.1, @withwiz/block-editor 0.3.0, @types/react 19.3.0 이다. 2026-09-16 에 선택적 peer 중 `isomorphic-dompurify`(3.19.0 고정, dompurify 3.4.15·jsdom 29.1.1 해석)와 `@tiptap/react`·`@tiptap/starter-kit`·`@tiptap/extension-link`·`@tiptap/pm`(3.31.3 고정, `@tiptap/core` 3.31.3 은 peer 로 설치)을 devDependencies 에도 추가했다. peer 선언과 선택 여부는 바뀌지 않았고, `@aws-sdk/client-s3` 는 여전히 설치되지 않는다. isomorphic-dompurify 는 호스트가 4.2.0 을 쓰지만, 4.x 와 3.20 이후는 jsdom 30 을 따라 Node `^22.22.2` 를 요구해 저장소 `.npmrc` 의 `engine-strict=true` 에서 Node 22.22.0 설치가 EBADENGINE 으로 실패한다. 3.19.0 은 4.2.0 과 같은 `dompurify ^3.4.12` 조건이라 호스트와 같은 dompurify 3.4.15 를 해석한다 |
 | 도메인별 실행 스크립트 | 없음. `package.json` 에는 `build`, `build:types`, `typecheck`, `test` 만 있다 |
-| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건). 2026-09-18 `fix/residual-defects-a` 기준 갱신: `BlogService.create()`·`update()` 직접 호출 경로의 허용 필드 제한 결함을 고치고 TC-S-011 에 9~12단계를 추가 (215건, SC/TC 수는 변화 없음). 2026-09-28 소비 프로젝트 언급 제거: 관련 문서의 출처와 TC-S-011 결정 설명의 호스트 이름·경로를 일반 표현으로 바꾸고, TC-S-013 `MARKER_COMMENT_HTML` 의 본문과 `alpha-data`·`beta-data` base64 데이터를 중립 문구로 다시 만듦 (테스트 수 변화 없음) |
+| 문서 이력 | 2026-09-13 2.1.3(`49b7778`) 기준 최초 작성: 테스트 54건, SC/TC 49개(✅ 15 / 🔲 34). 2026-09-15 2.1.5(`2c9fb47`) 기준 갱신: 139건, SC/TC 54개(✅ 22 / 🔲 32). 2026-09-16 브랜치 `fix/residual-defects` 기준 갱신: DOMPurify 경로 기본 실행, 댓글 `requireLogin` 공개 작성 라우트 결함, editor 서브패스 선언 파일 누락, `enableValidation:false` 포스트 라우트 원본 body 전달, 폴백 새니타이저 SVG 애니메이션·문서 수준 요소 잔존을 수정하고 테스트 71건 추가. TC-A-004·TC-SM-002 를 🔲 계획에서 ✅ 완료로 전환하고 TC-S-017 을 추가 (210건, SC/TC 55개, ✅ 25 / 🔲 30). 2026-09-17 `faabcf9` 에서 `@withwiz/block-editor` 를 선택 peer 로 바로잡고 TC-SM-002 에 5단계를 추가 (211건). 2026-09-18 `fix/residual-defects-a` 기준 갱신: `BlogService.create()`·`update()` 직접 호출 경로의 허용 필드 제한 결함을 고치고 TC-S-011 에 9~12단계를 추가 (215건, SC/TC 수는 변화 없음). 2026-09-28 소비 프로젝트 언급 제거: 관련 문서의 출처와 TC-S-011 결정 설명의 호스트 이름·경로를 일반 표현으로 바꾸고, TC-S-013 `MARKER_COMMENT_HTML` 의 본문과 `alpha-data`·`beta-data` base64 데이터를 중립 문구로 다시 만듦 (테스트 수 변화 없음). 2026-09-30 2.2.1 + 브랜치 `fix/unpublish-clears-past-published-at` 기준 갱신: 비공개 전환 시 과거 발행 시각이 남아 예약 발행 스케줄러가 글을 다시 공개하던 결함과 `coverImageUrl` 루트 상대 경로 거부 결함을 고치고 `unpublish-reservation.test.mjs` 16건을 추가. 매핑 방식은 계획 TC(TC-I-004·TC-I-005·TC-U-006)에 부분 완료 단계를 넣지 않고, 완료 TC 2개를 새로 만들어(서비스 10건은 TC-I-011, 검증 스키마 6건은 TC-U-010) 계획 TC 에는 부분 커버 표기만 추가하는 쪽을 택했다. `post-routes-validated.test.mjs` 의 `publishedAt` 고정값을 `2099-09-01` 로 바꾼 사항을 TC-S-011 에 반영하고, 2026-09-18 갱신 때 맞추지 못한 개요·분류 요약·도메인 판정·체크리스트의 파일 수·건수(17개·211건 → 18개·215건 → 19개·231건)를 실측으로 바로잡음 (231건, SC/TC 57개, ✅ 27 / 🔲 30) |
 
 ### 관련 문서
 
 | 문서 | 성격 | 이 문서와의 관계 |
 |------|------|------------------|
 | `spec.md` (563줄) | 제품 스펙(Flow, Feature, Definition of Done) | `동시`, `경쟁 조건`, `concurrency`, `race` 검색 결과가 0건이다. 레이트 리밋(Flow 5, 70행)과 예약 발행(Flow 8, 89~95행과 DoD 497~503행)을 단일 요청 관점으로만 서술하므로 Load/Stress 시나리오의 근거로 사용할 수 없다 |
-| `CHANGELOG.md` | 변경 이력 | 2.0.0 항목은 런타임 스위트가 "validators, theme exports, slug/pagination utilities, and i18n defaults" 를 검증한다고 서술하지만, validators 와 i18n 을 직접 import 하는 테스트 파일은 없다(`post-routes-validated.test.mjs` 는 라우트를 거쳐 검증 스키마를 간접 실행한다). 2.1.x 항목(2.1.4·2.1.5 포함)도 기록되어 있지 않다 |
+| `CHANGELOG.md` | 변경 이력 | 2.0.0 항목은 런타임 스위트가 "validators, theme exports, slug/pagination utilities, and i18n defaults" 를 검증한다고 서술하지만, i18n 을 직접 import 하는 테스트 파일은 없다. validators 는 `post-routes-validated.test.mjs`(스키마 `shape` 키 기준 비교)와 2026-09-30 에 추가된 `unpublish-reservation.test.mjs`(`coverImageUrl` 검증, TC-U-010)만 직접 import 한다. 2.1.x 항목(2.1.4·2.1.5 포함)과 2.2.1 항목은 기록되어 있지 않다(2026-09-30 기준 `[Unreleased]`, 2.2.0, 2.0.0, 0.1.0 항목이 있다) |
 | `critique.md`, `generator_report.md`, `sprint_contract.md` | 2026-05 스프린트 산출물 | 빌드·타입 검사 결과와 스프린트 계획을 기록한 문서이며 테스트 시나리오·케이스 문서가 아니다 |
 | `WITHWIZ_PACKAGES_TEST_AUDIT.md` (소비 프로젝트 저장소의 사전 조사 문서) | 사전 조사 | 테스트 43건 시점에 작성되었다. 이후 2.1.3~2.1.5 가 게시되었고, 2026-09-15 기준 `develop`, `main`, `origin/develop`, `origin/main`(마지막 fetch 기준)이 모두 2.1.5 릴리스 커밋 `b47b2f7` 을 가리키며 npm `latest` dist-tag 는 2.1.5 이다. 따라서 조사 문서에 기록된 "게시 전, 병합 전" 상태는 현재와 다르다 |
 | 커밋 `3572744` | 동시성 결함 수정 | 댓글 레이트 리밋 경쟁 조건과 예약 발행 이중 집계의 원인, 선택한 방식, 테스트 11건 추가 내역을 기록한다. 커밋 메시지에 따르면 수정 전 코드에서는 동시성 관련 4건이 실패했다 |
@@ -34,6 +35,8 @@
 | 커밋 `5b3876e`, `c0ea2a9`, `d625f08`, `d22f6c6`, `e90268e` (2.1.5, 병합 `4fa864e`) | 저장형 XSS 경로 보안 결함 수정 | 새니타이저 `purify` 주입과 폴백 경로 스캐너 재작성(`sanitizer-purify.test.mjs` 58건, TC-S-013·014·015), 빈 새니타이즈 결과의 원본 복귀 차단(`blog-service-sanitize.test.mjs` 5건, TC-S-013), 상세 페이지 링크 변환 속성 주입 차단(`detail-linkify.test.mjs` 5건, TC-S-016), 관리자 포스트 라우트의 검증 결과 전달(`post-routes-validated.test.mjs` 6건, TC-S-011)과 헬퍼 `html-inspect.mjs` 추가를 기록한다. `e90268e` 는 정규식·문자열 리터럴의 제어 문자를 `\u` 이스케이프로 바꾼 표기 변경이며 커밋 메시지는 동작이 같다고 기록한다 |
 | 커밋 `b106c9f`, `56f004a`, `0cf4b3b`, `c499691`, `bb7addc` (브랜치 `fix/residual-defects`, 미병합·미게시) | 잔여 결함 수정과 테스트 보강 | `isomorphic-dompurify` devDependency 추가로 DOMPurify 경로 21건 기본 실행(TC-S-013·015), 공개 댓글 작성 라우트 사용자 식별 설정 추가(`comment-require-login.test.mjs` 8건, TC-A-004), editor 서브패스 선언 파일 생성과 exports 스모크(`exports-smoke.test.mjs` 43건, TC-SM-002), `enableValidation:false` 포스트 라우트 허용 필드 제한(`post-routes-validated.test.mjs` 특성 테스트 1건 교체·2건 추가, TC-S-011), 폴백 새니타이저 SVG 애니메이션·`meta`·`base`·`link` 제거(`sanitizer-purify.test.mjs` 18건, TC-S-013·017)를 기록한다. 각 커밋 메시지에 수정 전 실패 건수가 있다 |
 | 커밋 `faabcf9` (브랜치 `fix/residual-defects`, 미병합·미게시) | 의존 선언 정정 | `peerDependenciesMeta` 의 `@withwiz/block-editor` 를 `optional: false` 에서 `true` 로 바꾸고 lockfile 루트 항목을 동기화했다. block-editor 없이 새로 설치한 상태에서 typecheck·build·전체 테스트가 통과한다. TC-SM-002 에 선택 peer 확인 1건을 추가했다(`exports-smoke.test.mjs` 43건 → 44건) |
+| 커밋 `ca448be` (2.2.0, 병합 `4675bcb`) | 허용 필드 제한 결함 수정 | `BlogService.create()`·`update()` 를 직접 호출해도 허용 필드만 Prisma 로 전달하도록 고치고 `blog-service-input-fields.test.mjs` 4건을 추가했다(TC-S-011 9~12번) |
+| 브랜치 `fix/unpublish-clears-past-published-at` (미병합·미게시, CHANGELOG `[Unreleased]`) | 발행 시각 규칙·대표 이미지 URL 검증 결함 수정 | 비공개 글에 미래(예약) 발행 시각만 남기는 `keepOnlyReservation()` 을 `create()`·`update()`·`bulkUpdatePublished()` 에 적용하고, `bulkUpdatePublished(ids, true)` 가 발행 시각이 없는 글을 현재 시각으로 채우게 했다(TC-I-011). `coverImageUrl` 검증이 루트 상대 경로를 허용하게 했다(TC-U-010). `unpublish-reservation.test.mjs` 16건을 추가하고, `post-routes-validated.test.mjs` 의 `publishedAt` 고정값을 `2099-09-01` 로 바꿨다(TC-S-011 7번) |
 
 ---
 
@@ -50,6 +53,7 @@
 | SC-U-007 | i18n·파일·날짜·카테고리 테마 보조 유틸 | Unit | Low | 🔲 계획 |
 | SC-U-008 | S3 스토리지 어댑터 URL 키 추출 | Unit | Medium | 🔲 계획 |
 | SC-U-009 | React 컴포넌트 렌더링(25개) | Unit | Medium | 🔲 계획 |
+| SC-U-010 | 대표 이미지 URL(`coverImageUrl`) 검증의 루트 상대 경로 허용과 위험 값 거부 | Unit | High | ✅ 완료 |
 | SC-I-001 | 댓글 생성 경로 순차 동작(fake Prisma) | Integration | High | ✅ 완료 |
 | SC-I-002 | 예약 발행 단일 실행 결과 계약 | Integration | High | ✅ 완료 |
 | SC-I-003 | BlogService 공개 조회 조건 구성 | Integration | Critical | 🔲 계획 |
@@ -60,6 +64,7 @@
 | SC-I-008 | CommentService 조회 트리·관리 기능 | Integration | High | 🔲 계획 |
 | SC-I-009 | SchedulerService 예약 목록·취소 | Integration | Medium | 🔲 계획 |
 | SC-I-010 | createBlog 기능 토글 조합 | Integration | Medium | 🔲 계획 |
+| SC-I-011 | 비공개 글의 발행 시각 규칙(예약 시각만 유지, 일괄 공개·비공개) | Integration | High | ✅ 완료 |
 | SC-A-001 | 포스트 라우트 요청 파싱·응답 계약 | API | High | 🔲 계획 |
 | SC-A-002 | 라우트 오류 응답 매핑(BlogError, 일반 예외) | API | High | 🔲 계획 |
 | SC-A-003 | 태그·검색·댓글 라우트 요청 파싱 | API | Medium | 🔲 계획 |
@@ -251,6 +256,7 @@
 
 - **자동화:** 가능 ✅
 - **근거:** 1~8번 예상값은 2026-09-13 `dist` 대상 임시 스크립트로 확인했다.
+- **부분 커버 (2026-09-30):** 3번의 `coverImageUrl` 값 검사는 TC-U-010 이 정적 스키마 2종과 팩토리 스키마 1종에서 검증한다(`'javascript:alert(1)'`, `data:` 값 거부와 빈 문자열 허용 포함). 3번 외의 단계는 테스트가 없어 이 TC 는 계획 상태를 유지한다. 1·2·4~8번의 예상값은 이번 수정으로 바뀌지 않는다.
 
 ---
 
@@ -330,13 +336,35 @@
 
 ---
 
+### TC-U-010: 대표 이미지 URL 검증의 루트 상대 경로 허용과 위험 값 거부
+
+| 항목 | 내용 |
+|------|------|
+| **파일** | `test/runtime/unpublish-reservation.test.mjs` (16건 중 6건) |
+| **대상** | `src/validators/blog.validator.ts` 정적 스키마 `optionalUrlSchema`(`CreateBlogPostSchema`·`UpdateBlogPostSchema` 의 `coverImageUrl`)와 팩토리 `createBlogSchemas()` 내부 `createSafeUrlSchema()`. 두 스키마 모두 내부 `isUrlOrRootPath()`(루트 상대 경로 정규식 `ROOT_RELATIVE_PATH` 또는 `z.string().url()`)를 통과한 뒤 `file:`·`javascript:`·`data:` 접두 차단을 거친다. 첨부파일 `url`(`z.string().url()`)은 바뀌지 않았다 |
+| **우선순위** | High |
+| **전제조건** | `npm run build` 로 `dist/validators/index.mjs` 생성. 스키마 3종을 반복해 같은 두 테스트를 만든다: `정적 Update`(`UpdateBlogPostSchema`), `정적 Create`(`CreateBlogPostSchema.partial()`), `팩토리 Update`(`createBlogSchemas().UpdateBlogPostSchema`) |
+| **테스트 데이터** | 허용 값 `'https://cdn.example.com/a.png'`, `'/assets/cover.png'`, `'/a/b-c_d.webp?v=1'`, `''` / 거부 값 `'//evil.example/a.png'`, `'/\\evil.example/a.png'`, `'assets/cover.png'`, `'/has space.png'`, `'javascript:alert(1)'`, `'data:image/png;base64,AAAA'`, `'file:///etc/passwd'` |
+
+| # | 단계 | 예상 결과 |
+|---|------|---------|
+| 1 | `<스키마>: coverImageUrl 은 절대 URL·루트 상대 경로·빈 문자열을 허용한다`: 허용 값 4개를 각각 `safeParse({ coverImageUrl })` (스키마 3종, 3건) | 모두 `success: true` |
+| 2 | `<스키마>: coverImageUrl 의 위험 값은 거부한다`: 거부 값 7개를 각각 `safeParse({ coverImageUrl })` (스키마 3종, 3건) | 모두 `success: false` (프로토콜 상대 URL, 역슬래시, 슬래시로 시작하지 않는 상대 경로, 공백, 위험 프로토콜 3종) |
+
+- **자동화:** 가능 ✅ | **테스트 수:** 6개 (실측: 2단계 × 스키마 3종)
+- **관련 요구사항:** 2번의 위험 프로토콜 차단은 OWASP A03:2021 Injection (CWE-79) 과 관련된다. 프로토콜 상대 URL·역슬래시 거부는 다른 출처를 가리키는 경로를 막기 위한 것이다
+- **결함 이력:** 수정 전(2.2.1) `coverImageUrl` 스키마는 `z.string().url()` 이어서 루트 상대 경로를 거부했다. 대표 이미지가 상대 경로로 저장된 글은 관리자 화면에서 다시 저장하면 검증 실패 400 으로 거부되어, 대표 이미지와 무관한 수정도 저장할 수 없었다. 브랜치 `fix/unpublish-clears-past-published-at` 에서 정적·팩토리 스키마 모두 루트 상대 경로를 허용하게 고쳤다. 2026-09-30 에 develop `f2eaa5b` 빌드로 이 파일을 실행하면 1번 3건이 실패했고, 2번 3건은 기존 동작 확인용이라 통과했다.
+- **한계:** 팩토리 `CreateBlogPostSchema` 는 실행하지 않는다(정적 Create 와 팩토리 Update 로 두 구현을 모두 거친다). 거부 시 오류 메시지(`validationUrlInvalid`)는 단언하지 않는다. 라우트를 거친 400 → 200 전환은 TC-S-011 의 라우트 테스트 범위 밖이다.
+
+---
+
 ## 2. Integration Tests (통합 테스트)
 
 **목적:** 실제 서비스 팩토리(`createXxxService`)에 인메모리 fake Prisma 를 주입해 서비스 로직과 Prisma 질의 인자 구성을 함께 검증한다. 실제 DB 는 사용하지 않는다.
 
 **실행 명령:** `npm test` (단일 파일: `npm run build && node --test test/runtime/concurrency-guards.test.mjs`)
 
-**현재 공백:** 서비스 5종 중 `CommentService.create()` 와 `SchedulerService.processScheduledPosts()` 만 fake Prisma 로 로직 전반이 실행된다. `BlogService` 는 2.1.5 에서 추가된 `blog-service-sanitize.test.mjs`(TC-S-013), `post-routes-validated.test.mjs`(TC-S-011), 2026-09-18 에 추가된 `blog-service-input-fields.test.mjs`(TC-S-011)가 `create()`·`update()` 의 Prisma data 를 기록해 본문 새니타이즈 저장값, zod 기본값·`publishedAt` 변환, 스키마 밖 필드 제거를 단언하지만, 이는 보안 회귀 목적의 부분 검증이다. slug 중복, 태그 연결, 조회 조건, 삭제·대시보드는 검증하지 않는다. `TagService`, `SearchService` 를 실행하는 테스트는 `auth-failclosed.test.mjs` 뿐이며, 이 파일은 모든 델리게이트가 빈 결과를 반환하는 Proxy fake 를 사용하므로 질의 조건과 매핑 로직을 단언하지 않는다.
+**현재 공백:** 서비스 5종 중 `CommentService.create()` 와 `SchedulerService.processScheduledPosts()` 만 fake Prisma 로 로직 전반이 실행된다. `BlogService` 는 2.1.5 에서 추가된 `blog-service-sanitize.test.mjs`(TC-S-013), `post-routes-validated.test.mjs`(TC-S-011), 2026-09-18 에 추가된 `blog-service-input-fields.test.mjs`(TC-S-011)가 `create()`·`update()` 의 Prisma data 를 기록해 본문 새니타이즈 저장값, zod 기본값·`publishedAt` 변환, 스키마 밖 필드 제거를 단언하지만, 이는 보안 회귀 목적의 부분 검증이다. 2026-09-30 에 추가된 `unpublish-reservation.test.mjs`(TC-I-011)가 `create()`·`update()`·`bulkUpdatePublished()` 의 발행 시각 저장값을 검증한다. slug 중복, 태그 연결, 조회 조건, 삭제·`togglePublish()`·대시보드는 검증하지 않는다. `TagService`, `SearchService` 를 실행하는 테스트는 `auth-failclosed.test.mjs` 뿐이며, 이 파일은 모든 델리게이트가 빈 결과를 반환하는 Proxy fake 를 사용하므로 질의 조건과 매핑 로직을 단언하지 않는다.
 
 ---
 
@@ -423,7 +451,7 @@
 | 1 | `create({ slug:'hello', ... }, 'u1')` | 저장 slug `'hello-3'` (정확 일치가 있으면 `hello-` 접두 slug 를 모아 비어 있는 최소 접미사 선택) |
 | 2 | `create({ slug:'fresh', ... })` | 접두 조회(`findMany`) 없이 `'fresh'` 저장 |
 | 3 | `sanitizeContent` 주입 후 `content:'<p>ok</p><script>x</script>'` 저장 | 저장 `content` 는 새니타이즈 결과(`sanitize(data.content) ?? ''`). 결과가 빈 문자열이면 빈 문자열, `null` 이면 빈 문자열이 저장된다 (2.1.5 수정 `c0ea2a9`, TC-S-013 7~10번에서 검증) |
-| 4 | `published:true`, `publishedAt` 미지정 / 둘 다 미지정 | `publishedAt` 은 현재 시각 `Date` / `null` |
+| 4 | `published:true`, `publishedAt` 미지정 / 둘 다 미지정 | `publishedAt` 은 현재 시각 `Date` / `null`. `published` 가 `true` 가 아니고 `publishedAt` 이 과거이면 `null` (2026-09-30 규칙, TC-I-011 9번) |
 | 5 | `enableTags:true` 와 `tagIds:['t1','t2']` 로 생성 | `$transaction` 안에서 `blogPost.create` 후 `postTag.createMany({ data:[{postId, tagId:'t1'},{postId, tagId:'t2'}], skipDuplicates:true })` |
 | 6 | `enableTags:true` 에서 `tagIds:[]`, 또는 `postTag.createMany` 부재 | 트랜잭션 없이 `delegate.create` 1회 |
 | 7 | 기존 `published:false` 글을 `update(id, { published:true })` | 트랜잭션 안에서 `findUnique` 후 `publishedAt` 을 현재 시각으로 설정. 기존 `published:true` 면 `publishedAt` 미변경 |
@@ -433,7 +461,7 @@
 
 - **자동화:** 가능 ✅
 - **근거:** 1·10번은 2026-09-13 임시 스크립트로 확인했다.
-- **부분 커버:** 3번은 `blog-service-sanitize.test.mjs`(TC-S-013)가 검증한다. `post-routes-validated.test.mjs`(TC-S-011 5·6번)는 라우트 경유 `create()` 에서 `coverImageUrl`·`coverImageKey` 미지정 시 `null`, `publishedAt` 문자열의 `Date` 변환을 단언하지만 4·9번의 조건(`published:true` 만 지정, `coverImageUrl:''` 수정)과는 다르다. 나머지 단계는 테스트가 없어 계획 상태를 유지한다.
+- **부분 커버:** 3번은 `blog-service-sanitize.test.mjs`(TC-S-013)가 검증한다. `post-routes-validated.test.mjs`(TC-S-011 5·6번)는 라우트 경유 `create()` 에서 `coverImageUrl`·`coverImageKey` 미지정 시 `null`, `publishedAt` 문자열의 `Date` 변환을 단언하지만 4·9번의 조건(`published:true` 만 지정, `coverImageUrl:''` 수정)과는 다르다. 2026-09-30 부터 `unpublish-reservation.test.mjs`(TC-I-011 4~10번)가 `create()`·`update()` 의 비공개 글 발행 시각 저장값을 검증하지만, 4번의 `published:true` + `publishedAt` 미지정(현재 시각 채움)과 7번의 공개 전환 경로는 여전히 단언하지 않는다. 나머지 단계는 테스트가 없어 계획 상태를 유지한다.
 - **비고:** 1번 `uniqueSlug()` 는 조회와 삽입 사이에 원자성이 없어 동시 작성 시 같은 slug 가 계산될 수 있다. 패키지 스키마(`prisma/blog.prisma`)는 `BlogPost.slug` 에 `@unique` 를 선언하므로 두 번째 삽입은 DB 제약 오류가 되며, 이 오류는 `BlogError` 가 아니어서 라우트에서 500 으로 응답된다(TC-A-002 2번).
 
 ---
@@ -460,6 +488,7 @@
 
 - **자동화:** 가능 ✅
 - **근거:** 1·2·5번은 2026-09-13 임시 스크립트로 확인했다.
+- **부분 커버 (2026-09-30):** 대상 중 `bulkUpdatePublished()` 는 TC-I-011 1~3번이 검증한다(단계표에는 없던 메서드). 5번 `togglePublish()` 와 나머지 단계는 테스트가 없어 계획 상태를 유지한다.
 
 ---
 
@@ -587,6 +616,36 @@
 
 - **자동화:** 가능 ✅
 - **기존 테스트와의 관계:** `createblog-failfast.test.mjs` 3번 테스트가 `comments.enabled:false` 일 때 `services.comments === null` 을 이미 단언한다.
+
+---
+
+### TC-I-011: 비공개 글의 발행 시각 규칙 (예약 시각만 유지)
+
+| 항목 | 내용 |
+|------|------|
+| **파일** | `test/runtime/unpublish-reservation.test.mjs` (16건 중 10건) |
+| **대상** | `src/services/blog.service.ts` 모듈 수준 함수 `keepOnlyReservation(published, publishedAt, now)`(비공개 글에는 미래 시각만 남기고 과거 시각은 `null`, `dist/services` 로는 export 되지 않음)와 이를 쓰는 `create()`, `update()`, `bulkUpdatePublished()` |
+| **우선순위** | High |
+| **전제조건** | 실제 `createBlogService(prisma, { modelName:'blogPost' })` 에 메모리 저장소 fake 델리게이트 주입. `findUnique` 는 저장된 행을 돌려주고, `create`·`update` 는 Prisma data 를 기록하며, `updateMany` 는 `where` 의 `id.in`, `publishedAt: null`, `publishedAt: { lte }` 조건을 평가해 일치하는 행만 바꾼다. `$transaction: (fn) => fn(prisma)`. 시각은 실행 시점 기준 `past()`(24시간 전)와 `future()`(24시간 후)로 만든다 |
+| **테스트 데이터** | 일괄 비공개 `a(published:true, 과거)`, `b(published:false, 미래)`, `c(published:true, null)` / 일괄 공개 `a(published:false, null)`, `b(published:false, 과거)` / 작성 입력 `{ slug:'hello', category:'news', title:'제목', content:'<p>본문</p>' }` |
+
+| # | 단계 | 예상 결과 |
+|---|------|---------|
+| 1 | `bulkUpdatePublished(false): 과거 발행 시각은 지우고 미래 예약 시각은 남긴다`: `bulkUpdatePublished(['a','b','c'], false)` | 반환 `3`, 저장 결과 `a(false, null)`, `b(false, 미래 시각 그대로)`, `c(false, null)` |
+| 2 | `bulkUpdatePublished(true): 발행 시각이 없는 글만 지금 시각으로 채운다`: `bulkUpdatePublished(['a','b'], true)` | 반환 `2`, `a` 는 `published:true` 이고 `publishedAt` 이 호출 직전 시각 이상의 `Date`, `b` 는 `published:true` 이고 기존 과거 시각 유지 |
+| 3 | `bulkUpdatePublished: 대상 밖 글은 건드리지 않는다`: `z(published:true, 과거)` 가 있는 상태에서 `bulkUpdatePublished(['a'], false)` | `z` 는 `published:true` 와 기존 시각을 유지 |
+| 4 | `update: 비공개로 저장하며 과거 발행 시각을 함께 보내면 null 로 저장한다`: 기존 `(true, 과거)` 글에 `{ published:false, publishedAt:<과거 ISO> }` | Prisma `update` data 의 `publishedAt === null` |
+| 5 | `update: 비공개로만 바꾸면 기존 과거 발행 시각을 null 로 저장한다`: 기존 `(true, 과거)` 글에 `{ published:false }` | Prisma `update` data 의 `publishedAt === null` (입력에 없으면 트랜잭션 안에서 기존 값을 조회해 판단) |
+| 6 | `update: 비공개 + 미래 시각(예약)은 그대로 저장한다`: 기존 `(false, null)` 글에 `{ published:false, publishedAt:<미래 ISO> }` | Prisma `update` data 의 `publishedAt` 이 입력 미래 시각과 같은 `Date` |
+| 7 | `update: 기존 미래 예약 글을 비공개로 다시 저장해도 예약 시각을 유지한다`: 기존 `(false, 미래)` 글에 `{ published:false, title:'바뀐 제목' }` | Prisma `update` data 에 `publishedAt` 키가 없음 |
+| 8 | `update: published 를 보내지 않으면 발행 시각 규칙을 적용하지 않는다`: 기존 `(false, null)` 글에 `{ publishedAt:<과거 ISO> }` | Prisma `update` data 의 `publishedAt` 이 입력 과거 시각과 같은 `Date` |
+| 9 | `create: 비공개 + 과거 발행 시각은 null 로 저장한다`: `{ ...작성 입력, published:false, publishedAt:<과거 ISO> }`, 작성자 `'author-1'` | Prisma `create` data 의 `publishedAt === null` |
+| 10 | `create: 비공개 + 미래 시각(예약)과 공개 + 과거 시각은 그대로 저장한다`: `(false, 미래)`, `(true, 과거)` 순서로 2회 작성 | 두 `create` data 의 `publishedAt` 이 각각 입력한 미래·과거 시각과 같은 `Date` |
+
+- **자동화:** 가능 ✅ | **테스트 수:** 10개 (실측)
+- **관련 스펙:** 예약 발행 스케줄러(`processScheduledPosts`, TC-I-002)는 `published=false AND publishedAt<=now` 인 글을 예약 글로 보고 공개한다. 이 TC 는 비공개 저장·일괄 전환 뒤 그 조건에 해당하는 행이 남지 않는지를 저장값으로 단언한다.
+- **결함 이력:** 수정 전(2.2.1)에는 비공개로 전환해도 과거 `publishedAt` 이 남았다. 그래서 예약 발행 스케줄러가 다음 실행에서 그 글을 다시 공개했다. 수정 화면 저장 경로(`update({ published:false })`)와 일괄 비공개 경로(`bulkUpdatePublished(ids, false)`, 수정 전에는 `published` 만 바꾸는 `updateMany` 1회) 모두 해당했고, `togglePublish()` 는 원래 `publishedAt` 을 `null` 로 초기화했다. `create()` 도 비공개 + 과거 시각을 그대로 저장했고, 일괄 공개는 발행 시각이 없는 글을 `null` 그대로 공개했다. 브랜치 `fix/unpublish-clears-past-published-at` 에서 `keepOnlyReservation()` 을 추가해 세 메서드에 적용했고, `bulkUpdatePublished(ids, false)` 는 트랜잭션 안에서 과거 시각을 먼저 `null` 로 바꾼 뒤 모두 비공개로 바꾸게 했다. 2026-09-30 에 develop `f2eaa5b` 빌드로 이 파일을 실행하면 1·2·4·5·9번 5건이 실패했고, 3·6·7·8·10번 5건은 기존 동작 확인용이라 통과했다. 같은 규칙 때문에 `post-routes-validated.test.mjs` 의 `publishedAt` 고정값(`2026-09-01`, 2026-09-30 기준 과거)이 비공개 글에서 `null` 로 바뀌므로 `2099-09-01` 로 바꿨다(TC-S-011 7번). 바꾸기 전 파일을 수정 후 빌드로 실행하면 7번 1건이 실패했다.
+- **한계:** 저장값만 단언하며, 이어서 `processScheduledPosts()` 를 실행해 재공개되지 않음을 확인하지는 않는다. fake `$transaction` 은 격리 없이 콜백을 바로 실행하므로 두 `updateMany` 사이에 스케줄러가 끼어드는 경쟁은 재현하지 않는다(TC-L-002 와 같은 동시성 검증 없음). `keepOnlyReservation()` 은 `dist/services` 로 export 되지 않아 직접 호출하지 않는다. `togglePublish()` 는 이 파일에서도 실행하지 않는다(TC-I-005 5번). 일괄 공개 시 미래 `publishedAt` 을 가진 글은 코드상 미래 시각을 유지한 채 `published:true` 가 되며, 이 경우는 단언하지 않는다.
 
 ---
 
@@ -975,7 +1034,7 @@ Request
 | **대상** | `src/routes/post.routes.ts` admin `list.POST`, `detail.PUT` (검증 통과 시 `check.data` 를 서비스로 전달, 2.1.5 `d22f6c6`. 검증 비활성 시 `pickPostInput()` 으로 허용 필드 `POST_INPUT_FIELDS` 14개만 전달, 2026-09-16 `c499691`) / `src/services/blog.service.ts` `create()`, `update()` 와 거기서 export 하는 `POST_INPUT_FIELDS`·`pickPostInput()` (서비스 직접 호출 경로에도 같은 선별 적용, 2026-09-18 `ca448be`) |
 | **우선순위** | High |
 | **전제조건** | 1~6번: `create`·`update`·`getById` 인자를 기록하는 fake BlogService. 7·8번: 실제 `createBlogService(prisma, { modelName:'blogPost' })` 에 Prisma `create`·`update` data 를 기록하는 fake 델리게이트와 `$transaction: (fn) => fn(prisma)` 주입. 공통: `authMiddleware` 가 `{ id:'admin-1', role:'admin' }` 반환. 1~3·7·8번은 검증 활성(기본), 4~6번은 `enableValidation:false`. 5번은 `dist/validators/index.mjs` 의 `createBlogSchemas()` 스키마 `shape` 키를 기준으로 사용. 9~12번은 라우트를 거치지 않고 `createBlogService()` 를 직접 호출하며, Prisma `create`·`update` data 를 기록하는 fake 델리게이트와 `$transaction: (fn) => fn(prisma)` 를 주입한다 |
-| **테스트 데이터** | 스키마 밖 필드 `INJECTED_FIELDS = { id:'forged-id', createdAt, updatedAt, authorId:'someone-else', author:{ connect }, tags:{ create }, comments:{ create }, viewCount:999 }`, 유효 생성 본문 `{ title:'제목', content:'<p>본문</p>', category:'news', slug:'hello-world', publishedAt:'2026-09-01T00:00:00.000Z' }` |
+| **테스트 데이터** | 스키마 밖 필드 `INJECTED_FIELDS = { id:'forged-id', createdAt, updatedAt, authorId:'someone-else', author:{ connect }, tags:{ create }, comments:{ create }, viewCount:999 }`, 유효 생성 본문 `{ title:'제목', content:'<p>본문</p>', category:'news', slug:'hello-world', publishedAt:'2099-09-01T00:00:00.000Z' }` (2026-09-30 에 `2026-09-01` 에서 변경. 비공개 글에는 미래 시각만 남는 규칙(TC-I-011) 때문에 실행 시점과 관계없이 미래인 고정 값이 필요하다) |
 
 | # | 단계 | 예상 결과 |
 |---|------|---------|
@@ -985,7 +1044,7 @@ Request
 | 4 | `enableValidation: false 여도 허용 필드만 서비스로 전달 (스키마 밖 필드 제거, 값은 변환하지 않음)`: 유효 본문 + `INJECTED_FIELDS` 로 POST, `{ title:'수정', ...INJECTED_FIELDS }` 로 PUT | 201·200, `create` data 에 주입 키 8개가 없고 data 가 유효 본문과 정확히 같음(zod 기본값·Date 변환 없음), 작성자 인자는 `'admin-1'`, `update` 인자는 `{ id:'p1', data:{ title:'수정' } }` |
 | 5 | `enableValidation: false 의 허용 필드는 생성·수정 스키마 필드와 같다`: 스키마 `shape` 의 모든 키에 값을 넣고 `INJECTED_FIELDS` 를 더해 POST·PUT | `create` data 키 목록이 `CreateBlogPostSchema.shape` 키 목록과, `update` data 키 목록이 `UpdateBlogPostSchema.shape` 키 목록과 같음 |
 | 6 | `enableValidation: false 의 기본 필수값 검사는 기존처럼 400 이고 서비스를 부르지 않는다`: `slug` 없는 본문 + `INJECTED_FIELDS` 로 POST | 400, `create` 0회 |
-| 7 | `서비스 호환: POST 는 zod 기본값을 적용하고 Prisma 에 스키마 밖 필드를 넘기지 않는다`: 본문에 `<img src="x" onerror="alert(1)">` 추가 | 201, Prisma `create` data 에 `authorId` 를 제외한 7개 주입 키가 없음, `authorId:'admin-1'`, `editorType:'rich'`, `attachments:[]`, `featured:false`, `published:false`, `publishedAt` 은 `Date`(`2026-09-01T00:00:00.000Z`), `coverImageUrl`·`coverImageKey` 는 `null`, `content === '<p>본문</p><img src="x">'` |
+| 7 | `서비스 호환: POST 는 zod 기본값을 적용하고 Prisma 에 스키마 밖 필드를 넘기지 않는다`: 본문에 `<img src="x" onerror="alert(1)">` 추가 | 201, Prisma `create` data 에 `authorId` 를 제외한 7개 주입 키가 없음, `authorId:'admin-1'`, `editorType:'rich'`, `attachments:[]`, `featured:false`, `published:false`, `publishedAt` 은 `Date`(`2099-09-01T00:00:00.000Z`), `coverImageUrl`·`coverImageKey` 는 `null`, `content === '<p>본문</p><img src="x">'` |
 | 8 | `서비스 호환: PUT 은 보낸 필드만 갱신하고 publishedAt 문자열·null 을 올바르게 저장한다` | 두 응답 모두 200, 첫 `update` data 키는 `['publishedAt','title']` 이고 `publishedAt` 은 `Date`(`2026-09-02T03:04:05.000Z`), 두 번째 data 는 `{ publishedAt:null }` |
 | 9 | `create` 를 직접 호출하며 `id`·`viewCount`·`comments` 중첩 쓰기를 넣는다 | Prisma `create` data 에 세 키가 모두 없다 |
 | 10 | `create` 를 직접 호출하며 입력에 `authorId:'forged-author'` 를 넣고 인자로 `'author-1'` 을 준다 | Prisma `create` data 의 `authorId` 가 `'author-1'` 이다 |
@@ -1558,29 +1617,31 @@ Request
 
 | 유형 | 현재 파일 수 | 현재 테스트 수 | SC 수 (✅/🔲) | TC 수 (✅/🔲) |
 |------|------------|-------------|--------------|--------------|
-| **Unit** | 2개 | 9개 | 9 (2/7) | 9 (2/7) |
-| **Integration** | 1개 (주1) | 6개 | 10 (2/8) | 10 (2/8) |
+| **Unit** | 3개 (주5) | 15개 | 10 (3/7) | 10 (3/7) |
+| **Integration** | 2개 (주1, 주5) | 16개 | 11 (3/8) | 11 (3/8) |
 | **API** | 1개 | 8개 | 4 (1/3) | 4 (1/3) |
 | **E2E** | 0개 | 0개 | 0 (미적용) | 0 |
-| **Security** | 10개 | 128개 (주3) | 17 (14/3) | 17 (14/3) |
+| **Security** | 11개 | 132개 (주3) | 17 (14/3) | 17 (14/3) |
 | **Performance** | 0개 | 0개 | 2 (0/2) | 2 (0/2) |
 | **Accessibility** | 2개 | 11개 | 5 (2/3) | 5 (2/3) |
 | **Load/Stress** | 1개 (주1) | 5개 | 3 (2/1) | 3 (2/1) |
 | **Smoke** | 2개 (주2) | 44개 | 2 (2/0) | 2 (2/0) |
 | **Chaos** | 0개 | 0개 | 3 (0/3) | 3 (0/3) |
-| **합계** | **18개** (중복 제외, 주4) | **211개** (주3) | **55 (25/30)** | **55 (25/30)** |
+| **합계** | **20개** (중복 제외, 주4) | **231개** (주3) | **57 (27/30)** | **57 (27/30)** |
 
 - 주1: `concurrency-guards.test.mjs` 는 11건을 Integration 6건과 Load/Stress 5건으로 나누어 두 도메인에 모두 계산했다. 합계 파일 수는 중복을 제외한 값이다.
 - 주2: Smoke 파일 2개는 `test/headless-mode.ts`(러너 대상이 아닌 타입 검증 파일, 테스트 0건)와 `exports-smoke.test.mjs`(44건)이다.
-- 주3: 2026-09-17 기본 `npm test` 에서 211건이 모두 실행되어 통과했고 스킵은 0건이다. Security 128건 중 실제 DOMPurify 경로 29건(TC-S-013 21건, TC-S-015 1건, TC-S-017 7건)은 `isomorphic-dompurify` 를 해석할 수 없는 환경에서만 건너뛴다. 2026-09-15 에는 139건 중 21건을 건너뛰었다.
-- 주4: 러너 대상 17개 파일과 `test/headless-mode.ts` 의 합이다. 테스트 헬퍼 `test/runtime/helpers/html-inspect.mjs` 는 `*.test.mjs` 가 아니어서 러너가 실행하지 않으므로 파일 수에서 제외했다.
+- 주3: 2026-09-30 기본 `npm test` 에서 231건이 모두 실행되어 통과했고 스킵은 0건이다. Security 132건 중 실제 DOMPurify 경로 29건(TC-S-013 21건, TC-S-015 1건, TC-S-017 7건)은 `isomorphic-dompurify` 를 해석할 수 없는 환경에서만 건너뛴다. 2026-09-15 에는 139건 중 21건을 건너뛰었다.
+- 주4: 러너 대상 19개 파일과 `test/headless-mode.ts` 의 합이다. 테스트 헬퍼 `test/runtime/helpers/html-inspect.mjs` 는 `*.test.mjs` 가 아니어서 러너가 실행하지 않으므로 파일 수에서 제외했다.
+- 주5: `unpublish-reservation.test.mjs` 는 16건을 Integration 10건(TC-I-011)과 Unit 6건(TC-U-010)으로 나누어 두 도메인에 모두 계산했다. 합계 파일 수는 중복을 제외한 값이다.
 - 커버리지 수치는 측정 도구가 설정되어 있지 않아 기록하지 않는다.
 - 2026-09-13 대비 변화(2026-09-15 판): 파일 10개 → 16개, 테스트 54건 → 139건, SC·TC 49개(15/34) → 54개(22/32). 계획에서 완료로 바뀐 TC 는 TC-S-011, TC-S-013 이고, 새로 추가한 TC 는 TC-S-014, TC-S-015, TC-S-016, TC-AC-004, TC-AC-005 이다.
 - 2026-09-15 대비 변화(2026-09-16·17 판): 파일 16개 → 18개, 테스트 139건 → 211건(기본 실행 통과 118건 → 211건), SC·TC 54개(22/32) → 55개(25/30). 계획에서 완료로 바뀐 TC 는 TC-A-004, TC-SM-002 이고, 새로 추가한 TC 는 TC-S-017 이다. 기존 TC 의 테스트 수는 TC-S-011 6건 → 8건, TC-S-013 45건 → 47건으로 늘었다.
+- 2026-09-17 대비 변화(2026-09-30 판): 파일 18개 → 20개, 테스트 211건 → 231건(2026-09-18 `ca448be` 4건, 2026-09-30 브랜치 `fix/unpublish-clears-past-published-at` 16건), SC·TC 55개(25/30) → 57개(27/30). 새로 추가한 TC 는 TC-U-010, TC-I-011 이다(둘 다 ✅ 완료). 기존 TC 의 테스트 수는 TC-S-011 8건 → 12건으로 늘었다. 계획 TC 인 TC-U-006, TC-I-004, TC-I-005 에는 부분 커버 표기만 추가하고 상태는 🔲 계획을 유지했다.
 
 ### 테스트 파일 대조
 
-`find test -type f` 결과 19개 파일 중 테스트 18개 파일을 모두 TC 에 매핑했으며, 누락 파일은 0개이다. 나머지 1개는 헬퍼(`helpers/html-inspect.mjs`)이다. 파일별 테스트 수 합계 211건은 2026-09-17 `npm test` 실측 결과(통과 211, 스킵 0)의 전체 건수와 일치한다. 파일별 건수는 빌드 후 파일마다 `node --test <파일>` 을 실행해 확인했다.
+`find test -type f` 결과 21개 파일 중 테스트 20개 파일을 모두 TC 에 매핑했으며, 누락 파일은 0개이다. 나머지 1개는 헬퍼(`helpers/html-inspect.mjs`)이다. 파일별 테스트 수 합계 231건은 2026-09-30 `npm test` 실측 결과(통과 231, 실패 0, 스킵 0)의 전체 건수와 일치한다. 파일별 건수는 빌드 후 파일마다 `node --test <파일>` 을 실행해 확인했다.
 
 | 파일 | 실측 테스트 수 (기본 통과/스킵) | 매핑 TC (건수) |
 |------|-------------|--------------|
@@ -1601,10 +1662,11 @@ Request
 | `test/runtime/sanitizer.test.mjs` | 12 (12/0) | TC-S-007 (6), TC-S-008 (6) |
 | `test/runtime/scheduler-cron.test.mjs` | 4 (4/0) | TC-S-003 (4) |
 | `test/runtime/theme.test.mjs` | 6 (6/0) | TC-U-001 (6) |
+| `test/runtime/unpublish-reservation.test.mjs` | 16 (16/0) | TC-I-011 (10), TC-U-010 (6) |
 | `test/runtime/utils-basic.test.mjs` | 3 (3/0) | TC-U-002 (3) |
 | `test/headless-mode.ts` | 0 (타입 검증) | TC-SM-001 |
 | `test/runtime/helpers/html-inspect.mjs` | - (헬퍼) | TC-S-013, TC-S-014, TC-S-016, TC-S-017 이 판정에 사용 |
-| **합계** | **211 (211/0)** | |
+| **합계** | **231 (231/0)** | |
 
 `sanitizer-purify.test.mjs` 76건 배분은 다음과 같다. 2026-09-16 에 추가한 테스트는 이름 뒤에 (2026-09-16) 으로 표시했다.
 
@@ -1621,6 +1683,23 @@ Request
 | `[CJS·DOMPurify] purify 미지정은 동적 로딩, purify: null 은 정규식 경로 강제` | 1 | 통과 | TC-S-015 |
 | `[ESM] purify 미지정 시 동적 로딩 실패 → 기존처럼 폴백 경고 정확히 1회` | 1 | 통과 | TC-S-015 |
 | `DOMPurifyLike 타입과 purify 설정이 공개 타입 선언에 포함된다` | 1 | 통과 | TC-S-015 |
+
+`unpublish-reservation.test.mjs` 16건 배분은 다음과 같다(2026-09-30 추가).
+
+| 테스트 이름 | TC |
+|------------|----|
+| bulkUpdatePublished(false): 과거 발행 시각은 지우고 미래 예약 시각은 남긴다 | TC-I-011 |
+| bulkUpdatePublished(true): 발행 시각이 없는 글만 지금 시각으로 채운다 | TC-I-011 |
+| bulkUpdatePublished: 대상 밖 글은 건드리지 않는다 | TC-I-011 |
+| update: 비공개로 저장하며 과거 발행 시각을 함께 보내면 null 로 저장한다 | TC-I-011 |
+| update: 비공개로만 바꾸면 기존 과거 발행 시각을 null 로 저장한다 | TC-I-011 |
+| update: 비공개 + 미래 시각(예약)은 그대로 저장한다 | TC-I-011 |
+| update: 기존 미래 예약 글을 비공개로 다시 저장해도 예약 시각을 유지한다 | TC-I-011 |
+| update: published 를 보내지 않으면 발행 시각 규칙을 적용하지 않는다 | TC-I-011 |
+| create: 비공개 + 과거 발행 시각은 null 로 저장한다 | TC-I-011 |
+| create: 비공개 + 미래 시각(예약)과 공개 + 과거 시각은 그대로 저장한다 | TC-I-011 |
+| `정적 Update`·`정적 Create`·`팩토리 Update`: coverImageUrl 은 절대 URL·루트 상대 경로·빈 문자열을 허용한다 (3건) | TC-U-010 |
+| `정적 Update`·`정적 Create`·`팩토리 Update`: coverImageUrl 의 위험 값은 거부한다 (3건) | TC-U-010 |
 
 `concurrency-guards.test.mjs` 11건 배분은 다음과 같다.
 
@@ -1642,15 +1721,15 @@ Request
 
 ## 도메인 적용성 판정
 
-사전 조사 문서(`WITHWIZ_PACKAGES_TEST_AUDIT.md`)의 판정표에서 blog-core 열을 옮기고, 이 문서 작성 시점의 근거를 추가했다. 근거는 2026-09-15(2.1.5) 기준으로 갱신했다.
+사전 조사 문서(`WITHWIZ_PACKAGES_TEST_AUDIT.md`)의 판정표에서 blog-core 열을 옮기고, 이 문서 작성 시점의 근거를 추가했다. 근거는 2026-09-30(2.2.1 + 브랜치 `fix/unpublish-clears-past-published-at`) 기준으로 갱신했다.
 
 | 도메인 | 판정 (사전 조사) | 근거 |
 |--------|----------------|------|
-| Unit | 적용(얕음) | 순수 유틸·테마 테스트 9건뿐이며, SEO·validators·i18n·storage·검색어 변환 등 순수 함수 테스트는 0건이다 |
+| Unit | 적용(얕음) | 순수 유틸·테마 테스트 9건과 2026-09-30 에 추가된 `coverImageUrl` 검증 스키마 테스트 6건(TC-U-010)으로 15건이다. validators 는 `coverImageUrl` 외 필드를 직접 검증하지 않고(TC-U-006 계획), SEO·i18n·storage·검색어 변환 등 순수 함수 테스트는 0건이다 |
 | API | 부분 | 라우트 핸들러 팩토리가 공개 API 이다. 2026-09-16 에 댓글 공개 작성 라우트의 사용자 식별 연동 8건(TC-A-004)이 추가되었지만, 라우트를 실행하는 나머지 4개 파일은 인증·IP 처리·허용 필드 제한 목적이고 파싱·응답 헤더·오류 본문 계약은 검증하지 않는다 |
-| Integration | 적용(공백 큼) | 서비스 5종 중 댓글 생성과 예약 발행 처리만 fake Prisma 로 로직 전반을 실행한다. BlogService 는 `create()`·`update()` 의 본문 저장값과 라우트 입력 전달만 보안 회귀 목적으로 부분 검증하고, tag·search 서비스는 0건이다 |
+| Integration | 적용(공백 큼) | 서비스 5종 중 댓글 생성과 예약 발행 처리만 fake Prisma 로 로직 전반을 실행한다. BlogService 는 `create()`·`update()` 의 본문 저장값과 라우트 입력 전달을 보안 회귀 목적으로 부분 검증하고, 2026-09-30 부터 `create()`·`update()`·`bulkUpdatePublished()` 의 비공개 글 발행 시각 규칙 10건(TC-I-011)을 검증한다. tag·search 서비스는 0건이다 |
 | E2E | 미적용 | DB·Next.js 런타임·인증을 호스트가 제공하는 라이브러리이므로 사용자 흐름 E2E 는 호스트 책임이다 |
-| Security | 적용(강함) | 211건 중 128건이 fail-closed, HMAC 시크릿, IP 스푸핑, XSS(저장 전 새니타이즈·렌더링 시 링크 변환), 허용 필드 제한 검증이다. 2.1.5 에서 폴백 우회 입력과 DOMPurify 주입 경로가 추가되었고, 2026-09-16 부터 실제 DOMPurify 경로 29건도 기본 실행에서 실행된다. 같은 날 폴백 경로의 SVG 애니메이션·문서 수준 요소 제거(TC-S-017)와 `enableValidation:false` 허용 필드 제한(TC-S-011)이 추가되었다. SQL 식별자 검증, 관리자 라우트 전수 인증, 500 메시지 노출은 여전히 0건이다 |
+| Security | 적용(강함) | 231건 중 132건이 fail-closed, HMAC 시크릿, IP 스푸핑, XSS(저장 전 새니타이즈·렌더링 시 링크 변환), 허용 필드 제한 검증이다. 2.1.5 에서 폴백 우회 입력과 DOMPurify 주입 경로가 추가되었고, 2026-09-16 부터 실제 DOMPurify 경로 29건도 기본 실행에서 실행된다. 같은 날 폴백 경로의 SVG 애니메이션·문서 수준 요소 제거(TC-S-017)와 `enableValidation:false` 허용 필드 제한(TC-S-011)이 추가되었고, 2026-09-18 에 서비스 직접 호출 경로의 허용 필드 제한 4건(TC-S-011)이 추가되었다. SQL 식별자 검증, 관리자 라우트 전수 인증, 500 메시지 노출은 여전히 0건이다 |
 | Accessibility | 적용, 정적 검사만 | 2.1.4 에서 정적 마크업(제목 계층)과 테마 색 대비 검사 11건이 추가되었다. 3개 엔트리로 컴포넌트 25개를 공개하지만 상호작용·자동 검사 도구에 필요한 jsdom 과 testing-library 는 devDependencies 에 없다(jsdom 29.1.1 은 2026-09-16 부터 `isomorphic-dompurify` 의 의존성으로만 설치된다) |
 | Performance | 낮음 | 조회 대부분이 DB 에 위임되며, 측정할 지점은 폴백 새니타이저와 건별 예약 갱신 정도이다 |
 | Load/Stress | 적용(사건이 입증) | 2026-09-13 결함 2건이 동시 요청에서만 드러났고, 회귀 테스트 5건이 그 순서를 재현한다 |
@@ -1663,9 +1742,9 @@ Request
 
 | 순위 | 항목 | 대상 | 선행 조건 |
 |------|------|------|----------|
-| 1 | CRUD(`blog.service`)·태그·검색·SEO 서비스 레벨 테스트 부재 (BlogService 는 본문 저장값·라우트 입력 전달만 부분 검증) | SC-I-003, SC-I-004, SC-I-005, SC-I-006, SC-I-007, SC-U-003, SC-U-004, SC-U-005 | `concurrency-guards.test.mjs` 의 `matchWhere` 매처와 fake 델리게이트(`blog-service-sanitize`·`post-routes-validated` 의 Prisma data 기록 fake 포함)를 공용 헬퍼로 분리한다. SEO 와 검색어 변환은 순수 함수이므로 새 러너나 의존성이 필요 없다 |
+| 1 | CRUD(`blog.service`)·태그·검색·SEO 서비스 레벨 테스트 부재 (BlogService 는 본문 저장값·라우트 입력 전달·비공개 글 발행 시각 규칙만 부분 검증) | SC-I-003, SC-I-004, SC-I-005, SC-I-006, SC-I-007, SC-U-003, SC-U-004, SC-U-005 | `concurrency-guards.test.mjs` 의 `matchWhere` 매처와 fake 델리게이트(`blog-service-sanitize`·`post-routes-validated` 의 Prisma data 기록 fake 포함)를 공용 헬퍼로 분리한다. SEO 와 검색어 변환은 순수 함수이므로 새 러너나 의존성이 필요 없다 |
 | 2 | 컴포넌트 25개 렌더링·상호작용 테스트 부족 | SC-U-009, SC-AC-001, SC-AC-002, SC-AC-003 | 정적 마크업 단계는 현재 러너(`node:test` + `dist` + `renderToStaticMarkup`)로 바로 작성할 수 있다. 클릭·키보드·제출 오류·자동 접근성 검사 단계는 `@testing-library/react`·jsdom devDependencies 추가가 필요하다. editor 2개에 필요한 `@tiptap/*` 는 2026-09-16 부터 devDependencies 로 설치된다 |
-| 3 | 설계 의도 확인이 필요한 라우트·서비스 동작 | SC-S-011 남은 한계 (`BlogService.create()`·`update()` 직접 호출 시 허용 필드 제한 없음), SC-S-012 (500 메시지 노출) | 의도 결정 후 예상 결과 확정. 서비스 제한은 blog-system 등 서비스를 직접 호출하는 호스트의 추가 필드 전달 여부 확인이 선행되어야 한다 |
+| 3 | 설계 의도 확인이 필요한 라우트 동작 | SC-S-012 (500 메시지 노출) | 의도 결정 후 예상 결과 확정 |
 | 4 | 라우트 계약과 admin 핸들러 전수 인증 | SC-A-001, SC-A-002, SC-A-003, SC-S-009, SC-S-010 | 없음 |
 | 5 | 부분 실패와 한계 조건 | SC-C-001, SC-C-002, SC-C-003, SC-L-003 | SC-L-003 은 커밋 가시성을 제어하는 fake 헬퍼 필요 |
 | 6 | headless 타입 검증 자동화 | TC-SM-001 명령 수정 | headless 검증 명령 수정과 npm 스크립트 연결(`package.json` 변경 필요) |
@@ -1675,6 +1754,10 @@ Request
 
 **해소된 갭 (2026-09-16, 브랜치 `fix/residual-defects`):** 2026-09-15 기준 3순위였던 DOMPurify 경로 건너뜀은 `b106c9f` 로 해소되었다. 4순위 중 SC-A-004(requireLogin 403 고정)는 `56f004a`, SC-S-011 의 `enableValidation:false` 원본 body 전달은 `c499691` 로 해소되었다. 7순위 중 SC-SM-002 는 `0cf4b3b` 로 editor 선언 파일 누락을 수정하며 자동화되었다. 이에 따라 순위를 다시 매겼다.
 
+**해소된 갭 (2026-09-18, 2.2.0):** 3순위였던 SC-S-011 남은 한계(`BlogService.create()`·`update()` 직접 호출 시 허용 필드 제한 없음)는 `ca448be` 로 해소되어 3순위에서 뺐다(TC-S-011 9~12번).
+
+**부분 해소 (2026-09-30, 브랜치 `fix/unpublish-clears-past-published-at`):** 1순위 BlogService 서비스 레벨 공백 중 발행 시각 저장 규칙과 `bulkUpdatePublished()` 는 SC-I-011 로, 7순위 SC-U-006 중 `coverImageUrl` 검증은 SC-U-010 으로 자동화되었다. 두 순위의 나머지 항목은 그대로 남아 순위를 바꾸지 않았다.
+
 ### 공통 선행 조건
 
 - 도메인별 실행 스크립트(`test:unit`, `test:security` 등)가 없으므로 도메인 단위 실행이 필요하면 파일명 규칙이나 디렉터리 분리를 먼저 정해야 한다.
@@ -1682,12 +1765,12 @@ Request
 
 ### 확인 필요 사항 목록
 
-| # | 내용 | 관련 TC | 상태 (2026-09-16) |
+| # | 내용 | 관련 TC | 상태 (2026-09-30) |
 |---|------|--------|------|
 | 1 | 위험 마크업만으로 구성된 본문은 새니타이즈 결과가 빈 문자열이 되어 원본이 저장된다 | TC-S-013 | 해소: 2.1.5 `c0ea2a9` 에서 결과(`null` 은 빈 문자열)를 저장하도록 수정, TC-S-013 7~9번이 검증 |
 | 2 | 닫는 태그가 없거나 self-closing 형태인 비신뢰 iframe 이 정규식 폴백에서 제거되지 않는다 | TC-S-013 | 해소: 2.1.5 `5b3876e` 에서 여는 태그를 제거하도록 수정, TC-S-013 1·2번이 검증 |
 | 3 | `requireLogin:true` 이면 공개 댓글 작성 라우트가 항상 403 을 응답한다 | TC-A-004 | 해소: 라우트의 사용자 식별 누락 결함으로 판정. 2026-09-16 `56f004a` 에서 `publicAuthMiddleware`·`commentAuthMiddleware` 추가, TC-A-004 1~8번이 검증. 설정이 없으면 기존처럼 403 이고 `createBlog` 가 경고 1회 |
-| 4 | 포스트 관리 라우트가 검증 결과 대신 원본 body 를 서비스로 전달해 스키마 외 필드(`authorId`, `id` 등)가 Prisma 로 전달된다 | TC-S-011 | 해소: 검증 활성 시 2.1.5 `d22f6c6`(TC-S-011 1·2·7번), 검증 비활성 시 2026-09-16 `c499691`(TC-S-011 4~6번). 남은 한계: `BlogService.create()`·`update()` 직접 호출 시 `...rest` 전개 (미결정) |
+| 4 | 포스트 관리 라우트가 검증 결과 대신 원본 body 를 서비스로 전달해 스키마 외 필드(`authorId`, `id` 등)가 Prisma 로 전달된다 | TC-S-011 | 해소: 검증 활성 시 2.1.5 `d22f6c6`(TC-S-011 1·2·7번), 검증 비활성 시 2026-09-16 `c499691`(TC-S-011 4~6번), 서비스 직접 호출 시 2026-09-18 `ca448be`(TC-S-011 9~12번, 라이브러리 책임으로 결정) |
 | 5 | `BlogError` 가 아닌 예외의 원본 메시지가 500 응답 본문에 포함된다 | TC-S-012 | 미결정 |
 | 6 | 태그 클라우드가 정렬 없이 `take` 로 자른 뒤 메모리에서 정렬한다 | TC-I-006 | 미결정 |
 | 7 | `featured.GET` 의 숫자가 아닌 `limit` 이 `NaN` 으로 서비스에 전달된다 | TC-A-001 | 미결정 |
@@ -1698,7 +1781,7 @@ Request
 | 12 | `test/headless-mode.ts` 주석의 검증 명령이 실패한다 | TC-SM-001 | 미결정 (2026-09-16 오류 57건, 2026-09-15 와 같음) |
 | 13 | `scheduler-cron.test.mjs` fake 반환값 형태가 실제 계약과 다르다 | TC-S-003 | 미결정 |
 | 14 | RSS 는 빈 태그 이름을 제외하지 않아 빈 `<category>` 를 출력한다 | TC-U-004 | 미결정 |
-| 15 | `CHANGELOG.md` 가 존재하지 않는 validators·i18n 테스트를 서술하고 2.1.x 항목이 없다 | 관련 문서 | 미결정 (2.1.4·2.1.5 항목과 2026-09-16 브랜치 변경 항목도 없음) |
+| 15 | `CHANGELOG.md` 가 존재하지 않는 validators·i18n 테스트를 서술하고 2.1.x 항목이 없다 | 관련 문서 | 미결정 (2.1.x·2.2.1 항목 없음. 2026-09-30 기준 2.2.0 과 `[Unreleased]` 항목은 있고, validators 는 2개 파일이 직접 import 하지만 i18n 테스트는 여전히 없다) |
 | 16 | `isomorphic-dompurify` 가 devDependencies 에 없어 실제 DOMPurify 경로 21건이 기본 `npm test` 에서 건너뛰어진다 | TC-S-013, TC-S-015 | 해소: 2026-09-16 `b106c9f` 에서 3.19.0 을 devDependencies 에 추가, 기본 실행 스킵 0건 |
 | 17 | `sanitizer.test.mjs` 의 테스트 이름("dompurify 미설치 → 정확히 1회 warn")과 달리 ESM 산출물은 설치 여부와 무관하게 폴백을 사용한다. ESM 호스트는 `createSanitizer({ purify })` 를 `sanitizeContent` 로 주입해야 DOMPurify 가 쓰이며, `createBlog` 경유 주입 경로는 테스트가 없다 | TC-S-007, TC-S-015 | 미결정 (2026-09-15 추가). 2026-09-16 에 devDependencies 설치 상태에서도 ESM 은 `Dynamic require` 실패로 폴백하고 CJS 는 DOMPurify 를 쓰는 것을 확인했다 |
 | 18 | devDependency `isomorphic-dompurify` 가 호스트의 4.2.0 이 아니라 3.19.0 이다. 4.x 는 Node `^22.22.2` 를 요구해 `.npmrc` `engine-strict=true` 와 Node 22.22.0 에서 설치가 실패한다 | TC-S-013, TC-S-015, TC-S-017 | 미결정 (2026-09-16 추가). 개발 환경 Node 를 22.22.2 이상으로 올리면 4.x 로 맞출지 결정이 필요하다 |
@@ -1708,11 +1791,12 @@ Request
 ## 리뷰 체크리스트
 
 - [x] 10개 도메인 적용성 판정 포함 (E2E 는 미적용으로 명시)
-- [x] 테스트 파일 18개를 모두 TC 에 매핑하고 누락 0개 확인 (헬퍼 1개 별도 표기)
-- [x] 파일별 테스트 수 합계(211)가 2026-09-17 `npm test` 실측 결과(통과 211, 실패 0, 스킵 0)에 일치
+- [x] 테스트 파일 20개를 모두 TC 에 매핑하고 누락 0개 확인 (헬퍼 1개 별도 표기)
+- [x] 파일별 테스트 수 합계(231)가 2026-09-30 `npm test` 실측 결과(통과 231, 실패 0, 스킵 0)에 일치
 - [x] 완료 TC 의 단계는 실제 테스트 이름과 단언에서 발췌
 - [x] 계획 TC 의 단계는 소스 코드 동작에 근거하고, 주요 예상값은 `dist` 대상 임시 스크립트로 확인
 - [x] 동시성 테스트 11건을 Integration(순차 동작 6건)과 Load/Stress(경쟁 조건 5건)로 분리
+- [x] `unpublish-reservation.test.mjs` 16건을 Integration(TC-I-011 10건)과 Unit(TC-U-010 6건)으로 분리하고, 수정 전 동작과 develop 빌드 대상 실패 건수를 "결함 이력"에 기록
 - [x] `sanitizer-purify.test.mjs` 76건을 TC-S-013(공통 케이스 42건), TC-S-014(폴백 전용 10건), TC-S-015(주입 계약 8건), TC-S-017(애니메이션·문서 수준 요소 16건)으로 분리
 - [x] 결함을 "현재 동작" 으로 기록했던 TC(TC-S-011, TC-S-013)를 2.1.5 수정 후 동작으로 갱신하고 남은 한계 명시
 - [x] 2026-09-16 에 해결한 결함 확인용 TC(TC-A-004, TC-SM-002)를 ✅ 완료로 전환하고, TC-S-011 특성 테스트 교체를 포함해 결함 당시 동작을 "결함 이력"에 기록
