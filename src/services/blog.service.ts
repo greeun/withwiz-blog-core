@@ -140,6 +140,24 @@ export function pickPostInput<T extends object>(input: T): T {
   return picked as T;
 }
 
+// ── 발행 시각 규칙 ──
+
+/**
+ * 비공개 글에는 예약(미래) 발행 시각만 남긴다.
+ *
+ * 스케줄러는 `published=false` 이고 `publishedAt` 이 지난 글을 예약 글로 보고 공개한다.
+ * 그래서 비공개로 저장하면서 과거 시각을 남기면 다음 스케줄러 실행이 그 글을 다시 공개한다.
+ * 공개 글이거나 시각이 없거나 미래 시각이면 값을 그대로 돌려준다.
+ */
+export function keepOnlyReservation(
+  published: boolean,
+  publishedAt: Date | null,
+  now: Date = new Date(),
+): Date | null {
+  if (published || !publishedAt) return publishedAt;
+  return publishedAt.getTime() > now.getTime() ? publishedAt : null;
+}
+
 // ── 팩토리 함수 ──
 
 export function createBlogService(prisma: PrismaClientLike, config: BlogServiceConfig): BlogService {
@@ -327,7 +345,10 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
         coverImageKey: data.coverImageKey || null,
         attachments: (attachments || []) as any,
         authorId,
-        publishedAt: data.publishedAt ? new Date(data.publishedAt as string) : data.published ? new Date() : null,
+        publishedAt: keepOnlyReservation(
+          data.published === true,
+          data.publishedAt ? new Date(data.publishedAt as string) : data.published ? new Date() : null,
+        ),
       };
 
       const shouldSyncTags =
@@ -408,6 +429,22 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
           if (!existing?.published) {
             updateData.publishedAt = new Date();
           }
+        }
+
+        // 비공개로 저장할 때 과거 발행 시각이 남으면 스케줄러가 예약 글로 보고 다시 공개한다.
+        if (data.published === false) {
+          let target: Date | null;
+          if ('publishedAt' in updateData) {
+            target = updateData.publishedAt;
+          } else {
+            const existing = await tx[config.modelName].findUnique({
+              where: { id },
+              select: { publishedAt: true },
+            });
+            target = (existing?.publishedAt as Date | null | undefined) ?? null;
+          }
+          const kept = keepOnlyReservation(false, target);
+          if (kept !== target) updateData.publishedAt = kept;
         }
 
         const updated = await tx[config.modelName].update({
@@ -503,11 +540,29 @@ export function createBlogService(prisma: PrismaClientLike, config: BlogServiceC
     },
 
     async bulkUpdatePublished(ids, published) {
-      const result = await delegate.updateMany({
-        where: { id: { in: ids } },
-        data: { published, updatedAt: new Date() } as any,
+      const now = new Date();
+      return prisma.$transaction(async (tx: any) => {
+        const model = tx[config.modelName];
+        if (published) {
+          // togglePublish 와 같이 발행 시각이 없는 글은 지금 시각으로 공개한다.
+          await model.updateMany({
+            where: { id: { in: ids }, publishedAt: null },
+            data: { published: true, publishedAt: now, updatedAt: now },
+          });
+        } else {
+          // 과거 발행 시각을 지우지 않으면 스케줄러가 예약 글로 보고 다시 공개한다.
+          // 미래 시각은 예약이므로 유지한다.
+          await model.updateMany({
+            where: { id: { in: ids }, publishedAt: { lte: now } },
+            data: { published: false, publishedAt: null, updatedAt: now },
+          });
+        }
+        const result = await model.updateMany({
+          where: { id: { in: ids } },
+          data: { published, updatedAt: now },
+        });
+        return result.count;
       });
-      return result.count;
     },
 
     async bulkUpdateFeatured(ids, featured) {
