@@ -34,7 +34,8 @@ const validCreateBody = {
   content: '<p>본문</p>',
   category: 'news',
   slug: 'hello-world',
-  publishedAt: '2026-09-01T00:00:00.000Z',
+  // 비공개 글에는 예약(미래) 시각만 남으므로 실행 시점과 무관하게 미래인 고정 값을 쓴다.
+  publishedAt: '2099-09-01T00:00:00.000Z',
 };
 
 const jsonRequest = (method, body) =>
@@ -186,7 +187,7 @@ test('서비스 호환: POST 는 zod 기본값을 적용하고 Prisma 에 스키
   assert.equal(data.featured, false);
   assert.equal(data.published, false);
   assert.ok(data.publishedAt instanceof Date, 'publishedAt 은 Date');
-  assert.equal(data.publishedAt.toISOString(), '2026-09-01T00:00:00.000Z');
+  assert.equal(data.publishedAt.toISOString(), '2099-09-01T00:00:00.000Z');
   assert.equal(data.coverImageUrl, null);
   assert.equal(data.coverImageKey, null);
   assert.equal(data.content, '<p>본문</p><img src="x">');

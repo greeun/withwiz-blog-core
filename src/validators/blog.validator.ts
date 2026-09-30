@@ -24,8 +24,22 @@ export const slugSchema = z
   .max(200)
   .regex(SLUG_PATTERN, 'Slug must be URL-safe (lowercase, hyphens only)');
 
-/** 위험한 프로토콜(file://, javascript: 등)을 차단하는 안전한 URL 스키마 */
-const safeUrl = z.string().url().refine(
+/**
+ * 사이트 루트 기준 상대 경로 (`/assets/cover.png`).
+ * 정적 자산 경로를 그대로 쓰는 글이 있어 절대 URL 과 함께 허용한다.
+ * `//host` 는 다른 출처를 가리키는 프로토콜 상대 URL 이고, 역슬래시는 브라우저가 `/` 로 읽으므로 막는다.
+ */
+const ROOT_RELATIVE_PATH = /^\/(?![/\\])[^\s\\]*$/;
+
+const absoluteUrl = z.string().url();
+
+/** 절대 URL 이거나 루트 상대 경로인지 확인한다. */
+function isUrlOrRootPath(value: string): boolean {
+  return ROOT_RELATIVE_PATH.test(value) || absoluteUrl.safeParse(value).success;
+}
+
+/** 위험한 프로토콜(file://, javascript: 등)을 차단하는 안전한 URL 스키마 (루트 상대 경로 허용) */
+const safeUrl = z.string().refine(isUrlOrRootPath, { message: 'Invalid url' }).refine(
   (url) => {
     const lower = url.toLowerCase().replace(/[\t\n\r]/g, '');
     return !lower.startsWith('file:') && !lower.startsWith('javascript:') && !lower.startsWith('data:');
@@ -81,10 +95,10 @@ function createSlugSchema(t: Required<BlogI18nStrings>) {
 }
 
 /**
- * i18n 에러 메시지가 주입된 안전 URL 스키마를 생성한다.
+ * i18n 에러 메시지가 주입된 안전 URL 스키마를 생성한다. 루트 상대 경로도 허용한다.
  */
 function createSafeUrlSchema(t: Required<BlogI18nStrings>) {
-  return z.string().url(t.validationUrlInvalid).refine(
+  return z.string().refine(isUrlOrRootPath, { message: t.validationUrlInvalid }).refine(
     (url) => {
       const lower = url.toLowerCase().replace(/[\t\n\r]/g, '');
       return !lower.startsWith('file:') && !lower.startsWith('javascript:') && !lower.startsWith('data:');

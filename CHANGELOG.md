@@ -5,6 +5,24 @@ All notable changes to `@withwiz/blog-core` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Unpublishing a post no longer leaves a past `publishedAt` behind. The scheduler
+  treats `published=false` with a past `publishedAt` as a due reservation, so
+  posts hidden through `update({ published: false })` or
+  `bulkUpdatePublished(ids, false)` were published again on the next scheduler
+  run. `create()`, `update()` and `bulkUpdatePublished()` now store `null`
+  instead of a past time for unpublished posts; a future `publishedAt` is kept
+  as a reservation. `togglePublish()` already behaved this way.
+- `bulkUpdatePublished(ids, true)` sets `publishedAt` to the current time for
+  posts that have none, matching `togglePublish()`.
+- `coverImageUrl` validation accepts root-relative paths (`/assets/cover.png`)
+  in addition to absolute URLs. Posts whose cover image was stored as a
+  site-relative path could not be saved again from the admin editor (400).
+  Protocol-relative (`//host`), backslash, whitespace and `javascript:` /
+  `data:` / `file:` values are still rejected.
+
 ## [2.2.0] — 2026-09-19
 
 ### Changed
